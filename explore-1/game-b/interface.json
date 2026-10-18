@@ -1,0 +1,133 @@
+{
+  "canvas": { "width": 720, "height": 1280 },
+  "conventions": {
+    "partKinds": "魂件種類字串: \"ranged\"(遠攻)、\"melee\"(近戰)、\"seek\"(索敵)、\"march\"(進攻主堡)、\"frost\"(冰霜)、\"blast\"(爆裂)。六種圖示在所有函式中同一套, 互相要分得開",
+    "combos": "組合編號(從 0 起算)與名稱: 0 穿透箭、1 冰箭、2 爆裂彈、3 旋風斬、4 冰霜重擊、5 突襲、6 冰爆、7 自爆衝鋒。每個組合要有自己的代表色或小圖示, 在 drawSoulSlots 的配對連線、drawHud 圖鑑、drawComboBanner 中一致",
+    "timers": "所有 xxxAge / xxxDuration 成對欄位: Age 是事件發生後經過的秒數, 閒置時 Age = Duration(不是 0), 0 ≤ Age < Duration 表示正在播",
+    "position": "所有 x, y 都是物件中心; size 是判定框 [寬, 高], 以中心對齊",
+    "drawOrder": "drawBackground → drawCoin → drawGroundPart → drawCorpse → 單位(主堡、箭塔、步兵、樹精、敵人, 依 y 由小到大) → drawPlayer → drawSoulSlots(每個單位、屍體與玩家) → drawProjectile → drawAreaEffect → drawHitSpark → drawMoveMarker → drawPlacementGhost → drawComboBanner → drawHud → drawBottomPanel → drawResult",
+    "textOwnership": "畫面上所有文字都由美術在各繪製函式內畫(依 state 傳入的字串或數值), RD 不另外畫字"
+  },
+  "draw": [
+    {
+      "name": "drawBackground",
+      "state": [],
+      "notes": "畫滿 720×1280(HUD 與底部面板區之後會被蓋住)。包含: 地面; 敵人路線, 寬 56, 中線依序連接 (640,130) → (80,130) → (80,430) → (640,430) → (640,730) → (80,730) → (80,1000) → (360,1000) → (360,1090), 轉角處接順; 路線起點 (640,130) 畫出怪口。主堡區範圍不在這裡畫"
+    },
+    {
+      "name": "drawCastle",
+      "state": ["x", "y", "hitAge", "hitDuration", "zoneActive", "targeted"],
+      "size": [112, 112],
+      "notes": "固定在 (360,1090)。hitDuration = 0.3(敵人抵達時閃一下, 只改顏色不放大), 閒置 hitAge = 0.3。主堡區是半徑 130 的圓(外緣), 本函式畫成淡淡的地面範圍圈, zoneActive(玩家在主堡區內)時更明顯; 這圈超出 size 是允許的例外, 下緣會被底部面板蓋住無妨。targeted: 主堡是目前打開面板的目標, 畫外框(框外, 寬 3)。主堡魂件槽列由 RD 呼叫 drawSoulSlots 畫在 (360, 1090−56−20)"
+    },
+    {
+      "name": "drawTower",
+      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "targeted"],
+      "size": [48, 48],
+      "notes": "箭塔。hitDuration = 0.2(受擊閃一下, 只改顏色); attackDuration = 0.15(攻擊動作, 位移不超出框外 4px); 閒置時 Age = Duration。moving: 正在移動。slowed: 正在被減速(畫冰霜感的覆蓋, 不超出框)。targeted: 是目前打開面板的目標, 畫外框(框外, 寬 3)。血條只在 hp < maxHp 時畫, 框外上方, 中心 (x, y−24−6), 寬 48 高 4。魂件槽列由 RD 另外呼叫 drawSoulSlots 畫在 (x, y−24−20)"
+    },
+    {
+      "name": "drawSoldier",
+      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "targeted"],
+      "size": [32, 32],
+      "notes": "步兵。規則同 drawTower; 血條中心 (x, y−16−6), 寬 32; 魂件槽列由 RD 畫在 (x, y−16−20)"
+    },
+    {
+      "name": "drawTreant",
+      "state": ["x", "y", "team", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "targeted"],
+      "size": [52, 52],
+      "notes": "樹精。team: \"neutral\"(中立, 看得出不屬於任何一方)或 \"ally\"(我方)。中立時不畫血條。其餘規則同 drawTower; 血條中心 (x, y−26−6), 寬 52; 魂件槽列由 RD 畫在 (x, y−26−20)"
+    },
+    {
+      "name": "drawEnemy",
+      "state": ["type", "x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed"],
+      "size": { "imp": [32, 32], "runner": [32, 32], "armored": [44, 44], "bat": [24, 24] },
+      "notes": "type: \"imp\"(小鬼)、\"runner\"(疾行鬼, 要看得出很快)、\"armored\"(鐵甲鬼, 要看得出很硬)、\"bat\"(小蝠)。一眼要和我方單位分開。其餘規則同 drawTower(無 targeted); 血條中心 (x, y−高/2−6), 寬 = 該種類寬; 魂件槽列由 RD 畫在 (x, y−高/2−20)"
+    },
+    {
+      "name": "drawPlayer",
+      "state": ["x", "y", "moving", "attackAge", "attackDuration", "targeted"],
+      "size": [32, 32],
+      "notes": "玩家魂匠, 一眼要和所有單位分開。attackDuration = 0.15, 閒置 attackAge = 0.15。targeted: 玩家點了自己、面板正開著自己, 畫外框(框外, 寬 3)。玩家的魂件槽列由 RD 畫在 (x, y−16−20)"
+    },
+    {
+      "name": "drawCorpse",
+      "state": ["kind", "x", "y", "life", "maxLife", "targeted"],
+      "size": { "imp": [32, 32], "runner": [32, 32], "armored": [44, 44], "bat": [24, 24], "tower": [48, 48], "soldier": [32, 32], "treant": [52, 52] },
+      "notes": "屍體。kind 是死掉的單位種類。life: 剩餘秒數, maxLife = 12, 越少越淡。targeted: 是目前打開面板的目標, 畫外框(框外, 寬 3)。魂件槽列由 RD 畫在 (x, y−高/2−12)"
+    },
+    {
+      "name": "drawCoin",
+      "state": ["x", "y"],
+      "size": [16, 16],
+      "notes": "金幣, 不會消失"
+    },
+    {
+      "name": "drawGroundPart",
+      "state": ["kind", "x", "y"],
+      "size": [28, 28],
+      "notes": "背包滿時掉在地上的魂件。kind 見 conventions.partKinds"
+    },
+    {
+      "name": "drawSoulSlots",
+      "state": ["x", "y", "slots", "pairs"],
+      "size": [20, 20],
+      "notes": "單位、屍體、玩家頭上的魂件槽列。x, y 是整列中心。slots: 陣列, 長度 = 槽位上限(1~3, 全部畫出), 每項是魂件種類字串或 null(空格)。每格 18×18, 格距 20, 整列寬 = 長度×20(size 是單格)。pairs: 目前成立的組合陣列, 長度 0~1(槽位最多 3, 最多一組), 每項 {a, b, combo}: a、b 是配對的兩格索引(從 0 起算), combo 是組合編號; 用該組合的代表色把兩格框在一起或連起來, 連線畫在格列上方 6px 內(框外)"
+    },
+    {
+      "name": "drawProjectile",
+      "state": ["kind", "x", "y", "angle", "team"],
+      "size": { "normal": [10, 10], "pierce": [24, 6], "frost": [12, 12], "blast": [14, 14] },
+      "notes": "kind: \"normal\"(單件遠攻)、\"pierce\"(穿透箭, 長條)、\"frost\"(冰箭)、\"blast\"(爆裂彈)。angle: 飛行方向(弧度, 0 = 向右), 長條要沿 angle 旋轉。team: \"ally\" 或 \"enemy\"(目前敵人只會有 normal, 仍要能畫)"
+    },
+    {
+      "name": "drawAreaEffect",
+      "state": ["kind", "x", "y", "radius", "age", "duration"],
+      "size": [0, 0],
+      "notes": "範圍效果, 判定範圍就是 radius(給的是外緣), 畫的範圍以 radius 為準不另有固定 size。kind 與時長: \"blast\"(爆裂彈命中, radius 70, duration 0.3)、\"deathBlast\"(爆裂單件的死亡爆炸, radius 80, duration 0.3)、\"nova\"(冰爆, radius 100, duration 0.4)、\"selfDestruct\"(自爆衝鋒, radius 90, duration 0.4)、\"whirl\"(旋風斬, radius 56, duration 0.2)。RD 只在 0 ≤ age < duration 時呼叫。四種要分得開; 冰霜類用冷色"
+    },
+    {
+      "name": "drawHitSpark",
+      "state": ["x", "y", "age", "duration"],
+      "size": [24, 24],
+      "notes": "命中火花, 在被打的單位中心。duration = 0.25, RD 只在播放期間呼叫"
+    },
+    {
+      "name": "drawMoveMarker",
+      "state": ["x", "y", "age", "duration"],
+      "size": [32, 32],
+      "notes": "點地面移動時在點擊處出現的標記, duration = 0.5, RD 只在播放期間呼叫"
+    },
+    {
+      "name": "drawPlacementGhost",
+      "state": ["kind", "x", "y", "valid"],
+      "size": { "tower": [48, 48], "rally": [32, 32] },
+      "notes": "放置模式下跟著滑鼠的預覽。kind: \"tower\"(箭塔預覽, 半透明)或 \"rally\"(步兵 / 樹精的集合點旗標)。valid: 這個位置能不能放(rally 永遠 true); 不能放時要明顯看得出(如偏紅)"
+    },
+    {
+      "name": "drawComboBanner",
+      "state": ["combo", "name", "age", "duration"],
+      "size": [520, 72],
+      "notes": "發現組合橫幅, 固定中心 (360,190)。combo: 組合編號; name: 組合名稱字串。美術畫出文字「發現組合: <name>」與該組合代表色 / 圖示。duration = 2.5, RD 只在播放期間呼叫; 出現與消失可做淡入淡出或彈一下, 放大的是整塊, 放大時不超出 560×90"
+    },
+    {
+      "name": "drawHud",
+      "state": ["gold", "castleHp", "castleMaxHp", "wave", "totalWaves", "nextWaveIn", "nextWave", "discovered", "slowMo"],
+      "size": [720, 100],
+      "notes": "固定在畫面頂端 (0,0)~(720,100)。上排(0~50): gold、主堡生命 castleHp / castleMaxHp(20)、波次 wave / totalWaves(6; wave 第一波開始前為 0)、nextWaveIn 下一波倒數秒數(無條件進位; 無下一波時 −1, 不顯示)。下排(50~100)左半: nextWave 下一波預告, 陣列長度 0~4, 每項 {type, count}, type 同 drawEnemy 的種類字串, 畫成敵人小圖示 ×數量; 長度 0 時不畫(第 6 波開始後)。下排右半: discovered 長度固定 8 的布林陣列, 索引 = 組合編號(從 0 起算), 已發現畫該組合圖示, 未發現畫「?」。slowMo: 魂件面板開著(慢動作中)時為 true, 在整個畫面四周畫一圈淡淡的框提示慢動作, 這圈框超出 HUD 範圍是允許的例外。所有文字由美術畫"
+    },
+    {
+      "name": "drawBottomPanel",
+      "state": ["bag", "mode", "targetName", "targetSlots", "targetPairs", "shopItems"],
+      "size": [720, 120],
+      "notes": "固定在畫面底部 (0,1160)~(720,1280)。版位(RD 依這些矩形判定點擊, 座標皆為中心, 美術照這些位置畫): 背包 4 格, 每格 72×72, 中心 (56,1220)、(136,1220)、(216,1220)、(296,1220), 索引從 0 起算。右側區 x 340~720。bag: 長度固定 4, 每項魂件種類字串或 null。mode: \"target\"(面板開著)、\"shop\"(在主堡區且面板沒開)、\"none\"(其他)。mode = \"target\" 時: targetName 目標名稱字串(如「箭塔」「小鬼的屍體」「自己」)畫在右側區頂端 (520,1176); targetSlots 長度 1~3, 每格 72×72, 中心 (420,1228)、(500,1228)、(580,1228), 每項魂件種類字串或 null; targetPairs 格式同 drawSoulSlots 的 pairs, 在目標格之間畫配對; 關閉按鈕 ✕ 中心 (684,1196), 40×40。mode = \"shop\" 時: shopItems 長度固定 7, 依序為 箭塔、步兵、樹精、遠攻、近戰、冰霜、爆裂, 每項 {name, price, state, kind}, state: \"ok\" | \"poor\"(金幣不足, 變暗) | \"locked\"(未解鎖, 顯示鎖不顯示品名) | \"active\"(正在放置模式, 高亮); kind 是魂件品項的魂件種類字串, 單位品項為 null(魂件品項畫魂件圖示)。商店格 84×50, 第一排中心 (390,1192)、(476,1192)、(562,1192)、(648,1192), 第二排中心 (390,1248)、(476,1248)、(562,1248), 第 0~3 項在第一排、第 4~6 項在第二排。mode = \"none\" 時右側區留空或畫淡淡的提示底。所有文字由美術畫"
+    },
+    {
+      "name": "drawResult",
+      "state": ["win", "wave", "totalWaves", "discoveredCount", "totalCombos"],
+      "size": [720, 1280],
+      "notes": "結算畫面, 蓋在整個畫面上(半透明底)。美術畫出標題「勝利」或「主堡被攻陷」、「第 wave / totalWaves 波」、「發現組合 discoveredCount / totalCombos(8)」與提示「點擊畫面重新開始」"
+    }
+  ],
+  "guidePages": 6
+}
