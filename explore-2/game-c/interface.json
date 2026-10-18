@@ -1,0 +1,169 @@
+{
+  "canvas": { "width": 1280, "height": 720 },
+  "conventions": {
+    "itemKinds": "物品種類字串。魂件: \"ranged\"(遠攻)、\"melee\"(近戰)、\"guard\"(鐵壁)、\"seek\"(索敵)、\"march\"(進攻主堡); 其他手上物品: \"slotStone\"(擴槽石)、\"towerKit\"(箭塔材料)、\"soldierKit\"(步兵)、\"wolfKit\"(野狼)、\"impKit\"(小鬼兵)、\"archerKit\"(弓鬼兵)、\"shieldKit\"(盾鬼兵)、\"eliteKit\"(魂王兵)。五種魂件 + 擴槽石的圖示在 drawSoulSlots、drawGroundPart、drawPlayer、drawSoulPopup 中是同一套, 互相要分得開; 各兵種材料的圖示要看得出是哪個單位(可用該單位的小頭像)",
+    "timers": "所有 xxxAge / xxxDuration 成對欄位: Age 是事件發生後經過的秒數, 閒置時 Age = Duration(不是 0), 0 ≤ Age < Duration 表示正在播。Age 以遊戲時間計(慢動作時也跟著變慢)",
+    "position": "所有 x, y 都是物件中心; size 是判定框 [寬, 高], 以中心對齊",
+    "team": "team 欄位: \"enemy\"(敵方)、\"ally\"(我方)、\"neutral\"(中立)。同一種造型的三種陣營要一眼分開: 敵方帶敵方色、我方帶我方色(和箭塔、步兵同色系)、中立灰暗褪色",
+    "drawOrder": "RD 依序呼叫: drawBackground → drawBuildPad → drawCoin → drawGuardAura → drawCorpse → drawGroundPart → drawPlacePreview → 單位與玩家(drawCastle、drawTower、drawSoldier、drawWolf、drawDemon、drawPlayer, 依 y 由小到大) → drawSoulSlots(每個單位與屍體) → drawProjectile → drawAreaHit → drawHitSpark → drawStealLink → drawComboName → drawSpawnWarning → drawRespawnList → drawShopPanel → drawHud → drawSlowMo → drawSoulPopup → drawResult",
+    "textOwnership": "除了說明頁, 畫面上所有文字都由美術在各繪製函式內畫(依 state 傳入的字串或數值), RD 不另外畫字。有文字的函式: drawComboName(技能名稱)、drawSoulPopup(標題、手上、動作提示、操作提示)、drawShopPanel(按鍵、品名、價格)、drawHud(數值)、drawRespawnList(秒數、+N)、drawSlowMo(「慢動作」)、drawResult(標題、波次、收編數、重來提示)"
+  },
+  "draw": [
+    {
+      "name": "drawBackground",
+      "state": [],
+      "notes": "畫滿 1280×720。草地 + 三條路線(寬 56, 給的是全寬), 中線: 上路 (0,170)→(1040,170)→(1124,385); 中路 (0,385)→(1124,385); 下路 (0,600)→(1040,600)→(1124,385)(都接到主堡左緣), 匯合處接順。左邊 x 0~40 是敵營入口, 可畫成陰暗的裂口。上方 0~50 會被 HUD 蓋住。主堡區範圍不在這裡畫"
+    },
+    {
+      "name": "drawBuildPad",
+      "state": ["x", "y", "state", "rebuildRemaining", "rebuildTotal", "highlight"],
+      "size": [64, 64],
+      "notes": "建造地基, 固定六塊: (300,100)、(760,100)、(520,278)、(520,492)、(300,670)、(760,670)。state: \"empty\"(空)、\"occupied\"(有塔, 塔會畫在它上面)、\"rebuilding\"(箭塔陣亡重建中)。rebuildRemaining: 重建剩餘秒數, rebuildTotal = 8; 不在重建時 rebuildRemaining = 0; 重建中在地基上畫一個隨時間填滿的計時圈(直徑 40, 框內)和半透明的塔影。highlight: 玩家拿著箭塔材料且這塊空地基是互動目標時為 true, 明顯亮起表示可蓋(不超出 64×64)"
+    },
+    {
+      "name": "drawCastle",
+      "state": ["x", "y", "hitAge", "hitDuration", "attackAge", "attackDuration", "zoneActive", "targeted"],
+      "size": [112, 112],
+      "notes": "固定在 (1180,385)。hitDuration = 0.3(敵人抵達時閃一下, 只改顏色不放大), 閒置 hitAge = 0.3。attackDuration = 0.15(主堡魂件發動的動作, 不超出框外 4px)。zoneActive: 玩家在主堡區內時為 true。主堡區是半徑 120 的圓(外緣), 由本函式畫成淡淡的地面範圍圈, zoneActive 時更明顯; 這圈超出 size 是允許的例外, 畫在主堡本體下面。targeted: 是互動目標, 畫外框(內緣貼齊 112×112 外邊, 寬 3, 屬框外)。主堡魂件槽列由 RD 呼叫 drawSoulSlots 畫在 (1180, 385−56−20)"
+    },
+    {
+      "name": "drawTower",
+      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "targeted"],
+      "size": [48, 48],
+      "notes": "箭塔。hitDuration = 0.2(受擊閃一下, 只改顏色); attackDuration = 0.15(攻擊動作, 位移不超出框外 4px); 閒置 Age = Duration。moving: 正在移動(裝了索敵)。targeted: 是互動目標, 畫外框(內緣貼齊 48×48 外邊, 寬 3, 屬框外)。血條只在 hp < maxHp 時畫, 框外上方, 中心 (x, y−24−6), 寬 48 高 4。魂件槽列由 RD 另外呼叫 drawSoulSlots 畫在 (x, y−24−20)"
+    },
+    {
+      "name": "drawSoldier",
+      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "facing", "targeted"],
+      "size": [32, 32],
+      "notes": "步兵。facing: 1 面向右、−1 面向左(推進時面向左)。其餘欄位規則同 drawTower; 血條中心 (x, y−16−6), 寬 32; 魂件槽列由 RD 畫在 (x, y−16−20)"
+    },
+    {
+      "name": "drawWolf",
+      "state": ["x", "y", "team", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "facing", "targeted"],
+      "size": [36, 36],
+      "notes": "野狼。team: \"neutral\" 或 \"ally\"(見 conventions.team)。中立時不畫血條。facing 同 drawSoldier。其餘規則同 drawTower; 血條中心 (x, y−18−6), 寬 36; 魂件槽列由 RD 畫在 (x, y−18−20)"
+    },
+    {
+      "name": "drawDemon",
+      "state": ["type", "team", "x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "facing", "harmless", "targeted"],
+      "size": { "imp": [32, 32], "archer": [32, 32], "shield": [40, 40], "elite": [60, 60] },
+      "notes": "鬼族單位, 敵人、迷魂、收編兵共用。type: \"imp\"(小鬼)、\"archer\"(弓鬼)、\"shield\"(盾鬼)、\"elite\"(魂王鬼, 要一眼看出珍貴強大, 光暈畫在 60×60 內)。team: \"enemy\"(敵人)、\"neutral\"(迷魂: 魂件被拆光後的中立, 灰暗、呆滯、像空殼)、\"ally\"(收編兵, 我方色)。facing: 1 面向右(敵人前進方向)、−1 面向左(收編兵推進方向)。harmless: 敵人身上沒有攻擊魂件時為 true, 畫成洩氣、武器消失的樣子(team 為 neutral 時固定 true)。moving: false 時站著不動(敵人被拆掉進攻主堡後就會這樣)。targeted: 是互動目標, 畫外框(框外, 寬 3)。hitDuration = 0.2、attackDuration = 0.15, 規則同 drawTower。血條只在 team 不是 neutral 且 hp < maxHp 時畫, 框外上方, 中心 (x, y−高/2−6), 寬 = 該種類寬, 高 4; 魂件槽列由 RD 畫在 (x, y−高/2−20)"
+    },
+    {
+      "name": "drawCorpse",
+      "state": ["kind", "x", "y", "life", "maxLife", "targeted"],
+      "size": { "imp": [32, 32], "archer": [32, 32], "shield": [40, 40], "elite": [60, 60] },
+      "notes": "敵人屍體(我方單位不留屍體)。kind 同 drawDemon 的 type。life: 剩餘秒數, maxLife = 15; life < 3 時閃爍(本函式依 life 自行判斷節奏), 其餘時間清楚可辨; 屍體要和迷魂(活著的中立)一眼分開(例: 倒地)。targeted: 是互動目標, 畫外框(框外, 寬 3)。魂件槽列由 RD 畫在 (x, y−高/2−12)"
+    },
+    {
+      "name": "drawGroundPart",
+      "state": ["item", "x", "y", "targeted"],
+      "size": [28, 28],
+      "notes": "地上的魂件或擴槽石, 不會消失。item: 五種魂件或 \"slotStone\"。targeted: 是互動目標, 畫外框(框外, 寬 3)"
+    },
+    {
+      "name": "drawCoin",
+      "state": ["x", "y"],
+      "size": [16, 16],
+      "notes": "金幣, 不會消失、不閃爍"
+    },
+    {
+      "name": "drawPlayer",
+      "state": ["x", "y", "moving", "handItem", "stealing", "stealProgress"],
+      "size": [32, 32],
+      "notes": "玩家魂匠, 一眼要和所有單位分得開。handItem: 手上物品(conventions.itemKinds 字串)或 null; 畫在頭上框外, 中心 (x, y−34), 24×24。stealing: 正在搶奪; stealProgress: 0~1, 不在搶奪時 stealing = false、stealProgress = 0; 進度畫成繞著玩家的圓環, 半徑 24 指圓環外緣, 環寬 4, 從正上方順時針填滿, 圓環超出 32×32 是允許的例外"
+    },
+    {
+      "name": "drawPlacePreview",
+      "state": ["kind", "x", "y", "valid"],
+      "size": { "soldier": [32, 32], "wolf": [36, 36], "imp": [32, 32], "archer": [32, 32], "shield": [40, 40], "elite": [60, 60] },
+      "notes": "玩家拿著移動單位材料時的放置預覽。kind: 要放的單位(\"soldier\"、\"wolf\"、\"imp\"、\"archer\"、\"shield\"、\"elite\", 後四種是收編兵)。valid 為 true 時 (x, y) 是路線中線上會放下的點, 畫該單位的半透明我方色輪廓 + 一個朝左的小箭頭(表示會往敵營推進, 箭頭畫在框內); false 時 (x, y) 是玩家腳下, 畫紅色叉。畫在 size 內。箭塔材料不用本函式(由 drawBuildPad 的 highlight 表示)"
+    },
+    {
+      "name": "drawSoulSlots",
+      "state": ["x", "y", "slots"],
+      "size": [20, 20],
+      "notes": "單位、主堡、屍體頭上的魂件槽列。x, y 是整列中心。slots: 陣列, 長度 1~4(= 槽位上限), 每項是魂件種類字串或 null(空格), 從 0 起算由左到右。每格 18×18, 格距 20, 整列寬 = 長度×20(size 是單格)。空格與有魂件的格子要一眼分得出來"
+    },
+    {
+      "name": "drawGuardAura",
+      "state": ["x", "y", "radius"],
+      "size": [280, 280],
+      "notes": "堅守 / 不動城的吸引範圍, 畫在該單位腳下。radius: 100(堅守)或 140(不動城), 指外緣; size 對應最大直徑 280。淡淡的護盾色地面圈, 不蓋住單位辨識"
+    },
+    {
+      "name": "drawProjectile",
+      "state": ["x", "y", "angle", "team"],
+      "size": [10, 10],
+      "notes": "投射物(遠攻、連射)。angle: 飛行方向(弧度, 0 = 向右)。team: \"ally\" 或 \"enemy\", 兩方顏色要分得開"
+    },
+    {
+      "name": "drawAreaHit",
+      "state": ["kind", "x", "y", "radius", "team", "age", "duration"],
+      "size": [180, 180],
+      "notes": "範圍攻擊的一次性特效, 中心 (x, y)。kind: \"rain\"(箭雨, 箭從上方落下, radius 60)、\"whirl\"(旋風斬, 繞中心旋轉的斬擊, radius 60)、\"quake\"(裂地斬, 地面裂開的衝擊, radius 90)。radius 指外緣, 畫不超出外緣; size 對應最大直徑 180。team: \"ally\" 或 \"enemy\"(敵方魂王鬼也會旋風斬), 顏色分開。duration = 0.3, RD 只在 0 ≤ age < duration 時呼叫"
+    },
+    {
+      "name": "drawHitSpark",
+      "state": ["x", "y", "age", "duration"],
+      "size": [24, 24],
+      "notes": "命中火花, 單體傷害命中時在被打的單位中心播放。duration = 0.25, RD 只在 0 ≤ age < duration 時呼叫"
+    },
+    {
+      "name": "drawStealLink",
+      "state": ["x1", "y1", "x2", "y2", "progress"],
+      "size": [0, 0],
+      "notes": "搶奪中的連線, 從玩家中心 (x1,y1) 連到敵人槽列上被搶那一格的中心 (x2,y2)(RD 依槽列位置算好傳入)。progress: 0~1, 越接近 1 越強烈。RD 只在搶奪中呼叫"
+    },
+    {
+      "name": "drawComboName",
+      "state": ["x", "y", "name", "isNew", "age", "duration"],
+      "size": [200, 36],
+      "notes": "單位升到有名字的技能等級時, 頭上跳出的技能名稱。x, y: RD 傳 (單位 x, 單位 y − 半邊長 − 44), 在槽列之上。name: 技能名稱字串(連射 / 箭雨 / 旋風斬 / 裂地斬 / 堅守 / 不動城)。isNew: 本局第一次出現時為 true, 文字改成「新技能! 」+ name 並更醒目, size 放寬為 [280, 48]。duration = 1.5, RD 只在 0 ≤ age < duration 時呼叫; 出現時可彈一下(整塊放大至多 1.2 倍), 之後往上飄至多 16px 並淡出, 都算在 size 內"
+    },
+    {
+      "name": "drawSpawnWarning",
+      "state": ["lane", "remaining", "total"],
+      "size": [64, 64],
+      "notes": "波次預警。lane: \"top\" | \"mid\" | \"bottom\"; 固定位置: top 中心 (40,170)、mid 中心 (40,385)、bottom 中心 (40,600), 箭頭都朝右。remaining: 剩餘秒數, total = 6。RD 只在預警期間(0 < remaining ≤ total)呼叫, 可能多個同時出現。可以閃爍, 不超出 64×64"
+    },
+    {
+      "name": "drawRespawnList",
+      "state": ["items"],
+      "size": [240, 40],
+      "notes": "重生中的移動單位列表, 固定在主堡上方, 整列中心 (1160, 290)。items: 陣列, 長度 0~8(0 時 RD 不呼叫), 每項 {kind: 單位種類字串(\"soldier\"、\"wolf\"、\"imp\"、\"archer\"、\"shield\"、\"elite\"), remaining: 剩餘秒數, total: 8}; 從 0 起算由左到右, 每項 28×28 的半透明頭像 + 隨時間填滿的計時圈, 格距 30。最多畫 7 項, 超過 7 項時第 7 格改畫「+N」(N = 總數 − 6)。整列寬依項數變化, 以中心對齊, 最寬 240。秒數文字可省略(計時圈已表示)"
+    },
+    {
+      "name": "drawShopPanel",
+      "state": ["items"],
+      "size": [600, 150],
+      "notes": "主堡商店面板, 固定中心 (640,630)。RD 只在玩家在主堡區內、彈窗沒開、手上空時呼叫。items: 固定 10 項陣列(從 0 起算第 0 項 = 按鍵 1, ……, 第 8 項 = 按鍵 9, 第 9 項 = 按鍵 0), 每項 {key: \"1\"~\"9\" 或 \"0\", name, price, state: \"ok\" | \"poor\" | \"locked\"}; poor 變暗, locked 畫鎖、不畫品名但畫按鍵與一個灰色剪影(暗示可收編的兵種)。排成 2 列 × 5 項, 第 0~4 項在上列、5~9 項在下列, 等寬。每項畫按鍵、品名、價格(美術畫)"
+    },
+    {
+      "name": "drawHud",
+      "state": ["gold", "castleHp", "castleMaxHp", "wave", "totalWaves", "nextWaveIn", "recruited", "recruitTotal"],
+      "size": [1280, 50],
+      "notes": "固定在畫面頂端 (0,0)~(1280,50)。gold: 金幣數。castleHp / castleMaxHp(20)。wave: 已開始的波次(第一波開始前為 0), totalWaves = 6。nextWaveIn: 距下一波秒數(無條件進位), 已無下一波時為 −1, 不顯示。recruited / recruitTotal(5): 已收編兵種數, 畫成「收編 recruited / 5」。所有文字由美術畫"
+    },
+    {
+      "name": "drawSlowMo",
+      "state": [],
+      "size": [1280, 720],
+      "notes": "慢動作效果, 彈窗開著時蓋滿整個畫面(畫在 HUD 之上、彈窗之下)。要非常明顯: 畫面整體去色或偏冷色、四周暗角、畫面外圍一圈明顯的邊框, 並在 (640, 80) 畫「慢動作」字樣(美術畫)。不可把遊戲畫面蓋到看不清單位位置"
+    },
+    {
+      "name": "drawSoulPopup",
+      "state": ["x", "y", "w", "h", "title", "slots", "index", "hand", "actionLabel", "shakeAge", "shakeDuration"],
+      "size": [312, 116],
+      "notes": "魂件彈窗。RD 算好中心 (x, y) 與寬高傳入: h = 116; w = 槽位數×48 + 120(槽位 2~4, 所以 216~312, size 給最大值); 放在目標上方, 超出畫面時改到目標下方並夾在畫面內。版位(相對面板中心): 標題中心 (0, −40), title 是目標名稱字串(例「箭塔」「小鬼(活)」「小鬼的屍體」「小鬼迷魂」「野狼」「主堡」); 目標槽位一排, 每格 40×40、格距 48, 第 0 格中心 x = −w/2 + 40, 格子中心 y = −4; 面板右側的「手上」格, 中心 (w/2 − 44, −4), 40×40, 上方小字「手上」, 和槽位之間有分隔線; 底部一行中心 (0, +40): 左邊 actionLabel(RD 依游標決定: 「拿起」「裝上」「互換」「擴槽」「搶奪」, 無效時為空字串), 右邊小字固定「J 確定 K 關閉」。slots: 長度 2~4, 項目為魂件字串或 null, 從 0 起算由左到右; index: 游標格, 從 0 起算, 要非常明顯。hand: 手上物品字串(魂件或 \"slotStone\")或 null。shakeDuration = 0.25, 無效操作時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+    },
+    {
+      "name": "drawResult",
+      "state": ["win", "wave", "totalWaves", "recruited", "recruitTotal"],
+      "size": [1280, 720],
+      "notes": "結算畫面, 蓋在整個畫面上(半透明底)。win: true 勝利 / false 失敗。美術畫出標題「勝利」或「主堡被攻陷」、「第 wave / totalWaves 波」、「收編兵種 recruited / recruitTotal」、提示「按 J 重新開始」"
+    }
+  ],
+  "guidePages": 7
+}
