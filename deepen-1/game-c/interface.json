@@ -1,0 +1,182 @@
+{
+  "canvas": { "width": 1280, "height": 720 },
+  "conventions": {
+    "itemKinds": "物品種類字串。基本魂件: \"ranged\"(遠攻)、\"melee\"(近戰)、\"frost\"(冰霜)、\"seek\"(索敵)、\"march\"(進攻主堡)、\"drum\"(行軍); 組合魂件(只由魂爐送出): \"pierce\"(穿透箭)、\"iceArrow\"(冰箭)、\"whirl\"(旋風斬)、\"frostSmash\"(冰霜重擊)、\"charge\"(衝鋒); 其他手上物品: \"slotStone\"(擴槽石)、\"crossbowKit\"(弩塔材料)、\"pillarKit\"(魂柱材料)、\"soldierKit\"(步兵)、\"golemKit\"(石魔像)。六種基本魂件 + 五種組合魂件 + 擴槽石的圖示在 drawSoulSlots、drawGroundPart、drawPlayer、drawSoulPopup、drawShopPopup、drawHud 中是同一套, 互相要分得開; 組合魂件要看得出比基本魂件高級(例: 鑲邊、雙色), 並帶有它兩件原料的意象",
+    "enemyTypes": "敵人種類字串: \"imp\"(小鬼)、\"archer\"(弓鬼)、\"ice\"(冰鬼)、\"drummer\"(鼓鬼, 背著戰鼓, 和行軍魂件的圖示呼應)、\"brute\"(狂鬼, 較大)。drawEnemy、drawCorpse 用同一套造型",
+    "teams": "陣營字串: \"ally\"(我方發出的攻擊)與 \"enemy\"(敵人發出的攻擊, 只會打我方移動單位)。drawProjectile、drawFrostAura 用 owner 欄位區分, 兩邊要一眼分得出, 顏色交給美術",
+    "timers": "所有 xxxAge / xxxDuration 成對欄位: Age 是事件發生後經過的秒數, 閒置時 Age = Duration(不是 0), 0 ≤ Age < Duration 表示正在播。Age 以遊戲時間計(慢動作時也跟著變慢)",
+    "position": "所有 x, y 都是物件中心; size 是判定框 [寬, 高], 以中心對齊。互動目標外框(targeted)一律畫在框外: 內緣貼齊 size 外邊, 寬 3",
+    "drawOrder": "RD 依序呼叫: drawBackground → drawPillarRange(每根魂柱) → drawResonanceLine(每條共鳴線) → drawFrostAura → drawCoin → drawCorpse → drawGroundPart → drawPlacePreview → 單位與敵人與玩家(drawCastle、drawCrossbow、drawPillar、drawSoldier、drawGolem、drawEnemy、drawPlayer, 依 y 由小到大) → drawSoulSlots(每個我方 / 中立單位、魂柱、主堡、屍體、玩家身上; 活敵人只在它是互動目標時畫) → drawProjectile → drawPierceBeam → drawAreaHit → drawHitSpark → drawStealLink → drawComboName → drawSpawnWarning → drawHud → drawSlowMo → drawSoulPopup / drawShopPopup → drawResult",
+    "textOwnership": "除了說明頁, 畫面上所有文字都由美術在各繪製函式內畫(依 state 傳入的字串或數值), RD 不另外畫字。有文字的函式: drawComboName(組合名稱)、drawSoulPopup(標題、「手上」、「丟下」、動作提示、操作提示)、drawShopPopup(標題、品名、價格、鎖、底部提示、操作提示)、drawHud(數值與標籤、「魂爐」)、drawSlowMo(「慢動作」)、drawResult(標題、波次、組合數、重來提示)"
+  },
+  "draw": [
+    {
+      "name": "drawBackground",
+      "state": [],
+      "notes": "只收 ctx。整張 1280×720 填滿(HUD 會蓋住上方 0~50)。草地 + Y 型路線(寬 56, 給的是全寬): 北支線 (0,194)→(720,194)→(720,434)、南支線 (0,626)→(720,626)→(720,434)、匯流段 (720,434)→(1124,434)(接到主堡左緣), 轉角與匯流處接順。路以外的草地上淡淡畫出 48×48 蓋塔格線(格子中心 (24+48i, 74+48j), i = 0~26, j = 0~13), 淡到不干擾辨識。主堡區與魂柱範圍不在這裡畫"
+    },
+    {
+      "name": "drawPillarRange",
+      "state": ["x", "y", "radius", "kinds", "changeAge", "changeDuration"],
+      "size": [300, 300],
+      "notes": "魂柱的共鳴範圍, 畫在地面層(所有單位之下)。radius = 150, 指圓的外緣(就是判定邊界, 不可畫到外緣之外)。kinds: 魂柱身上的基本魂件陣列, 長度 0~2(依序), 0 時畫成很淡的空圈; 有魂件時範圍帶有該魂件的意象色(2 件時兩種意象都看得出, 例: 分半或交替), 範圍內地面淡淡染色, 不可蓋住路線與單位的辨識。changeDuration = 0.5: 魂柱的魂件剛被換過(裝上、拿下、互換)時, 一圈波紋從中心擴到外緣, 閒置 changeAge = 0.5。多根魂柱的範圍重疊時各自畫, 要看得出重疊"
+    },
+    {
+      "name": "drawResonanceLine",
+      "state": ["x1", "y1", "x2", "y2", "kind", "active"],
+      "size": [0, 0],
+      "notes": "共鳴線: 從魂柱中心 (x1,y1) 到範圍內某個接收者中心 (x2,y2) 的細線(長度 0~150), 魂柱的每件魂件對每個接收者各一條, 同一對的兩條由 RD 錯開 4px 傳入。kind: 這條傳的基本魂件字串。active: false 畫成很細很淡(寬 1~2), true(這件虛魂件有被配進組合)變亮並沿線往接收者流動, 寬至多 4。要和搶奪連線分得開"
+    },
+    {
+      "name": "drawCastle",
+      "state": ["x", "y", "hitAge", "hitDuration", "attackAge", "attackDuration", "zoneActive", "targeted"],
+      "size": [112, 112],
+      "notes": "固定在 (1180,434)。hitDuration = 0.3(敵人抵達主堡時閃一下, 只改顏色不放大), 閒置 hitAge = 0.3。attackDuration = 0.15(主堡身上的魂件發動時的動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。zoneActive: 玩家在主堡區內時為 true。主堡區是半徑 110 的圓(外緣), 由本函式畫成淡淡的地面範圍圈, zoneActive 時更明顯(並可在圈旁標一個小小的空白鍵圖示表示可購買); 這圈超出 size 是允許的例外, 畫在主堡本體下面; 要和魂柱範圍分得開(主堡區不染魂件意象色)。主堡上要看得出有一座「魂爐」(爐口), 魂爐送出組合魂件時的表現由 drawGroundPart 的 spawnAge 負責。主堡魂件槽列由 RD 呼叫 drawSoulSlots 畫在 (1180, 434−56−20)"
+    },
+    {
+      "name": "drawCrossbow",
+      "state": ["x", "y", "attackAge", "attackDuration", "moving", "resonating", "targeted"],
+      "size": [48, 48],
+      "notes": "弩塔(沒有生命, 不會受傷)。attackDuration = 0.15(攻擊動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: 正在移動(裝了索敵或進攻主堡)。resonating: 至少一件虛魂件被配進組合時為 true, 本體帶一層微光(畫在框內)。魂件槽列由 RD 另外呼叫 drawSoulSlots 畫在 (x, y−24−20)"
+    },
+    {
+      "name": "drawPillar",
+      "state": ["x", "y", "kinds", "targeted"],
+      "size": [36, 36],
+      "notes": "魂柱: 一根發光的柱子, 不攻擊, 一眼要和弩塔分開(沒有武器, 像是會往外放射的東西)。kinds: 身上的基本魂件陣列, 長度 0~2; 柱頂的光帶有該魂件的意象色(和 drawPillarRange 一致), 0 時柱頂不亮。魂件槽列(1~2 格)由 RD 畫在 (x, y−18−20)"
+    },
+    {
+      "name": "drawSoldier",
+      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "charging", "resonating", "downAge", "downDuration", "targeted"],
+      "size": [32, 32],
+      "notes": "步兵(移動單位, 會巡邏)。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackAge / attackDuration / moving / resonating 規則同 drawCrossbow。charging: 正在衝鋒, 畫出前衝姿勢與速度線(速度線可畫到框外後方 12px)。downDuration = 5: 倒下中 0 ≤ downAge < 5, 畫成倒地 + 在框內畫出剩餘時間的小圓餅(剩 = 1 − downAge/5); 沒倒下時 downAge = 5。血條只在 hp < maxHp 且沒倒下時畫, 在框外上方, 中心 (x, y−16−6), 寬 32, 高 4; 魂件槽列由 RD 畫在 (x, y−16−20)"
+    },
+    {
+      "name": "drawGolem",
+      "state": ["x", "y", "team", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "charging", "resonating", "downAge", "downDuration", "targeted"],
+      "size": [56, 56],
+      "notes": "石魔像。team: \"neutral\"(中立, 灰暗、看得出不屬於任何一方; 中立時 hp = maxHp、charging / resonating = false、downAge = downDuration)或 \"ally\"(我方)。其餘欄位規則同 drawSoldier(血條中心 (x, y−28−6), 寬 56); 魂件槽列由 RD 畫在 (x, y−28−20)"
+    },
+    {
+      "name": "drawEnemy",
+      "state": ["type", "x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "targeted"],
+      "size": { "imp": [32, 32], "archer": [32, 32], "ice": [32, 32], "drummer": [36, 36], "brute": [44, 44] },
+      "notes": "type 見 conventions.enemyTypes。一眼要和我方單位分開。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackDuration = 0.15(打我方移動單位時的出手動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: false 表示被拆掉進攻主堡後停在原地, 畫成呆站(例: 頭上一個問號, 畫在框內)。slowed: 正被減速, 加一層冰藍色調(只改顏色)。血條只在 hp < maxHp 時畫, 在框外上方, 中心 (x, y−高/2−6), 寬 = 該種類寬, 高 4; 敵人是互動目標時, RD 另外呼叫 drawSoulSlots 畫在 (x, y−高/2−20)"
+    },
+    {
+      "name": "drawCorpse",
+      "state": ["kind", "x", "y", "life", "maxLife", "targeted"],
+      "size": { "imp": [32, 32], "archer": [32, 32], "ice": [32, 32], "drummer": [36, 36], "brute": [44, 44] },
+      "notes": "敵人屍體。kind 同 drawEnemy 的 type。life: 剩餘秒數, maxLife = 15; life < 3 時閃爍(本函式依 life 自行判斷節奏), 其餘時間維持清楚可辨。魂件槽列由 RD 畫在 (x, y−高/2−12)"
+    },
+    {
+      "name": "drawGroundPart",
+      "state": ["item", "x", "y", "spawnAge", "spawnDuration", "targeted"],
+      "size": [28, 28],
+      "notes": "地上的魂件或擴槽石(玩家丟下、招募掉出、魂爐送出), 不會消失。item: 基本 / 組合魂件或 \"slotStone\"。spawnDuration = 0.6: 魂爐剛送出時從主堡方向彈出落地並閃光(彈出的位移與光芒可超出框外, 至多 24px), 閒置 spawnAge = 0.6; 其他來源出現時 RD 直接傳閒置值"
+    },
+    {
+      "name": "drawCoin",
+      "state": ["x", "y"],
+      "size": [16, 16],
+      "notes": "金幣, 不會消失。被吸向玩家時位置由 RD 更新, 本函式不必另畫飛行效果"
+    },
+    {
+      "name": "drawPlayer",
+      "state": ["x", "y", "moving", "attackAge", "attackDuration", "resonating", "handItem", "stealing", "stealProgress"],
+      "size": [32, 32],
+      "notes": "玩家魂匠, 一眼要和所有單位分得開。attackDuration = 0.15(身上的魂件發動時的出手動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。resonating: 至少一件虛魂件被配進組合時為 true, 身上帶一層微光(畫在框內)。handItem: 手上「拿著」的物品(conventions.itemKinds 字串)或 null; 畫在身體右側、像是捧在手上, 圖示中心 (x+28, y), 22×22, 屬框外的允許例外; 要和頭上的身上魂件列(由 RD 呼叫 drawSoulSlots 畫在 (x, y−16−20), 固定 3 格)一眼分得出「拿著」與「裝在身上」。stealing: 正在搶奪活敵人的魂件; stealProgress: 0~1, 不在搶奪時 stealing = false、stealProgress = 0; 進度畫成繞著玩家的圓環, 半徑 24 指圓環外緣, 環寬 4, 從正上方順時針填滿, 圓環超出 32×32 是允許的例外"
+    },
+    {
+      "name": "drawPlacePreview",
+      "state": ["kind", "x", "y", "valid"],
+      "size": { "crossbow": [48, 48], "pillar": [48, 48], "soldier": [32, 32], "golem": [56, 56] },
+      "notes": "玩家拿著單位材料時的放置預覽。kind: \"crossbow\" | \"pillar\" | \"soldier\" | \"golem\"。弩塔與魂柱時 (x, y) 是玩家所站蓋塔格的中心, 畫出 48×48 的格子框(魂柱本體 36×36 畫在格子框中央), 步兵 / 石魔像時是玩家腳下。半透明輪廓, 畫在 size 內; 例外: pillar 另外畫出半徑 150 的範圍圈(虛線, 150 指外緣), 讓玩家放之前看到會蓋到誰。valid: true 畫成可放(例: 綠), false 畫成不可放(例: 紅 + 叉)"
+    },
+    {
+      "name": "drawSoulSlots",
+      "state": ["x", "y", "slots", "virtual"],
+      "size": [20, 20],
+      "notes": "單位、魂柱、主堡、屍體、玩家身上(以及是互動目標的活敵人)頭上的魂件槽列。x, y 是實體槽列的中心。slots: 陣列, 長度 1~4(= 槽位上限; 玩家固定 3), 每項是魂件種類字串(基本或組合)或 null(空格), 從 0 起算由左到右。每格 18×18, 格距 20, 實體槽列寬 = 長度×20(size 給的是單格)。空格與有魂件的格子要一眼分得出來。virtual: 共鳴來的虛魂件陣列, 每項 {kind, used}: kind 是基本魂件字串, used 為 true 表示它被配進了組合(畫得較亮), false 較淡; 長度 0 以上(多根魂柱重疊時可能很多), 依魂柱遠近排列。畫在實體槽列右邊, 中間隔 6px, 每格 14×14、格距 16, 半透明 / 虛線框, 一眼看得出「不是自己的、是借來的」。長度 ≤ 3 全畫; 超過 3 項時只畫前 2 項, 第 3 格畫「+N」(N = 剩下的項數), 所以虛魂件區最寬 3 格 = 48px, 由本函式畫在框外右側(允許的例外)。只有接收者(弩塔、我方步兵、我方石魔像、主堡、玩家)會傳非空的 virtual, 其他一律傳 []"
+    },
+    {
+      "name": "drawFrostAura",
+      "state": ["x", "y", "radius", "owner"],
+      "size": [140, 140],
+      "notes": "身上有單件實體冰霜(沒配進組合)的單位、玩家、敵人腳下的減速範圍, 跟著移動。radius = 70, 指外緣; owner 見 conventions.teams。淡淡的冰霜地面圈, 不蓋住單位辨識, 要和冰霜魂柱的範圍分得開(這個小、跟著單位走)"
+    },
+    {
+      "name": "drawProjectile",
+      "state": ["x", "y", "angle", "kind", "owner"],
+      "size": [10, 10],
+      "notes": "投射物。angle: 飛行方向(弧度, 0 = 向右)。kind: \"normal\"(遠攻)或 \"ice\"(冰箭), 兩種要分得開。owner 見 conventions.teams(弓鬼射兵是 enemy)"
+    },
+    {
+      "name": "drawPierceBeam",
+      "state": ["x1", "y1", "x2", "y2", "age", "duration"],
+      "size": [0, 0],
+      "notes": "穿透箭(只有我方會射): 從射手中心 (x1,y1) 到射程終點 (x2,y2) 的直線光束, 判定線寬 28(中線兩側各 14), 畫的寬度不超過 28。duration = 0.15, RD 只在 0 ≤ age < duration 時呼叫, 越接近結束越淡"
+    },
+    {
+      "name": "drawAreaHit",
+      "state": ["kind", "x", "y", "radius", "age", "duration"],
+      "size": [120, 120],
+      "notes": "範圍攻擊的一次性特效(只有我方會放), 中心 (x, y)。kind: \"whirl\"(旋風斬, 繞中心旋轉一圈的斬擊)、\"frostSmash\"(冰霜重擊的減速波)、\"charge\"(衝鋒撞擊, radius 30, 朝出怪點方向的衝擊)。radius 指效果外緣(whirl / frostSmash 60, charge 30), 畫不超出外緣。duration = 0.3, RD 只在 0 ≤ age < duration 時呼叫"
+    },
+    {
+      "name": "drawHitSpark",
+      "state": ["x", "y", "age", "duration"],
+      "size": [24, 24],
+      "notes": "命中火花, 單體傷害命中時在被打的單位中心播放(敵人或我方移動單位)。duration = 0.25, RD 只在 0 ≤ age < duration 時呼叫"
+    },
+    {
+      "name": "drawStealLink",
+      "state": ["x1", "y1", "x2", "y2", "progress"],
+      "size": [0, 0],
+      "notes": "搶奪中的連線, 從玩家中心 (x1,y1) 連到敵人身上被搶的那一格中心 (x2,y2)(該敵人的槽列畫在 (敵人 x, 敵人 y − 高/2 − 20))。progress: 0~1, 越接近 1 越強烈。RD 只在搶奪中呼叫"
+    },
+    {
+      "name": "drawComboName",
+      "state": ["x", "y", "name", "isNew", "age", "duration"],
+      "size": [200, 36],
+      "notes": "單位多出組合時頭上跳出的組合名稱。x, y: RD 傳 (單位 x, 單位 y − 半邊長 − 44), 在槽列之上。name: 組合名稱字串。isNew: 本局第一次出現時為 true, 文字改成「新組合! 」+ name 並更醒目, size 放寬為 [280, 48]。duration = 1.5, RD 只在 0 ≤ age < duration 時呼叫; 出現時可彈一下(整塊放大至多 1.2 倍), 之後往上飄至多 16px 並淡出, 都算在 size 內"
+    },
+    {
+      "name": "drawSpawnWarning",
+      "state": ["x", "y", "remaining", "total"],
+      "size": [64, 64],
+      "notes": "波次預警, 箭頭朝右。x, y: RD 傳出怪點的固定位置: 北 (40,194)、南 (40,626); 一波用到兩個出怪點時呼叫兩次。remaining: 剩餘秒數, total = 6。RD 只在預警期間(0 < remaining ≤ total)呼叫。可以閃爍, 不超出 64×64"
+    },
+    {
+      "name": "drawHud",
+      "state": ["gold", "castleHp", "castleMaxHp", "wave", "totalWaves", "nextWaveIn", "forge"],
+      "size": [1280, 50],
+      "notes": "固定在畫面頂端 (0,0)~(1280,50)。左半: gold、castleHp / castleMaxHp(20)、wave / totalWaves(6, 第一波開始前 wave = 0)、nextWaveIn(距下一波秒數, 無條件進位; 已無下一波時為 −1, 不顯示)。中間偏右: 「魂爐」標籤 + forge: 固定 5 項布林陣列(從 0 起算, 順序 = 穿透箭、冰箭、旋風斬、冰霜重擊、衝鋒), true 畫該組合魂件圖示, false 畫暗掉的空格(不洩漏是什麼); 旁邊小字「每波開始送出」。右側固定小字操作提示「Z 互動  X 自己  空白鍵 商店」。所有文字由美術畫"
+    },
+    {
+      "name": "drawSlowMo",
+      "state": [],
+      "size": [1280, 720],
+      "notes": "慢動作效果, 任何彈窗開著時蓋滿整個畫面(畫在 HUD 之上、彈窗之下)。要非常明顯: 畫面整體去色或偏冷色、四周暗角、畫面外圍一圈明顯的邊框, 並在 (640, 80) 畫「慢動作」字樣(美術畫)。不可把遊戲畫面蓋到看不清單位位置"
+    },
+    {
+      "name": "drawSoulPopup",
+      "state": ["x", "y", "w", "h", "title", "slots", "dropCell", "index", "hand", "actionLabel", "shakeAge", "shakeDuration"],
+      "size": [312, 116],
+      "notes": "魂件彈窗(目標彈窗與自身彈窗共用; 只顯示實體魂件, 不顯示虛魂件)。RD 算好中心 (x, y) 與寬高傳入: h = 116; w = 格數×48 + 120, 格數 = slots 長度 + (dropCell ? 1 : 0), 範圍 1~4, 所以 w = 168~312(size 給最大值); 放在目標上方(自身彈窗放在玩家上方), 超出畫面時改到目標下方並夾在畫面內。版位(相對面板中心): 標題中心 (0, −40), title 是目標名稱字串(例「弩塔」「魂柱」「小鬼(活)」「小鬼的屍體」「主堡」「自己」); 格子一排, 每格 40×40、格距 48, 第 0 格中心 x = −w/2 + 40, 格子中心 y = −4; slots 長度 1~4, 項目為魂件字串或 null, 從 0 起算由左到右; dropCell: true 時(只有自身彈窗)在 slots 之後多畫一格「丟下」格(圖示 + 小字「丟下」, 樣式和魂件格明顯不同), 它的索引 = slots 長度。面板右側的「手上」格, 中心 (w/2 − 44, −4), 40×40, 上方小字「手上」, 和格子之間有分隔線。index: 游標格, 從 0 起算(含丟下格), 要非常明顯。hand: 手上物品字串或 null(手空時手上格畫成空)。底部一行中心 (0, +40): 左邊 actionLabel(RD 依游標決定: 「拿起」「裝上」「互換」「擴槽」「搶奪」「丟下」, 無效時為空字串), 右邊小字固定「Z 確定 X 關閉」。shakeDuration = 0.25, 無效操作時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+    },
+    {
+      "name": "drawShopPopup",
+      "state": ["items", "cursorIndex", "message", "shakeAge", "shakeDuration"],
+      "size": [760, 150],
+      "notes": "商店彈窗, 固定中心 (640,400)。標題「商店」在面板上緣內側。一排 8 項, 每項一格 80×72(圖示 + 品名 + 價格), 格距 88, 置中排列, 格子中心 y = −4(相對面板中心)。items: 固定 8 項陣列(從 0 起算), 每項 {item, name, price, state}, item 是 conventions.itemKinds 字串(單位材料畫該單位的小圖), state: \"ok\" | \"poor\"(金幣不足, 變暗)| \"locked\"(畫鎖、不畫品名, 只有石魔像會鎖)。cursorIndex: 從 0 起算, 游標格要非常明顯。底部一行(面板下緣內側): 左邊 message(\"\" | \"金幣不足\" | \"尚未解鎖\" | \"手上要空著\"), 右邊小字固定「← → 選  Z 購買  X 關閉」。shakeDuration = 0.25, 購買失敗時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+    },
+    {
+      "name": "drawResult",
+      "state": ["win", "wave", "totalWaves", "comboCount"],
+      "size": [1280, 720],
+      "notes": "結算畫面, 蓋在整個畫面上(半透明底)。win: true 勝利 / false 失敗。美術畫出標題「勝利」或「主堡被攻陷」、「第 wave / totalWaves 波」、「發現組合 comboCount / 5」、提示「按 Z 重新開始」"
+    }
+  ],
+  "guidePages": 8
+}
