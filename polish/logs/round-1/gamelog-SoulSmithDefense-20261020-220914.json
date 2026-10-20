@@ -1,0 +1,543 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-1",
+ "summary": {
+  "level": 1,
+  "levelName": "初陣",
+  "attempt": 1,
+  "failsBefore": 0,
+  "result": "win",
+  "durationSec": 126,
+  "gameSec": 111.1,
+  "slowMoSec": 18.6,
+  "waveReached": 4,
+  "totalWaves": 4,
+  "castleHp": 20,
+  "stars": 3,
+  "leaks": 0,
+  "leaksByWave": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "leaksBySpawn": {},
+  "kills": 27,
+  "goldEarned": 60,
+  "goldSpent": 39,
+  "goldEnd": 51,
+  "purchases": {
+   "soldierKit": 2,
+   "crossbowKit": 1
+  },
+  "steals": {
+   "started": 3,
+   "done": 3,
+   "canceled": 0
+  },
+  "installs": {
+   "direct": 9,
+   "replace": 0,
+   "slotStone": 0
+  },
+  "drops": 5,
+  "unitDowns": 0,
+  "recruits": 0,
+  "combosFoundThisLevel": [
+   "冰箭",
+   "穿透箭",
+   "冰霜重擊",
+   "旋風斬"
+  ],
+  "combosFoundTotal": 4
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 4.4,
+   "doneSt": 5.9
+  },
+  "2": {
+   "shownSt": 6.5,
+   "doneSt": 8.4
+  },
+  "3": {
+   "shownSt": 9,
+   "doneSt": 11.7
+  },
+  "4": {
+   "shownSt": 40.7,
+   "doneSt": 41.9
+  },
+  "5": {
+   "shownSt": 42.5,
+   "doneSt": 86.1
+  },
+  "6": {
+   "shownSt": 86.7,
+   "doneSt": 89.4
+  },
+  "7": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "8": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "9": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "10": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "11": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "12": {
+   "shownSt": null,
+   "doneSt": null
+  }
+ },
+ "events": [
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 4.3,
+   "level": 1,
+   "attempt": 1
+  },
+  {
+   "type": "combo_new",
+   "t": 0,
+   "st": 4.4,
+   "name": "冰箭",
+   "unit": "castle"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 0,
+   "st": 4.4,
+   "stage": 1
+  },
+  {
+   "type": "tutorial_done",
+   "t": 1.5,
+   "st": 5.9,
+   "stage": 1
+  },
+  {
+   "type": "tutorial_show",
+   "t": 2.1,
+   "st": 6.5,
+   "stage": 2
+  },
+  {
+   "type": "take",
+   "t": 4.1,
+   "st": 8.4,
+   "item": "ranged",
+   "from": "castle"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 4.1,
+   "st": 8.4,
+   "stage": 2
+  },
+  {
+   "type": "tutorial_show",
+   "t": 4.7,
+   "st": 9,
+   "stage": 3
+  },
+  {
+   "type": "install",
+   "t": 7.4,
+   "st": 11.7,
+   "item": "ranged",
+   "to": "pillar",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "combo_new",
+   "t": 7.4,
+   "st": 11.7,
+   "name": "穿透箭",
+   "unit": "crossbow"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 7.4,
+   "st": 11.7,
+   "stage": 3
+  },
+  {
+   "type": "clock_start",
+   "t": 7.4,
+   "st": 11.7
+  },
+  {
+   "type": "purchase",
+   "t": 16,
+   "st": 20.4,
+   "item": "soldierKit",
+   "price": 12,
+   "goldAfter": 18
+  },
+  {
+   "type": "place",
+   "t": 16.8,
+   "st": 21.1,
+   "kind": "soldier",
+   "x": 951,
+   "y": 422
+  },
+  {
+   "type": "take",
+   "t": 19.1,
+   "st": 23.5,
+   "item": "frost",
+   "from": "castle"
+  },
+  {
+   "type": "install",
+   "t": 19.6,
+   "st": 24,
+   "item": "frost",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "combo_new",
+   "t": 19.6,
+   "st": 24,
+   "name": "冰霜重擊",
+   "unit": "soldier"
+  },
+  {
+   "type": "purchase",
+   "t": 26.1,
+   "st": 30.4,
+   "item": "soldierKit",
+   "price": 12,
+   "goldAfter": 6
+  },
+  {
+   "type": "place",
+   "t": 27,
+   "st": 31.3,
+   "kind": "soldier",
+   "x": 980,
+   "y": 422
+  },
+  {
+   "type": "wave_start",
+   "t": 29.8,
+   "st": 34.1,
+   "wave": 1
+  },
+  {
+   "type": "tutorial_show",
+   "t": 36.4,
+   "st": 40.7,
+   "stage": 4
+  },
+  {
+   "type": "tutorial_done",
+   "t": 37.6,
+   "st": 41.9,
+   "stage": 4
+  },
+  {
+   "type": "tutorial_show",
+   "t": 38.2,
+   "st": 42.5,
+   "stage": 5
+  },
+  {
+   "type": "take",
+   "t": 49.1,
+   "st": 53.4,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "drop",
+   "t": 52.6,
+   "st": 57,
+   "item": "melee"
+  },
+  {
+   "type": "take",
+   "t": 54.6,
+   "st": 58.9,
+   "item": "march",
+   "from": "corpse"
+  },
+  {
+   "type": "wave_start",
+   "t": 54.7,
+   "st": 59,
+   "wave": 2
+  },
+  {
+   "type": "install",
+   "t": 55.4,
+   "st": 59.8,
+   "item": "march",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 56.5,
+   "st": 60.8,
+   "item": "march",
+   "from": "crossbow"
+  },
+  {
+   "type": "drop",
+   "t": 57.7,
+   "st": 62,
+   "item": "march"
+  },
+  {
+   "type": "take",
+   "t": 59.1,
+   "st": 63.5,
+   "item": "ranged",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 60.3,
+   "st": 64.6,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 61.5,
+   "st": 65.8,
+   "item": "ranged",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 62.8,
+   "st": 67.2,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 76.7,
+   "st": 81.1,
+   "item": "melee",
+   "from": "ground"
+  },
+  {
+   "type": "install",
+   "t": 78.3,
+   "st": 82.7,
+   "item": "melee",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "combo_new",
+   "t": 78.3,
+   "st": 82.7,
+   "name": "旋風斬",
+   "unit": "soldier"
+  },
+  {
+   "type": "purchase",
+   "t": 81.7,
+   "st": 86.1,
+   "item": "crossbowKit",
+   "price": 15,
+   "goldAfter": 1
+  },
+  {
+   "type": "tutorial_done",
+   "t": 81.7,
+   "st": 86.1,
+   "stage": 5
+  },
+  {
+   "type": "tutorial_show",
+   "t": 82.3,
+   "st": 86.7,
+   "stage": 6
+  },
+  {
+   "type": "wave_start",
+   "t": 83.6,
+   "st": 88,
+   "wave": 3
+  },
+  {
+   "type": "place",
+   "t": 85.1,
+   "st": 89.4,
+   "kind": "crossbow",
+   "x": 504,
+   "y": 218
+  },
+  {
+   "type": "tutorial_done",
+   "t": 85.1,
+   "st": 89.4,
+   "stage": 6
+  },
+  {
+   "type": "steal_start",
+   "t": 92,
+   "st": 96.3,
+   "enemy": "archer",
+   "item": "ranged"
+  },
+  {
+   "type": "steal_done",
+   "t": 93.5,
+   "st": 97.8,
+   "enemy": "archer",
+   "item": "ranged"
+  },
+  {
+   "type": "install",
+   "t": 95.2,
+   "st": 99.6,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "steal_start",
+   "t": 96.7,
+   "st": 101,
+   "enemy": "archer",
+   "item": "ranged"
+  },
+  {
+   "type": "steal_done",
+   "t": 98.2,
+   "st": 102.6,
+   "enemy": "archer",
+   "item": "ranged"
+  },
+  {
+   "type": "install",
+   "t": 99.3,
+   "st": 103.6,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 107.6,
+   "st": 112,
+   "wave": 4
+  },
+  {
+   "type": "take",
+   "t": 111.3,
+   "st": 115.6,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "drop",
+   "t": 111.9,
+   "st": 116.3,
+   "item": "melee"
+  },
+  {
+   "type": "take",
+   "t": 112.8,
+   "st": 117.1,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "ground_swap",
+   "t": 113.5,
+   "st": 117.8,
+   "item": "melee",
+   "got": "melee"
+  },
+  {
+   "type": "drop",
+   "t": 114.2,
+   "st": 118.5,
+   "item": "melee"
+  },
+  {
+   "type": "take",
+   "t": 116.2,
+   "st": 120.6,
+   "item": "ranged",
+   "from": "corpse"
+  },
+  {
+   "type": "drop",
+   "t": 117.6,
+   "st": 121.9,
+   "item": "ranged"
+  },
+  {
+   "type": "take",
+   "t": 118.8,
+   "st": 123.2,
+   "item": "ranged",
+   "from": "ground"
+  },
+  {
+   "type": "install",
+   "t": 119.6,
+   "st": 124,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "steal_start",
+   "t": 123.4,
+   "st": 127.8,
+   "enemy": "ice",
+   "item": "frost"
+  },
+  {
+   "type": "steal_done",
+   "t": 124.9,
+   "st": 129.3,
+   "enemy": "ice",
+   "item": "frost"
+  },
+  {
+   "type": "level_end",
+   "t": 126,
+   "st": 130.4,
+   "result": "win",
+   "wave": 4,
+   "castleHp": 20,
+   "stars": 3
+  }
+ ]
+}

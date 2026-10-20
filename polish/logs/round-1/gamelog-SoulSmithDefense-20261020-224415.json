@@ -1,0 +1,301 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-1",
+ "summary": {
+  "level": 5,
+  "levelName": "三叉",
+  "attempt": 2,
+  "failsBefore": 0,
+  "result": "lose",
+  "durationSec": 1294,
+  "gameSec": 92.4,
+  "slowMoSec": 42.1,
+  "waveReached": 4,
+  "totalWaves": 7,
+  "castleHp": 0,
+  "stars": 0,
+  "leaks": 10,
+  "leaksByWave": [
+   3,
+   2,
+   5,
+   0,
+   0,
+   0,
+   0
+  ],
+  "leaksBySpawn": {
+   "北": 3,
+   "南": 2,
+   "中": 5
+  },
+  "kills": 13,
+  "goldEarned": 28,
+  "goldSpent": 0,
+  "goldEnd": 88,
+  "purchases": {},
+  "steals": {
+   "started": 0,
+   "done": 0,
+   "canceled": 0
+  },
+  "installs": {
+   "direct": 3,
+   "replace": 0,
+   "slotStone": 0
+  },
+  "drops": 1,
+  "unitDowns": 0,
+  "recruits": 0,
+  "combosFoundThisLevel": [],
+  "combosFoundTotal": 5
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 4.4,
+   "doneSt": 5.9
+  },
+  "2": {
+   "shownSt": 6.5,
+   "doneSt": 8.4
+  },
+  "3": {
+   "shownSt": 9,
+   "doneSt": 11.7
+  },
+  "4": {
+   "shownSt": 40.7,
+   "doneSt": 41.9
+  },
+  "5": {
+   "shownSt": 42.5,
+   "doneSt": 86.1
+  },
+  "6": {
+   "shownSt": 86.7,
+   "doneSt": 89.4
+  },
+  "7": {
+   "shownSt": 151.4,
+   "doneSt": 153.9
+  },
+  "8": {
+   "shownSt": 154.5,
+   "doneSt": 194.1
+  },
+  "9": {
+   "shownSt": 247.9,
+   "doneSt": 248.6
+  },
+  "10": {
+   "shownSt": 288,
+   "doneSt": 330.8
+  },
+  "11": {
+   "shownSt": 558.9,
+   "doneSt": 574.2
+  },
+  "12": {
+   "shownSt": 574.8,
+   "doneSt": 577
+  }
+ },
+ "events": [
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 937.2,
+   "level": 5,
+   "attempt": 2
+  },
+  {
+   "type": "clock_start",
+   "t": 0,
+   "st": 937.2
+  },
+  {
+   "type": "take",
+   "t": 371.7,
+   "st": 1308.9,
+   "item": "ranged",
+   "from": "pillar"
+  },
+  {
+   "type": "install",
+   "t": 372.5,
+   "st": 1309.7,
+   "item": "ranged",
+   "to": "pillar",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 550.8,
+   "st": 1488.1,
+   "wave": 1
+  },
+  {
+   "type": "take",
+   "t": 555.2,
+   "st": 1492.5,
+   "item": "ranged",
+   "from": "pillar"
+  },
+  {
+   "type": "install",
+   "t": 556.8,
+   "st": 1494.1,
+   "item": "ranged",
+   "to": "neutral",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 562.3,
+   "st": 1499.6,
+   "item": "ranged",
+   "from": "neutral"
+  },
+  {
+   "type": "install",
+   "t": 563,
+   "st": 1500.3,
+   "item": "ranged",
+   "to": "neutral",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 585.8,
+   "st": 1523,
+   "wave": 2
+  },
+  {
+   "type": "leak",
+   "t": 699.5,
+   "st": 1636.7,
+   "wave": 1,
+   "enemy": "imp",
+   "spawn": "北",
+   "castleHpAfter": 18
+  },
+  {
+   "type": "leak",
+   "t": 699.6,
+   "st": 1636.9,
+   "wave": 1,
+   "enemy": "imp",
+   "spawn": "南",
+   "castleHpAfter": 16
+  },
+  {
+   "type": "leak",
+   "t": 699.8,
+   "st": 1637,
+   "wave": 1,
+   "enemy": "imp",
+   "spawn": "北",
+   "castleHpAfter": 14
+  },
+  {
+   "type": "take",
+   "t": 702.3,
+   "st": 1639.6,
+   "item": "ranged",
+   "from": "neutral"
+  },
+  {
+   "type": "drop",
+   "t": 707.8,
+   "st": 1645.1,
+   "item": "ranged"
+  },
+  {
+   "type": "wave_start",
+   "t": 965.9,
+   "st": 1903.1,
+   "wave": 3
+  },
+  {
+   "type": "leak",
+   "t": 1045.2,
+   "st": 1982.5,
+   "wave": 2,
+   "enemy": "ice",
+   "spawn": "中",
+   "castleHpAfter": 12
+  },
+  {
+   "type": "leak",
+   "t": 1048.5,
+   "st": 1985.7,
+   "wave": 2,
+   "enemy": "imp",
+   "spawn": "北",
+   "castleHpAfter": 10
+  },
+  {
+   "type": "wave_start",
+   "t": 1287.9,
+   "st": 2225.1,
+   "wave": 4
+  },
+  {
+   "type": "leak",
+   "t": 1288.6,
+   "st": 2225.9,
+   "wave": 3,
+   "enemy": "imp",
+   "spawn": "中",
+   "castleHpAfter": 8
+  },
+  {
+   "type": "leak",
+   "t": 1289.8,
+   "st": 2227.1,
+   "wave": 3,
+   "enemy": "imp",
+   "spawn": "中",
+   "castleHpAfter": 6
+  },
+  {
+   "type": "leak",
+   "t": 1291.7,
+   "st": 2229,
+   "wave": 3,
+   "enemy": "imp",
+   "spawn": "中",
+   "castleHpAfter": 4
+  },
+  {
+   "type": "leak",
+   "t": 1292.9,
+   "st": 2230.2,
+   "wave": 3,
+   "enemy": "imp",
+   "spawn": "中",
+   "castleHpAfter": 2
+  },
+  {
+   "type": "leak",
+   "t": 1294,
+   "st": 2231.2,
+   "wave": 3,
+   "enemy": "drummer",
+   "spawn": "南",
+   "castleHpAfter": 0
+  },
+  {
+   "type": "level_end",
+   "t": 1294,
+   "st": 2231.2,
+   "result": "lose",
+   "wave": 4,
+   "castleHp": 0,
+   "stars": 0
+  }
+ ]
+}

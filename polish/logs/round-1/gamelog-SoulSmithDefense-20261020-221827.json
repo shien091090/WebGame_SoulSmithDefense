@@ -1,0 +1,387 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-1",
+ "summary": {
+  "level": 4,
+  "levelName": "夾擊",
+  "attempt": 1,
+  "failsBefore": 0,
+  "result": "win",
+  "durationSec": 173,
+  "gameSec": 158.1,
+  "slowMoSec": 18.7,
+  "waveReached": 6,
+  "totalWaves": 6,
+  "castleHp": 20,
+  "stars": 3,
+  "leaks": 0,
+  "leaksByWave": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "leaksBySpawn": {},
+  "kills": 55,
+  "goldEarned": 138,
+  "goldSpent": 60,
+  "goldEnd": 128,
+  "purchases": {
+   "soldierKit": 2,
+   "pillarKit": 3
+  },
+  "steals": {
+   "started": 0,
+   "done": 0,
+   "canceled": 0
+  },
+  "installs": {
+   "direct": 5,
+   "replace": 0,
+   "slotStone": 0
+  },
+  "drops": 2,
+  "unitDowns": 1,
+  "recruits": 0,
+  "combosFoundThisLevel": [
+   "衝鋒"
+  ],
+  "combosFoundTotal": 5
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 4.4,
+   "doneSt": 5.9
+  },
+  "2": {
+   "shownSt": 6.5,
+   "doneSt": 8.4
+  },
+  "3": {
+   "shownSt": 9,
+   "doneSt": 11.7
+  },
+  "4": {
+   "shownSt": 40.7,
+   "doneSt": 41.9
+  },
+  "5": {
+   "shownSt": 42.5,
+   "doneSt": 86.1
+  },
+  "6": {
+   "shownSt": 86.7,
+   "doneSt": 89.4
+  },
+  "7": {
+   "shownSt": 151.4,
+   "doneSt": 153.9
+  },
+  "8": {
+   "shownSt": 154.5,
+   "doneSt": 194.1
+  },
+  "9": {
+   "shownSt": 247.9,
+   "doneSt": 248.6
+  },
+  "10": {
+   "shownSt": 288,
+   "doneSt": 330.8
+  },
+  "11": {
+   "shownSt": 558.9,
+   "doneSt": 574.2
+  },
+  "12": {
+   "shownSt": 574.8,
+   "doneSt": 577
+  }
+ },
+ "events": [
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 510.8,
+   "level": 4,
+   "attempt": 1
+  },
+  {
+   "type": "clock_start",
+   "t": 0,
+   "st": 510.8
+  },
+  {
+   "type": "purchase",
+   "t": 5.7,
+   "st": 516.5,
+   "item": "soldierKit",
+   "price": 12,
+   "goldAfter": 38
+  },
+  {
+   "type": "place",
+   "t": 8.5,
+   "st": 519.3,
+   "kind": "soldier",
+   "x": 546,
+   "y": 426
+  },
+  {
+   "type": "purchase",
+   "t": 13.6,
+   "st": 524.4,
+   "item": "soldierKit",
+   "price": 12,
+   "goldAfter": 26
+  },
+  {
+   "type": "place",
+   "t": 16.3,
+   "st": 527,
+   "kind": "soldier",
+   "x": 548,
+   "y": 422
+  },
+  {
+   "type": "purchase",
+   "t": 20.8,
+   "st": 531.5,
+   "item": "pillarKit",
+   "price": 12,
+   "goldAfter": 14
+  },
+  {
+   "type": "wave_start",
+   "t": 20.8,
+   "st": 531.5,
+   "wave": 1
+  },
+  {
+   "type": "place",
+   "t": 24.6,
+   "st": 535.4,
+   "kind": "pillar",
+   "x": 552,
+   "y": 506
+  },
+  {
+   "type": "take",
+   "t": 26.9,
+   "st": 537.7,
+   "item": "ranged",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 27.4,
+   "st": 538.2,
+   "item": "ranged",
+   "to": "pillar",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "purchase",
+   "t": 40.7,
+   "st": 551.4,
+   "item": "pillarKit",
+   "price": 12,
+   "goldAfter": 12
+  },
+  {
+   "type": "place",
+   "t": 44.3,
+   "st": 555.1,
+   "kind": "pillar",
+   "x": 600,
+   "y": 506
+  },
+  {
+   "type": "take",
+   "t": 45.9,
+   "st": 556.7,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 47.9,
+   "st": 558.7,
+   "item": "melee",
+   "to": "pillar",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 48.1,
+   "st": 558.9,
+   "wave": 2
+  },
+  {
+   "type": "tutorial_show",
+   "t": 48.1,
+   "st": 558.9,
+   "stage": 11
+  },
+  {
+   "type": "purchase",
+   "t": 53.3,
+   "st": 564,
+   "item": "pillarKit",
+   "price": 12,
+   "goldAfter": 0
+  },
+  {
+   "type": "place",
+   "t": 55.7,
+   "st": 566.4,
+   "kind": "pillar",
+   "x": 600,
+   "y": 362
+  },
+  {
+   "type": "take",
+   "t": 63.4,
+   "st": 574.2,
+   "item": "drum",
+   "from": "corpse"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 63.4,
+   "st": 574.2,
+   "stage": 11
+  },
+  {
+   "type": "tutorial_show",
+   "t": 64,
+   "st": 574.8,
+   "stage": 12
+  },
+  {
+   "type": "install",
+   "t": 66.2,
+   "st": 577,
+   "item": "drum",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "tutorial_done",
+   "t": 66.2,
+   "st": 577,
+   "stage": 12
+  },
+  {
+   "type": "combo_new",
+   "t": 71.4,
+   "st": 582.1,
+   "name": "衝鋒",
+   "unit": "soldier"
+  },
+  {
+   "type": "wave_start",
+   "t": 76.3,
+   "st": 587.1,
+   "wave": 3
+  },
+  {
+   "type": "take",
+   "t": 97.4,
+   "st": 608.2,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "drop",
+   "t": 98.9,
+   "st": 609.6,
+   "item": "melee"
+  },
+  {
+   "type": "wave_start",
+   "t": 105.9,
+   "st": 616.7,
+   "wave": 4
+  },
+  {
+   "type": "take",
+   "t": 117.3,
+   "st": 628,
+   "item": "drum",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 119.1,
+   "st": 629.9,
+   "item": "drum",
+   "to": "pillar",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 132.9,
+   "st": 643.6,
+   "wave": 5
+  },
+  {
+   "type": "unit_down",
+   "t": 135.1,
+   "st": 645.8,
+   "unit": "soldier",
+   "x": 360,
+   "y": 51
+  },
+  {
+   "type": "take",
+   "t": 149.9,
+   "st": 660.6,
+   "item": "seek",
+   "from": "corpse"
+  },
+  {
+   "type": "drop",
+   "t": 151.9,
+   "st": 662.7,
+   "item": "seek"
+  },
+  {
+   "type": "take",
+   "t": 158.3,
+   "st": 669,
+   "item": "melee",
+   "from": "ground"
+  },
+  {
+   "type": "install",
+   "t": 159.9,
+   "st": 670.6,
+   "item": "melee",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 159.9,
+   "st": 670.7,
+   "wave": 6
+  },
+  {
+   "type": "level_end",
+   "t": 173,
+   "st": 683.8,
+   "result": "win",
+   "wave": 6,
+   "castleHp": 20,
+   "stars": 3
+  }
+ ]
+}

@@ -1,9 +1,9 @@
-# 音效經驗提案(SoulSmithDefense polish 音效)
+# 音效經驗提案(SoulSmithDefense 打磨第 2 輪 音效 build)
 
-## 提案 1 → 放進「技術」, 合併到「本機沒有 ffmpeg, Python 與 npm 又被權限擋住…」那條, 再加一段(續)
+## 提案 1 → 放進「素材來源」分類(新條目)
 
-- `辨識` **能用 Node 解碼量測了, 但剪輯、疊層、變速後還是寫不回 mp3 / ogg, 只能內嵌 PCM 或不改原檔** → 本機缺的是編碼器 → 用同一招從 npm registry 抓 `lamejs@1.2.1` 的 tarball(純 JS mp3 編碼器, 免編譯), 解到暫存資料夾; 套件的 `require` 進入點在 Node 下回傳空物件, 改用 `vm.createContext` 執行 `lame.all.js` 後取全域的 `lamejs`, `new Mp3Encoder(聲道數, 44100, kbps)`, 每 1152 樣本呼叫一次 `encodeBuffer`(Int16Array), 最後 `flush`。這樣整條流程(解碼 → 視窗化 sinc 變速 → 疊層 → 統一響度 → 編碼 mp3)都在 Node 裡完成, 35 個短音效單聲道 96 kbps 共約 290 KB; 320 kbps 的整首曲子轉成 96~128 kbps 就壓到 3 MB 內, 不必截段。lamejs 不寫 LAME 標頭, 解碼器不會自動去掉編碼延遲: 用 mpg123-decoder 驗算, 每個檔一律晚 25 毫秒左右 → 檔頭補 20 毫秒數位靜音, 執行時解碼後找第一個 |樣本| > 0.02 的位置, 扣掉原音本來的柔和前段, 當作起播位置。(SoulSmithDefense polish 音效 build, 瀏覽器實測待試玩)
+- `辨識` **要「戰鼓重擊」幾響, OpenGameArt 搜 war drums 只有密集的鼓組循環** → CC0 的戰鼓素材(例: William Hector「Horde War Drums loop」)是 130 BPM 整段鼓組, 量 5 毫秒低頻起音每 0.1~0.12 秒就一擊, 挑不出單獨一下重擊; 號角類也多是整首曲子 → 鼓改用 BigSoundBank 的低音通鼓單擊(`https://bigsoundbank.com/bass-tom-1-s2338.html`, CC0, 單擊約 0.5 秒、約 175 Hz), 視窗化 sinc 降速 0.62~0.7 倍變成 120 Hz 上下的大鼓, 自己排三響(間隔 0.3 秒, 最後一響最重)。號角從整首曲子裡用每 50 毫秒的音高相關係數找「相關 ≥ 0.99 且持續 1.5 秒以上」的段落, 那就是單獨一支號角在長鳴、沒有別的聲部(例: Eldritch Grim「War Horns」CC0 的 15.0~16.95 秒, E3 一短一長)。(SoulSmithDefense 打磨第 2 輪 build, 聽感待試玩)
 
-## 提案 2 → 放進「技術」(新條目, 待試玩驗證; 製作人可等試玩回饋後再決定要不要收)
+## 提案 2 → 放進「素材來源」分類(新條目; 性質 `品味`, 效果待下一輪試玩確認後再決定是否保留)
 
-- `辨識` **規格要「慢動作時背景音樂降一半並壓低音色」, 但音樂用 HTMLAudio 播(file:// 下接 Web Audio 濾波器, 媒體元素來源可能被當成跨來源而沒有聲音)** → 不經 Web Audio: 音量 × 0.5, 再把 `preservesPitch`(與 `mozPreservesPitch` / `webkitPreservesPitch`)設 false、`playbackRate` 設 0.85, 音高與速度一起往下, 聽起來像時間被拉慢, 跟慢動作畫面一致; 關彈窗時恢復 1.0。這個行為掛在 `popup_open` / `popup_close` 兩個音效事件上, RD 不用多接介面。(SoulSmithDefense polish 音效 build, 改播放速率時有沒有爆音待試玩)
+- `品味` **開戰音只用一支合成感的號角, 被嫌難聽** → 單一號角素材(StumpyStrust「Their Coming」截 2.4 秒)沒有打擊起頭, 只有一條長音 → 改成「戰鼓三響 + 號角一短一長」2.6 秒, 鼓與號角響度相近(各約 −14 dB), 讓開頭 0.6 秒先有打擊的氣勢再接號角。(SoulSmithDefense 打磨第 2 輪, 規格轉述的回饋「上一輪的聲音難聽, 要重做」; 效果待試玩)
