@@ -1,0 +1,926 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-2",
+ "summary": {
+  "level": 3,
+  "levelName": "長蛇",
+  "attempt": 1,
+  "failsBefore": 0,
+  "result": "win",
+  "durationSec": 209.1,
+  "gameSec": 185.2,
+  "slowMoSec": 29.9,
+  "hiddenSec": 0,
+  "waveReached": 5,
+  "totalWaves": 5,
+  "castleHp": 20,
+  "stars": 3,
+  "leaks": 0,
+  "leaksByWave": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "leaksBySpawn": {},
+  "kills": 37,
+  "playerKills": 0,
+  "playerHits": 0,
+  "goldEarned": 118,
+  "goldRefund": 15,
+  "goldSpent": 66,
+  "goldEnd": 107,
+  "purchases": {
+   "soldier": 3,
+   "crossbow": 2
+  },
+  "pillarCap": 2,
+  "pillarsMax": 0,
+  "steals": {
+   "started": 6,
+   "done": 5,
+   "canceled": 1
+  },
+  "installs": {
+   "direct": 19,
+   "replace": 2
+  },
+  "fuses": {
+   "穿透箭": 1,
+   "旋風斬": 2,
+   "冰霜重擊": 2
+  },
+  "drops": 6,
+  "groundExpired": 6,
+  "demolishes": 0,
+  "homeRefunds": 1,
+  "flags": {
+   "purchase": 3,
+   "rally": 2
+  },
+  "unitDowns": 2,
+  "maxRespawnQueue": 2,
+  "marchLoops": 0,
+  "recruits": 1,
+  "combosFoundThisLevel": [],
+  "combosFoundTotal": 4
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 3.2,
+   "doneSt": 4.8
+  },
+  "2": {
+   "shownSt": 5.4,
+   "doneSt": 10.9
+  },
+  "3": {
+   "shownSt": 11.5,
+   "doneSt": 14.5
+  },
+  "4": {
+   "shownSt": 15.1,
+   "doneSt": 113.3
+  },
+  "5": {
+   "shownSt": 113.9,
+   "doneSt": 114.8
+  },
+  "6": {
+   "shownSt": 140.2,
+   "doneSt": 140.3
+  },
+  "7": {
+   "shownSt": 140.9,
+   "doneSt": 148.8
+  },
+  "8": {
+   "shownSt": 160.1,
+   "doneSt": 166.8
+  },
+  "9": {
+   "shownSt": 141.9,
+   "doneSt": 143.6
+  },
+  "10": {
+   "shownSt": 264.3,
+   "doneSt": 267.9
+  },
+  "11": {
+   "shownSt": 230.1,
+   "doneSt": 230.8
+  },
+  "12": {
+   "shownSt": 395.5,
+   "doneSt": 449.4
+  },
+  "13": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "14": {
+   "shownSt": null,
+   "doneSt": null
+  }
+ },
+ "events": [
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 395.5,
+   "level": 3,
+   "attempt": 1
+  },
+  {
+   "type": "clock_start",
+   "t": 0,
+   "st": 395.5,
+   "reason": "immediate"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 0,
+   "st": 395.5,
+   "stage": 12
+  },
+  {
+   "type": "purchase",
+   "t": 13.1,
+   "st": 408.6,
+   "item": "soldier",
+   "price": 12,
+   "goldAfter": 28
+  },
+  {
+   "type": "flag_plant",
+   "t": 14.6,
+   "st": 410.1,
+   "reason": "purchase",
+   "unit": "soldier",
+   "x": 950,
+   "y": 316
+  },
+  {
+   "type": "purchase",
+   "t": 16.6,
+   "st": 412.1,
+   "item": "soldier",
+   "price": 12,
+   "goldAfter": 16
+  },
+  {
+   "type": "flag_plant",
+   "t": 18.8,
+   "st": 414.4,
+   "reason": "purchase",
+   "unit": "soldier",
+   "x": 978,
+   "y": 303
+  },
+  {
+   "type": "wave_start",
+   "t": 21.6,
+   "st": 417.1,
+   "wave": 1
+  },
+  {
+   "type": "take",
+   "t": 23,
+   "st": 418.5,
+   "item": "melee",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 24.9,
+   "st": 420.4,
+   "item": "melee",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "mute",
+   "t": 27.9,
+   "st": 423.5,
+   "muted": true
+  },
+  {
+   "type": "flag_plant",
+   "t": 28.5,
+   "st": 424.1,
+   "reason": "rally",
+   "unit": "soldier",
+   "x": 929,
+   "y": 285
+  },
+  {
+   "type": "take",
+   "t": 29.8,
+   "st": 425.3,
+   "item": "seek",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 32.2,
+   "st": 427.7,
+   "item": "seek",
+   "to": "crossbow",
+   "mode": "replace",
+   "swappedOut": "ranged"
+  },
+  {
+   "type": "install",
+   "t": 36.6,
+   "st": 432.1,
+   "item": "ranged",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "mute",
+   "t": 46.3,
+   "st": 441.8,
+   "muted": false
+  },
+  {
+   "type": "wave_start",
+   "t": 51.4,
+   "st": 447,
+   "wave": 2
+  },
+  {
+   "type": "take",
+   "t": 52.1,
+   "st": 447.6,
+   "item": "march",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 53.8,
+   "st": 449.3,
+   "item": "march",
+   "to": "neutral",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "tutorial_done",
+   "t": 53.8,
+   "st": 449.4,
+   "stage": 12
+  },
+  {
+   "type": "purchase",
+   "t": 61.1,
+   "st": 456.6,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 13
+  },
+  {
+   "type": "place",
+   "t": 64.9,
+   "st": 460.4,
+   "kind": "crossbow",
+   "x": 552,
+   "y": 218
+  },
+  {
+   "type": "recruit",
+   "t": 65.2,
+   "st": 460.7
+  },
+  {
+   "type": "take",
+   "t": 68.1,
+   "st": 463.6,
+   "item": "march",
+   "from": "ground"
+  },
+  {
+   "type": "install",
+   "t": 71.7,
+   "st": 467.2,
+   "item": "march",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 77.2,
+   "st": 472.7,
+   "item": "ranged",
+   "from": "corpse"
+  },
+  {
+   "type": "unit_down",
+   "t": 77.6,
+   "st": 473.2,
+   "unit": "soldier",
+   "x": 931,
+   "y": 190,
+   "queueLen": 1
+  },
+  {
+   "type": "install",
+   "t": 79.1,
+   "st": 474.6,
+   "item": "ranged",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 79.1,
+   "st": 474.6,
+   "item": "pierce",
+   "unit": "soldier",
+   "materials": [
+    "ranged",
+    "ranged"
+   ]
+  },
+  {
+   "type": "unit_down",
+   "t": 80.4,
+   "st": 475.9,
+   "unit": "soldier",
+   "x": 929,
+   "y": 285,
+   "queueLen": 2
+  },
+  {
+   "type": "wave_start",
+   "t": 82.5,
+   "st": 478,
+   "wave": 3
+  },
+  {
+   "type": "unit_respawn",
+   "t": 82.6,
+   "st": 478.2,
+   "unit": "soldier",
+   "waitSec": 5
+  },
+  {
+   "type": "take",
+   "t": 85,
+   "st": 480.5,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "home_refund",
+   "t": 85.5,
+   "st": 481,
+   "unit": "crossbow",
+   "refund": 15,
+   "parts": [
+    "ranged",
+    "march"
+   ]
+  },
+  {
+   "type": "install",
+   "t": 87.2,
+   "st": 482.7,
+   "item": "melee",
+   "to": "crossbow",
+   "mode": "replace",
+   "swappedOut": "seek"
+  },
+  {
+   "type": "fuse",
+   "t": 87.2,
+   "st": 482.7,
+   "item": "whirl",
+   "unit": "crossbow",
+   "materials": [
+    "melee",
+    "melee"
+   ]
+  },
+  {
+   "type": "install",
+   "t": 87.7,
+   "st": 483.2,
+   "item": "seek",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "unit_respawn",
+   "t": 88.5,
+   "st": 484,
+   "unit": "soldier",
+   "waitSec": 7.2
+  },
+  {
+   "type": "take",
+   "t": 90.1,
+   "st": 485.6,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 91.5,
+   "st": 487,
+   "item": "melee",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 93.9,
+   "st": 489.4,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 95.5,
+   "st": 491,
+   "item": "melee",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 95.5,
+   "st": 491,
+   "item": "whirl",
+   "unit": "crossbow",
+   "materials": [
+    "melee",
+    "melee"
+   ]
+  },
+  {
+   "type": "ground_expire",
+   "t": 96.5,
+   "st": 492,
+   "item": "ranged"
+  },
+  {
+   "type": "ground_expire",
+   "t": 96.5,
+   "st": 492,
+   "item": "march"
+  },
+  {
+   "type": "take",
+   "t": 98.1,
+   "st": 493.6,
+   "item": "seek",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 100,
+   "st": 495.5,
+   "item": "seek",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 103.8,
+   "st": 499.3,
+   "item": "frost",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 105.9,
+   "st": 501.4,
+   "item": "frost",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 105.9,
+   "st": 501.4,
+   "item": "frostSmash",
+   "unit": "soldier",
+   "materials": [
+    "melee",
+    "frost"
+   ]
+  },
+  {
+   "type": "take",
+   "t": 112.3,
+   "st": 507.8,
+   "item": "pierce",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 112.9,
+   "st": 508.4,
+   "item": "pierce",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 113.2,
+   "st": 508.7,
+   "wave": 4
+  },
+  {
+   "type": "take",
+   "t": 115.1,
+   "st": 510.6,
+   "item": "frost",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 116,
+   "st": 511.6,
+   "item": "frost",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 117.9,
+   "st": 513.4,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "install",
+   "t": 119.5,
+   "st": 515,
+   "item": "melee",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 119.5,
+   "st": 515,
+   "item": "frostSmash",
+   "unit": "soldier",
+   "materials": [
+    "frost",
+    "melee"
+   ]
+  },
+  {
+   "type": "take",
+   "t": 123.8,
+   "st": 519.3,
+   "item": "shop",
+   "from": "castle"
+  },
+  {
+   "type": "install",
+   "t": 125,
+   "st": 520.5,
+   "item": "shop",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 129.4,
+   "st": 525,
+   "item": "frostSmash",
+   "from": "soldier"
+  },
+  {
+   "type": "mute",
+   "t": 129.9,
+   "st": 525.4,
+   "muted": true
+  },
+  {
+   "type": "install",
+   "t": 130.2,
+   "st": 525.7,
+   "item": "frostSmash",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "take",
+   "t": 131.3,
+   "st": 526.8,
+   "item": "frostSmash",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 131.9,
+   "st": 527.4,
+   "item": "frostSmash",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "mute",
+   "t": 132.3,
+   "st": 527.8,
+   "muted": false
+  },
+  {
+   "type": "take",
+   "t": 133.7,
+   "st": 529.2,
+   "item": "shop",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 135.2,
+   "st": 530.7,
+   "item": "shop",
+   "to": "castle",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 146.8,
+   "st": 542.3,
+   "wave": 5
+  },
+  {
+   "type": "steal_start",
+   "t": 151.3,
+   "st": 546.9,
+   "enemy": "brute",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 152.8,
+   "st": 548.4,
+   "enemy": "brute",
+   "item": "march"
+  },
+  {
+   "type": "drop",
+   "t": 153.8,
+   "st": 549.3,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 154.5,
+   "st": 550,
+   "enemy": "brute",
+   "item": "melee"
+  },
+  {
+   "type": "steal_done",
+   "t": 156,
+   "st": 551.5,
+   "enemy": "brute",
+   "item": "melee"
+  },
+  {
+   "type": "ground_swap",
+   "t": 157,
+   "st": 552.5,
+   "item": "melee",
+   "got": "march"
+  },
+  {
+   "type": "drop",
+   "t": 158.1,
+   "st": 553.6,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 159.1,
+   "st": 554.7,
+   "enemy": "ice",
+   "item": "frost"
+  },
+  {
+   "type": "steal_done",
+   "t": 160.6,
+   "st": 556.2,
+   "enemy": "ice",
+   "item": "frost"
+  },
+  {
+   "type": "drop",
+   "t": 162,
+   "st": 557.5,
+   "item": "frost"
+  },
+  {
+   "type": "purchase",
+   "t": 167.6,
+   "st": 563.1,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 85
+  },
+  {
+   "type": "ground_expire",
+   "t": 167.9,
+   "st": 563.4,
+   "item": "melee"
+  },
+  {
+   "type": "ground_expire",
+   "t": 169,
+   "st": 564.5,
+   "item": "march"
+  },
+  {
+   "type": "place",
+   "t": 170.1,
+   "st": 565.6,
+   "kind": "crossbow",
+   "x": 600,
+   "y": 218
+  },
+  {
+   "type": "take",
+   "t": 172.1,
+   "st": 567.6,
+   "item": "melee",
+   "from": "corpse"
+  },
+  {
+   "type": "ground_expire",
+   "t": 173.2,
+   "st": 568.7,
+   "item": "frost"
+  },
+  {
+   "type": "drop",
+   "t": 174.2,
+   "st": 569.7,
+   "item": "melee"
+  },
+  {
+   "type": "take",
+   "t": 176.1,
+   "st": 571.6,
+   "item": "frostSmash",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 177.5,
+   "st": 573,
+   "item": "frostSmash",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "purchase",
+   "t": 181,
+   "st": 576.5,
+   "item": "soldier",
+   "price": 12,
+   "goldAfter": 99
+  },
+  {
+   "type": "flag_plant",
+   "t": 182.3,
+   "st": 577.8,
+   "reason": "purchase",
+   "unit": "soldier",
+   "x": 846,
+   "y": 359
+  },
+  {
+   "type": "take",
+   "t": 184.5,
+   "st": 580,
+   "item": "seek",
+   "from": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 186.4,
+   "st": 581.9,
+   "item": "seek",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "ground_expire",
+   "t": 186.4,
+   "st": 582,
+   "item": "melee"
+  },
+  {
+   "type": "steal_start",
+   "t": 188.3,
+   "st": 583.9,
+   "enemy": "brute",
+   "item": "seek"
+  },
+  {
+   "type": "mute",
+   "t": 189.1,
+   "st": 584.6,
+   "muted": true
+  },
+  {
+   "type": "steal_cancel",
+   "t": 189.7,
+   "st": 585.3,
+   "enemy": "brute",
+   "item": "seek",
+   "reason": "far"
+  },
+  {
+   "type": "mute",
+   "t": 190.4,
+   "st": 585.9,
+   "muted": false
+  },
+  {
+   "type": "flag_plant",
+   "t": 197.3,
+   "st": 592.9,
+   "reason": "rally",
+   "unit": "soldier",
+   "x": 189,
+   "y": 150
+  },
+  {
+   "type": "steal_start",
+   "t": 200.4,
+   "st": 596,
+   "enemy": "brute",
+   "item": "seek"
+  },
+  {
+   "type": "steal_done",
+   "t": 201.9,
+   "st": 597.5,
+   "enemy": "brute",
+   "item": "seek"
+  },
+  {
+   "type": "drop",
+   "t": 202.6,
+   "st": 598.1,
+   "item": "seek"
+  },
+  {
+   "type": "steal_start",
+   "t": 203.2,
+   "st": 598.7,
+   "enemy": "brute",
+   "item": "melee"
+  },
+  {
+   "type": "steal_done",
+   "t": 204.7,
+   "st": 600.2,
+   "enemy": "brute",
+   "item": "melee"
+  },
+  {
+   "type": "drop",
+   "t": 206.9,
+   "st": 602.4,
+   "item": "melee"
+  },
+  {
+   "type": "level_end",
+   "t": 209.1,
+   "st": 604.6,
+   "result": "win",
+   "wave": 5,
+   "castleHp": 20,
+   "stars": 3
+  }
+ ]
+}

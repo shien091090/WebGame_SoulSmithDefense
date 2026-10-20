@@ -1,5 +1,5 @@
 'use strict';
-// 魂匠守衛者(打磨版第 2 輪) — 玩法驗證 Demo。邏輯與繪製分離: update 改狀態, render 只呼叫 Art.drawXxx。
+// 魂匠守衛者(打磨版第 3 輪) — 玩法驗證 Demo。邏輯與繪製分離: update 改狀態, render 只呼叫 Art.drawXxx。
 
 const Placeholder = {}; // interface.json 涵蓋所有圖形, 無佔位
 
@@ -12,34 +12,48 @@ canvas.height = H * DPR;
 ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
 // ───────── 常數 ─────────
-const BASIC = { ranged: 1, melee: 1, frost: 1, seek: 1, march: 1, drum: 1 };
-const ATTACK = { ranged: 1, melee: 1, frost: 1, pierce: 1, iceArrow: 1, whirl: 1, frostSmash: 1 };
-const COMBO_KIND = ['pierce', 'iceArrow', 'whirl', 'frostSmash', 'charge'];
-const COMBO_NAME = ['穿透箭', '冰箭', '旋風斬', '冰霜重擊', '衝鋒'];
-const COMBO_IDX = { pierce: 0, iceArrow: 1, whirl: 2, frostSmash: 3, charge: 4 };
-const RECIPES = [['ranged', 'ranged'], ['ranged', 'frost'], ['melee', 'melee'], ['melee', 'frost'], ['drum', 'melee']];
+const BASIC = { ranged: 1, melee: 1, frost: 1, shock: 1, heal: 1, seek: 1, march: 1, charge: 1 };
+const ATTACK = { ranged: 1, melee: 1, frost: 1, shock: 1, pierce: 1, iceArrow: 1, whirl: 1, frostSmash: 1, thunderSlash: 1, thunderOrb: 1 };
+const RESONANT = Object.assign({ heal: 1, healRay: 1 }, ATTACK); // 會共鳴 = 攻擊類 + 支援類
+const COMBO_KIND = ['pierce', 'iceArrow', 'whirl', 'frostSmash', 'thunderSlash', 'thunderOrb', 'blink', 'healRay', 'holyPath', 'steadfast'];
+const COMBO_NAME = ['穿透箭', '冰箭', '旋風斬', '冰霜重擊', '雷霆斬', '雷電球', '瞬閃', '治癒光線', '神聖之路', '不動如山'];
+const COMBO_IDX = {}; COMBO_KIND.forEach((k, i) => { COMBO_IDX[k] = i; });
+const NCOMBO = COMBO_KIND.length;
+const RECIPES = [
+  [['ranged', 'ranged']], [['ranged', 'frost']], [['melee', 'melee']], [['melee', 'frost']],
+  [['shock', 'melee']], [['shock', 'ranged']], [['shock', 'seek']], [['heal', 'ranged']], [['heal', 'charge']],
+  [['march', 'seek'], ['march', 'charge']]
+];
 const KITS = { crossbowKit: 1, pillarKit: 1 };
 const KIT_NAME = { crossbowKit: 'crossbow', pillarKit: 'pillar', soldierKit: 'soldier', golemKit: 'golem' };
 const CASTLE_POS = { x: 1180, y: 434, half: 56 };
 const CASTLE_DOOR = { x: 1124, y: 434 };
-const SHOP = [['pillarKit', '魂柱', 12], ['crossbowKit', '弩塔', 15], ['soldierKit', '步兵', 12], ['golemKit', '石魔像', 18]];
-const PRICE = { pillar: 12, tower: 15 };
+const SHOP_ALL = [['pillarKit', '魂柱', 12], ['crossbowKit', '弩塔', 15], ['soldierKit', '步兵', 12], ['golemKit', '石魔像', 18]];
+const PRICE = { pillar: 12, tower: 15, soldier: 12, golem: 18 };
 const DESC = {
   ranged: ['遠攻', '射箭打遠處的敵人'], melee: ['近戰', '近身砍擊敵人'], frost: ['冰霜', '讓敵人變慢, 攻擊會帶冰'],
-  seek: ['自動索敵', '主動追打附近的敵人'], march: ['進攻主堡', '走回主堡, 建築會退款'], drum: ['行軍', '沿路往敵人出口推進'],
+  shock: ['電擊', '攻擊會電到旁邊的敵人'], heal: ['治癒', '慢慢治好附近的友軍'],
+  seek: ['自動索敵', '主動追打附近的敵人'], march: ['進攻主堡', '走回主堡, 退還買價'], charge: ['衝鋒', '沿路衝撞, 撞飛敵人'],
   pierce: ['穿透箭', '一箭貫穿整排敵人', ['ranged', 'ranged']], iceArrow: ['冰箭', '射出讓敵人大減速的箭', ['ranged', 'frost']],
   whirl: ['旋風斬', '砍擊身邊一圈敵人', ['melee', 'melee']], frostSmash: ['冰霜重擊', '重擊並凍慢一片敵人', ['melee', 'frost']],
-  charge: ['衝鋒', '沿路衝撞, 撞飛敵人', ['drum', 'melee']], shop: ['購買', '裝在誰身上, 誰旁邊開店']
+  thunderSlash: ['雷霆斬', '帶電重砍, 打暈敵人', ['shock', 'melee']], thunderOrb: ['雷電球', '射出慢飛的電球', ['shock', 'ranged']],
+  blink: ['瞬閃', '閃電瞬移到敵人面前', ['shock', 'seek']], healRay: ['治癒光線', '遠距治好最傷的友軍', ['heal', 'ranged']],
+  holyPath: ['神聖之路', '衝過的路能補血加速', ['heal', 'charge']], steadfast: ['不動如山', '定在原地, 更耐打', ['march', 'seek'], 'charge'],
+  shop: ['購買', '裝在誰身上, 誰旁邊開店']
 };
 const ENEMY_DEF = {
   imp: { name: '小鬼', hp: 40, speed: 45, half: 16, items: ['melee', 'march'], coins: 1, dmg: 2 },
   archer: { name: '弓鬼', hp: 30, speed: 50, half: 16, items: ['ranged', 'march'], coins: 2, dmg: 2 },
   ice: { name: '冰鬼', hp: 50, speed: 42, half: 16, items: ['frost', 'march'], coins: 2, dmg: 2 },
-  drummer: { name: '鼓鬼', hp: 45, speed: 48, half: 18, items: ['drum', 'march'], coins: 2, dmg: 2 },
+  drummer: { name: '衝鬼', hp: 45, speed: 48, half: 18, items: ['charge', 'march'], coins: 2, dmg: 2 },
+  thunder: { name: '雷鬼', hp: 45, speed: 46, half: 18, items: ['shock', 'march'], coins: 2, dmg: 2 },
+  healer: { name: '醫鬼', hp: 50, speed: 40, half: 18, items: ['heal', 'march'], coins: 2, dmg: 2 },
   brute: { name: '狂鬼', hp: 80, speed: 40, half: 22, items: ['melee', 'seek', 'march'], coins: 3, dmg: 3 }
 };
-const KIND_OF = { tower: 'crossbow', pillar: 'pillar', soldier: 'soldier', castle: 'castle', corpse: 'corpse', enemy: 'enemy', player: 'player' };
+const KIND_OF = { tower: 'crossbow', pillar: 'pillar', soldier: 'soldier', castle: 'castle' };
 function isSoul(h) { return !!h && !KITS[h]; }
+function zeroSingles() { return { ranged: 0, melee: 0, frost: 0, shock: 0, heal: 0, seek: 0, march: 0, charge: 0 }; }
+function zeros(n) { const a = []; for (let i = 0; i < n; i++) a.push(0); return a; }
 
 // ───────── 關卡資料 ─────────
 function gp(sp, pairs) { return { sp, list: pairs }; } // 一組出怪: 出怪點序號 + [[種類, 隻數], ...]
@@ -66,49 +80,49 @@ const LEVELS = [
       [gp(1, [['imp', 3], ['archer', 3]])],
       [gp(0, [['imp', 4], ['archer', 2]]), gp(1, [['imp', 4]])],
       [gp(0, [['archer', 3], ['ice', 2]]), gp(1, [['imp', 5]])],
-      [gp(0, [['imp', 4], ['ice', 2]]), gp(1, [['archer', 3], ['ice', 2], ['brute', 1]])]
+      [gp(0, [['imp', 4], ['ice', 2], ['thunder', 1]]), gp(1, [['archer', 3], ['ice', 2], ['brute', 1]])]
     ]
   },
   {
-    name: '長蛇', gold: 40, cap: 2, mul: 1.1, t1: 15, gap: 28,
+    name: '長蛇', gold: 40, cap: 2, mul: 1.2, t1: 15, gap: 28,
     paths: [[[0, 146], [1000, 146], [1000, 290], [300, 290], [300, 578], [860, 578], [860, 434], [1180, 434]]],
     spawns: [{ name: 'A', x: 40, y: 146, ang: 0 }],
     towers: [[504, 218, ['ranged']], [600, 506, ['ranged']]], soldiers: [], neutrals: [[600, 434]],
     waves: [
       [gp(0, [['imp', 6]])],
       [gp(0, [['imp', 4], ['archer', 3]])],
-      [gp(0, [['ice', 3], ['imp', 4]])],
-      [gp(0, [['brute', 2], ['archer', 3], ['imp', 3]])],
-      [gp(0, [['brute', 3], ['ice', 3], ['archer', 3]])]
+      [gp(0, [['ice', 3], ['imp', 4], ['thunder', 2]])],
+      [gp(0, [['brute', 2], ['archer', 3], ['imp', 3], ['healer', 1]])],
+      [gp(0, [['brute', 3], ['ice', 3], ['archer', 3], ['thunder', 2], ['healer', 1]])]
     ]
   },
   {
-    name: '夾擊', gold: 45, cap: 3, mul: 1.2, t1: 15, gap: 26,
+    name: '夾擊', gold: 45, cap: 3, mul: 1.4, t1: 15, gap: 26,
     paths: [[[360, 50], [360, 434], [1180, 434]], [[360, 720], [360, 434], [1180, 434]]],
     spawns: [{ name: '上', x: 360, y: 90, ang: Math.PI / 2 }, { name: '下', x: 360, y: 690, ang: -Math.PI / 2 }],
     towers: [[456, 314, ['ranged']], [456, 554, ['ranged']]], soldiers: [[640, 490]], neutrals: [],
     waves: [
       [gp(0, [['imp', 5]])],
       [gp(1, [['drummer', 3], ['imp', 3]])],
-      [gp(0, [['drummer', 2], ['archer', 3]]), gp(1, [['imp', 4]])],
-      [gp(0, [['ice', 3], ['brute', 2]]), gp(1, [['drummer', 2], ['archer', 3]])],
-      [gp(0, [['brute', 3], ['imp', 3]]), gp(1, [['ice', 3], ['drummer', 2]])],
-      [gp(0, [['imp', 3], ['brute', 2], ['ice', 1], ['drummer', 1]]), gp(1, [['imp', 3], ['brute', 2], ['ice', 1], ['drummer', 1]])]
+      [gp(0, [['drummer', 2], ['archer', 3]]), gp(1, [['imp', 4], ['healer', 1]])],
+      [gp(0, [['ice', 3], ['brute', 2], ['thunder', 1]]), gp(1, [['drummer', 2], ['archer', 3]])],
+      [gp(0, [['brute', 3], ['imp', 3], ['healer', 1]]), gp(1, [['ice', 3], ['drummer', 2], ['thunder', 2]])],
+      [0, 1].map(i => gp(i, [['imp', 3], ['brute', 2], ['ice', 1], ['drummer', 1], ['healer', 1]]))
     ]
   },
   {
-    name: '三叉', gold: 50, cap: 3, mul: 1.35, t1: 15, gap: 24,
+    name: '三叉', gold: 50, cap: 3, mul: 1.6, t1: 15, gap: 24,
     paths: [[[0, 146], [720, 146], [720, 434], [1180, 434]], [[0, 434], [1180, 434]], [[0, 674], [720, 674], [720, 434], [1180, 434]]],
     spawns: [{ name: '北', x: 40, y: 146, ang: 0 }, { name: '中', x: 40, y: 434, ang: 0 }, { name: '南', x: 40, y: 674, ang: 0 }],
     towers: [[456, 218, ['ranged']], [456, 602, ['ranged']]], soldiers: [], neutrals: [[960, 290], [960, 578]],
     waves: [
       [gp(0, [['imp', 4]]), gp(2, [['imp', 4]])],
       [gp(1, [['archer', 3], ['ice', 2]]), gp(0, [['imp', 4]])],
-      [gp(2, [['drummer', 3], ['brute', 1]]), gp(1, [['imp', 5]])],
-      [gp(0, [['brute', 2], ['ice', 3]]), gp(2, [['archer', 4]]), gp(1, [['imp', 3]])],
+      [gp(2, [['drummer', 3], ['brute', 1]]), gp(1, [['imp', 5], ['thunder', 1]])],
+      [gp(0, [['brute', 2], ['ice', 3]]), gp(2, [['archer', 4], ['healer', 1]]), gp(1, [['imp', 3], ['thunder', 1]])],
       [gp(0, [['imp', 3], ['archer', 2]]), gp(1, [['imp', 3], ['archer', 2]]), gp(2, [['imp', 3], ['archer', 2]])],
-      [gp(0, [['brute', 3], ['drummer', 2]]), gp(1, [['ice', 3], ['brute', 2]]), gp(2, [['imp', 5]])],
-      [0, 1, 2].map(i => gp(i, [['imp', 3], ['brute', 2], ['ice', 1], ['drummer', 1]]))
+      [gp(0, [['brute', 3], ['drummer', 2], ['healer', 1]]), gp(1, [['ice', 3], ['brute', 2], ['thunder', 2]]), gp(2, [['imp', 5], ['healer', 1]])],
+      [0, 1, 2].map(i => gp(i, [['imp', 3], ['brute', 2], ['ice', 1], ['drummer', 1], ['thunder', 1], ['healer', 1]]))
     ]
   }
 ];
@@ -157,32 +171,35 @@ let hideAt = null;
 // 這次開網頁期間的狀態(重新整理才重置)
 const S = {
   unlocked: [true, false, false, false, false], best: [0, 0, 0, 0, 0], attempts: [0, 0, 0, 0, 0], fails: [0, 0, 0, 0, 0],
-  combos: [false, false, false, false, false], golemUnlocked: false, muted: false,
+  combos: zeros(NCOMBO).map(() => false), golemUnlocked: false, muted: false,
   tut: { done: [], shownSt: [], doneSt: [], cur: 0, fx: null, view: null, pend: {}, pressed: {}, late: {} }
 };
 const G = { screen: 'title', cursor: 0, titleT: 0, sq: [], music: null, inited: false, level: 1, popup: null, steal: null, hand: null, flag: null, fuseSnd: 0, comboSnd: 0 };
 
 function emptyEv() {
-  return { matched: [], effects: [], singles: { ranged: 0, melee: 0, frost: 0, seek: 0, march: 0, drum: 0 }, virt: [], resonating: false, ice: false, aura: false, charge: false, ranged: false };
+  return {
+    matched: [], effects: [], singles: zeroSingles(), virt: [], resonating: false, ice: false, shockAttach: 0, frostAura: false, healAura: false,
+    charge: false, chargeN: 0, holy: false, blinkN: 0, rooted: false, ranged: false
+  };
 }
 function mkUnit(cat, x, y, half, slots) {
   return {
-    cat, x, y, half, slots, cd: {}, ev: emptyEv(),
+    cat, x, y, half, slots, factory: [], price: 0, cd: {}, ev: emptyEv(),
     hitAge: 0.2, attackAge: 0.15, moving: false, charging: false, state: 'normal',
-    hp: 1, maxHp: 1, slowT: 0, auraSlow: false, home: { x, y }, m: null, awayT: 0, flagObj: null,
-    prevCombos: [0, 0, 0, 0, 0], comboLast: [-99, -99, -99, -99, -99], removed: false, chHit: new Map()
+    hp: 1, maxHp: 1, slowT: 0, auraSlow: false, healing: false, onTrail: false, home: { x, y }, m: null, awayT: 0, flagObj: null, trailObj: null,
+    prevCombos: zeros(NCOMBO), comboLast: zeros(NCOMBO).map(() => -99), removed: false, chHit: new Map(), rayT: -99
   };
 }
 function nulls(n) { const a = []; for (let i = 0; i < n; i++) a.push(null); return a; }
-function mkTower(x, y) { const u = mkUnit('tower', x, y, 24, nulls(2)); u.price = PRICE.tower; return u; }
+function mkTower(x, y) { const u = mkUnit('tower', x, y, 24, nulls(2)); u.price = PRICE.tower; u.factory = ['ranged']; return u; }
 function mkPillar(x, y) { const u = mkUnit('pillar', x, y, 18, nulls(1)); u.changeAge = 0.5; u.price = PRICE.pillar; return u; }
 function mkSoldier(x, y) {
   const u = mkUnit('soldier', x, y, 16, ['melee', 'seek']);
-  u.team = 'ally'; u.hp = u.maxHp = 80; return u;
+  u.team = 'ally'; u.hp = u.maxHp = 80; u.price = PRICE.soldier; u.factory = ['melee']; return u;
 }
 function mkGolem(x, y, team) {
   const u = mkUnit('golem', x, y, 28, team === 'ally' ? ['seek', null, null] : nulls(3));
-  u.team = team; u.hp = u.maxHp = 220;
+  u.team = team; u.hp = u.maxHp = 220; u.price = PRICE.golem;
   if (team !== 'ally') { u.wx = x; u.wy = y; u.wanderT = 0; }
   return u;
 }
@@ -218,13 +235,14 @@ function newStat() {
   return {
     gameSec: 0, slowMoSec: 0, hiddenSec: 0, leaks: 0, leaksByWave: [], leaksBySpawn: {}, kills: 0, playerKills: 0, playerHits: 0,
     goldEarned: 0, goldRefund: 0, goldSpent: 0, purchases: {}, pillarsMax: 0,
-    steals: { started: 0, done: 0, canceled: 0 }, installs: { direct: 0, replace: 0 }, fuses: {}, drops: 0, groundExpired: 0,
-    demolishes: 0, homeRefunds: 0, flags: { purchase: 0, rally: 0 }, unitDowns: 0, maxRespawnQueue: 0, marchLoops: 0, recruits: 0, combosNew: []
+    steals: { started: 0, done: 0, diedDone: 0, canceled: 0 }, installs: { direct: 0, replace: 0 }, fuses: {}, drops: 0, groundExpired: 0,
+    demolishes: 0, homeRefunds: {}, bundledBack: 0, flags: { purchase: 0, rally: 0 }, unitDowns: 0, maxRespawnQueue: 0, marchLoops: 0,
+    blinks: 0, healed: 0, enemyHealed: 0, recruits: 0, combosNew: []
   };
 }
 
 // ───────── 聲音(防呆: sound.js 沒載入也不當) ─────────
-let lastArrowRT = -9;
+let lastArrowRT = -9, lastZapRT = -9;
 function snd(name) { if (G.sq.indexOf(name) < 0) G.sq.push(name); }
 function composeComboSnd() {
   const f = G.fuseSnd, c = G.comboSnd;
@@ -240,6 +258,7 @@ function flushSnd() {
   if (S.muted || typeof Sound === 'undefined' || !Sound.play) return;
   for (const n of q) {
     if (n === 'arrow_shot') { if (RT - lastArrowRT < 0.1) continue; lastArrowRT = RT; }
+    if (n === 'shock_zap') { if (RT - lastZapRT < 0.15) continue; lastZapRT = RT; }
     try { Sound.play(n); } catch (err) { console.error(err); }
   }
 }
@@ -279,6 +298,8 @@ function startLevel(n) {
   G.golems = LV.neutrals.map(g => mkGolem(g[0], g[1], 'neutral'));
   G.enemies = []; G.corpses = []; G.parts = []; G.coins = []; G.flags = [];
   G.projs = []; G.beams = []; G.areas = []; G.sparks = []; G.names = []; G.breaks = [];
+  G.chains = []; G.orbs = []; G.hbeams = []; G.blinks = []; G.trails = [];
+  G.frostAlly = []; G.frostEnemy = []; G.healAlly = []; G.healEnemy = [];
   G.castle = mkUnit('castle', 1180, 434, 56, nulls(3));
   G.castle.slots[0] = 'shop';
   G.castle.hitAge = 0.3;
@@ -325,7 +346,7 @@ function endLevel(win) {
   ev('level_end', { result: win ? 'win' : 'lose', wave: G.wave, castleHp: hp, stars });
   const st = G.stat;
   const tut = {};
-  for (let k = 1; k <= 14; k++) tut[String(k)] = { shownSt: T.shownSt[k] === undefined ? null : T.shownSt[k], doneSt: T.doneSt[k] === undefined ? null : T.doneSt[k] };
+  for (let k = 1; k <= 13; k++) tut[String(k)] = { shownSt: T.shownSt[k] === undefined ? null : T.shownSt[k], doneSt: T.doneSt[k] === undefined ? null : T.doneSt[k] };
   const summary = {
     level: G.level, levelName: LV.name, attempt: S.attempts[G.level - 1], failsBefore: win ? S.fails[G.level - 1] : S.fails[G.level - 1] - 1,
     result: win ? 'win' : 'lose', durationSec: r1(RT - G.log.t0), gameSec: r1(st.gameSec), slowMoSec: r1(st.slowMoSec), hiddenSec: r1(st.hiddenSec),
@@ -333,11 +354,12 @@ function endLevel(win) {
     kills: st.kills, playerKills: st.playerKills, playerHits: st.playerHits,
     goldEarned: st.goldEarned, goldRefund: st.goldRefund, goldSpent: st.goldSpent, goldEnd: G.gold, purchases: st.purchases,
     pillarCap: LV.cap, pillarsMax: st.pillarsMax, steals: st.steals, installs: st.installs, fuses: st.fuses,
-    drops: st.drops, groundExpired: st.groundExpired, demolishes: st.demolishes, homeRefunds: st.homeRefunds, flags: st.flags,
-    unitDowns: st.unitDowns, maxRespawnQueue: st.maxRespawnQueue, marchLoops: st.marchLoops, recruits: st.recruits,
+    drops: st.drops, groundExpired: st.groundExpired, demolishes: st.demolishes, homeRefunds: st.homeRefunds, bundledBack: st.bundledBack, flags: st.flags,
+    unitDowns: st.unitDowns, maxRespawnQueue: st.maxRespawnQueue, marchLoops: st.marchLoops, blinks: st.blinks,
+    healed: Math.round(st.healed), enemyHealed: Math.round(st.enemyHealed), recruits: st.recruits,
     combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length
   };
-  downloadLog({ game: 'SoulSmithDefense', version: 'polish-2', summary, tutorial: tut, events: G.log.events });
+  downloadLog({ game: 'SoulSmithDefense', version: 'polish-3', summary, tutorial: tut, events: G.log.events });
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
@@ -350,7 +372,7 @@ function unitKind(u) {
 function hasItem(u) { return u.slots.some(s => !!s); }
 function isMobileAlly(t) { return t.cat === 'soldier' || (t.cat === 'golem' && t.team === 'ally'); }
 function allyMobile() { return G.soldiers.concat(G.golems.filter(g => g.team === 'ally')); }
-function allyAlive() { return allyMobile().filter(u => u.state === 'normal'); }
+function allyAlive() { return allyMobile().filter(u => u.state === 'normal' && !u.removed); }
 function liveEnemies() { return G.enemies.filter(e => !e.dead && !e.gone); }
 function canFuseUnit(u) { return u.cat === 'tower' || u.cat === 'pillar' || u.cat === 'castle' || u.cat === 'soldier' || (u.cat === 'golem' && u.team === 'ally'); }
 function ownUnits() { // 我方建築 + 移動單位(含各種狀態) + 主堡
@@ -359,15 +381,18 @@ function ownUnits() { // 我方建築 + 移動單位(含各種狀態) + 主堡
 
 // ───────── 合成 / 組合評估 ─────────
 function findFuse(slots) {
-  for (let ci = 0; ci < 5; ci++) {
-    const a = RECIPES[ci][0], b = RECIPES[ci][1];
-    for (let i = 0; i < slots.length; i++) for (let j = i + 1; j < slots.length; j++) {
-      const x = slots[i], y = slots[j];
-      if ((x === a && y === b) || (x === b && y === a)) return { ci, i, j, mats: [x, y] };
+  for (let ci = 0; ci < NCOMBO; ci++) {
+    for (const r of RECIPES[ci]) {
+      const a = r[0], b = r[1];
+      for (let i = 0; i < slots.length; i++) for (let j = i + 1; j < slots.length; j++) {
+        const x = slots[i], y = slots[j];
+        if ((x === a && y === b) || (x === b && y === a)) return { ci, i, j, mats: [x, y] };
+      }
     }
   }
   return null;
 }
+function pairFuses(a, b) { return RECIPES.some(alts => alts.some(r => (r[0] === a && r[1] === b) || (r[0] === b && r[1] === a))); }
 function tryFuse(u) {
   const out = [];
   if (!canFuseUnit(u)) return out;
@@ -387,7 +412,7 @@ function popName(u, ci) {
   const isNew = !S.combos[ci];
   if (!isNew && G.time - u.comboLast[ci] < 4) return 0;
   u.comboLast[ci] = G.time;
-  if (isNew) { S.combos[ci] = true; G.stat.combosNew.push(COMBO_NAME[ci]); ev('combo_new', { name: COMBO_NAME[ci], unit: unitKind(u) }); }
+  if (isNew) { S.combos[ci] = true; G.stat.combosNew.push(COMBO_NAME[ci]); ev('combo_new', { name: COMBO_NAME[ci], unit: u.cat === 'player' ? 'player' : unitKind(u) }); }
   G.names.push({ unit: u, name: COMBO_NAME[ci], isNew, age: 0 });
   return isNew ? 2 : 1;
 }
@@ -402,11 +427,11 @@ function afterSlotsChange(t) {
     const r = popName(t, f.ci);
     G.fuseSnd = Math.max(G.fuseSnd, r === 2 ? 2 : 1);
     tutEv(9);
-    if (f.ci === 4) tutEv(14);
   }
   return fs.length;
 }
 
+// 配組池: 實體魂件 + 共鳴來的虛魂件(規則 15)
 function evalUnit(u, virt, canMove, noAttack) {
   const real = [], realCombo = [];
   for (const k of u.slots) {
@@ -420,59 +445,77 @@ function evalUnit(u, virt, canMove, noAttack) {
     if (BASIC[v.kind]) vb.push({ kind: v.kind, used: false, v: true });
     else if (COMBO_IDX[v.kind] !== undefined) vcombo.push(COMBO_IDX[v.kind]);
   }
-  function take(kind) {
+  function take(kind) { // 先用虛的、再用實體的
     for (const o of vb) if (!o.used && o.kind === kind) { o.used = true; return o; }
     for (const o of real) if (!o.used && o.kind === kind) { o.used = true; return o; }
     return null;
   }
   const matched = [];
-  for (let ci = 0; ci < 5; ci++) {
-    if (ci === 4 && !canMove) continue;
-    const a = RECIPES[ci][0], b = RECIPES[ci][1];
-    for (let g = 0; g < 8; g++) {
-      const x = take(a);
-      if (!x) break;
-      const y = take(b);
-      if (!y) { x.used = false; break; }
-      if (!x.v && !y.v) { x.used = false; y.used = false; break; }
-      matched.push(ci);
+  for (let ci = 0; ci < 9; ci++) { // 不動如山(9)只由實體合成
+    if (!canMove && (ci === 6 || ci === 8)) continue;
+    for (const r of RECIPES[ci]) {
+      for (let g = 0; g < 8; g++) {
+        const x = take(r[0]);
+        if (!x) break;
+        const y = take(r[1]);
+        if (!y) { x.used = false; break; }
+        if (!x.v && !y.v) { x.used = false; y.used = false; break; }
+        matched.push(ci);
+      }
     }
   }
-  const singles = { ranged: 0, melee: 0, frost: 0, seek: 0, march: 0, drum: 0 };
+  const singles = zeroSingles();
   for (const o of real) if (!o.used) singles[o.kind]++;
   for (const o of vb) if (!o.used) singles[o.kind]++;
-  const groups = realCombo.concat(vcombo, matched);
-  const effects = [], seen = [0, 0, 0, 0, 0];
+  let groups = realCombo.concat(vcombo, matched);
+  if (!canMove) groups = groups.filter(c => c !== 6 && c !== 8);
+  const cnt = ci => { let n = 0; for (const c of groups) if (c === ci) n++; return n; };
+  const effects = [], seen = zeros(NCOMBO);
   if (!noAttack) {
-    for (const ci of groups) { if (ci === 4) continue; seen[ci]++; effects.push({ key: 'c' + ci + '_' + seen[ci], t: COMBO_KIND[ci] }); }
+    for (const ci of groups) {
+      if (ci <= 5 || ci === 7) { seen[ci]++; effects.push({ key: 'c' + ci + '_' + seen[ci], t: COMBO_KIND[ci] }); }
+    }
     if (singles.ranged) effects.push({ key: 's_ranged', t: 'ranged', n: singles.ranged });
     if (singles.melee) effects.push({ key: 's_melee', t: 'melee', n: singles.melee });
   }
-  const ranged = !noAttack && (singles.ranged > 0 || groups.indexOf(0) >= 0 || groups.indexOf(1) >= 0);
-  const ice = !noAttack && singles.frost > 0 && effects.length > 0;
-  const aura = !noAttack && singles.frost > 0 && effects.length === 0;
-  u.ev = { matched, effects, singles, virt, resonating: !noAttack && virt.length > 0, ice, aura, charge: canMove && groups.indexOf(4) >= 0, ranged };
+  const holyN = cnt(8), blinkN = cnt(6);
+  const chargeN = canMove ? singles.charge + holyN : 0;
+  const otherAtk = effects.some(e => e.t !== 'healRay') || chargeN > 0 || blinkN > 0;
+  let shockAttach = 0, lone = false;
+  if (!noAttack && singles.shock > 0) {
+    if (otherAtk) shockAttach = singles.shock;
+    else { effects.push({ key: 's_shock', t: 'shock', n: singles.shock }); lone = true; }
+  }
+  const anyAtk = otherAtk || lone;
+  u.ev = {
+    matched, effects, singles, virt, resonating: !noAttack && virt.length > 0,
+    ice: !noAttack && singles.frost > 0 && anyAtk, shockAttach,
+    frostAura: !noAttack && singles.frost > 0 && !anyAtk, healAura: !noAttack && singles.heal > 0,
+    charge: chargeN > 0, chargeN, holy: holyN > 0, blinkN, rooted: cnt(9) > 0,
+    ranged: !noAttack && (singles.ranged > 0 || cnt(0) > 0 || cnt(1) > 0 || cnt(5) > 0)
+  };
 }
 function evalEnemy(e) {
-  const singles = { ranged: 0, melee: 0, frost: 0, seek: 0, march: 0, drum: 0 };
+  const singles = zeroSingles();
   for (const k of e.slots) if (k && BASIC[k]) singles[k]++;
   const effects = [];
   if (singles.ranged) effects.push({ key: 's_ranged', t: 'ranged', n: singles.ranged });
   if (singles.melee) effects.push({ key: 's_melee', t: 'melee', n: singles.melee });
-  e.ev = { matched: [], effects, singles, virt: [], resonating: false, ice: false, aura: singles.frost > 0, charge: false, ranged: singles.ranged > 0 };
+  if (singles.shock && !singles.ranged && !singles.melee) effects.push({ key: 's_shock', t: 'shock', n: singles.shock });
+  e.ev = Object.assign(emptyEv(), { effects, singles, frostAura: singles.frost > 0, healAura: singles.heal > 0, ranged: singles.ranged > 0 });
 }
-function activeTowers() { return G.towers.filter(t => t.state === 'normal'); }
+function activeTowers() { return G.towers.filter(t => t.state === 'normal' && !t.removed); }
 function receivers() { return activeTowers().concat(allyAlive(), [G.castle], [G.player]); }
 function pillarVirt(r) {
   const ps = G.pillars.filter(p => p.state === 'normal' && !p.removed && dist(p, r) <= 150).map(p => ({ p, d: dist(p, r) })).sort((a, b) => a.d - b.d);
   const virt = [];
-  for (const o of ps) { const k = o.p.slots[0]; if (k && ATTACK[k]) virt.push({ kind: k, used: true, pillar: o.p }); }
+  for (const o of ps) { const k = o.p.slots[0]; if (k && RESONANT[k]) virt.push({ kind: k, used: true, pillar: o.p }); }
   return virt;
 }
 function computeEvals() {
   for (const r of receivers()) evalUnit(r, pillarVirt(r), r.cat !== 'castle' && r.cat !== 'player', false);
   for (const p of G.pillars) evalUnit(p, [], p.state === 'normal', true);
-  for (const u of allyMobile()) if (u.state !== 'normal') { u.ev = emptyEv(); u.prevCombos = [0, 0, 0, 0, 0]; }
+  for (const u of allyMobile()) if (u.state !== 'normal') { u.ev = emptyEv(); u.prevCombos = zeros(NCOMBO); }
   for (const t of G.towers) if (t.state !== 'normal') t.ev = emptyEv();
   for (const g of G.golems) if (g.team === 'neutral') g.ev = emptyEv();
   G.enemies.forEach(evalEnemy);
@@ -488,9 +531,9 @@ function nearest(u, list, test) {
   return best;
 }
 function stolenBy(u) { return G.steal && G.steal.enemy === u; }
-function speedMult(u) { return 1 - Math.max(u.auraSlow ? 0.3 : 0, u.slowT > 0 ? 0.5 : 0, stolenBy(u) ? 0.6 : 0); }
+function speedMult(u) { return (1 - Math.max(u.auraSlow ? 0.3 : 0, u.slowT > 0 ? 0.5 : 0, stolenBy(u) ? 0.6 : 0)) * (u.onTrail ? 1.5 : 1); }
 function unitDown(t) {
-  t.state = 'gone'; t.m = null; t.moving = false; t.charging = false; t.downAt = G.time; t.chHit = new Map();
+  t.state = 'gone'; t.m = null; t.moving = false; t.charging = false; t.healing = false; t.downAt = G.time; t.chHit = new Map();
   G.breaks.push({ kind: t.cat === 'soldier' ? 'soldier' : 'golem', x: t.x, y: t.y, age: 0 });
   G.rq.push(t);
   if (G.rq.length === 1) G.rqT = 0;
@@ -500,8 +543,9 @@ function unitDown(t) {
 }
 // o: { src: 'player' | 'unit' | 'enemy', frost: bool }
 function hurt(t, amt, o) {
-  if (t.dead || t.state === 'gone') return;
+  if (t.dead || t.state === 'gone' || t.removed) return;
   const src = o && o.src;
+  if (t.cat !== 'enemy' && t.ev && t.ev.rooted) amt = Math.max(1, Math.round(amt * 0.5)); // 不動如山: 受傷減半
   t.hp -= amt; t.hitAge = 0;
   G.sparks.push({ x: t.x, y: t.y, frost: !!(o && o.frost), age: 0 });
   if (t.cat === 'enemy' && src === 'player') { G.stat.playerHits++; tutEv(8); }
@@ -510,10 +554,16 @@ function hurt(t, amt, o) {
     if (t.cat === 'enemy') {
       t.dead = true; G.stat.kills++; snd('enemy_die');
       if (src === 'player') { G.stat.playerKills++; ev('player_kill', { enemy: t.type }); }
+      if (G.steal && G.steal.enemy === t) completeSteal('died'); // 讀條中敵人倒下: 搶奪當場完成
     } else unitDown(t);
   }
 }
 function slowIt(t) { t.slowT = 2; }
+function stun(e, dur) { // 暈眩取剩餘較長者
+  if (e.dead) return;
+  const rem = e.stunDur - e.stunAge;
+  if (rem < dur) { e.stunDur = dur; e.stunAge = 0; }
+}
 function knockBack(e, from) {
   const P = LV.lanes[e.lane];
   const pr = pathProject(P, e.x, e.y);
@@ -531,74 +581,166 @@ function knockBack(e, from) {
   return ang;
 }
 function contact(u, t) { return dist(u, t) <= u.half + t.half + 12; }
-function spawnProj(u, t, kind, dmg, owner, src) {
-  G.projs.push({ x: u.x, y: u.y, angle: Math.atan2(t.y - u.y, t.x - u.x), kind, owner, dmg, target: t, travel: 0, src });
+function spawnProj(u, t, kind, dmg, owner, src, shock) {
+  G.projs.push({ x: u.x, y: u.y, angle: Math.atan2(t.y - u.y, t.x - u.x), kind, owner, dmg, target: t, travel: 0, src, shock: shock || 0 });
+}
+// 電擊連鎖: 被打的目標身邊 80 內最近的其他目標(最多 2n 隻, 上限 6), 各吃該次傷害的 50%; 連鎖不再連鎖、不帶冰
+function chainFrom(t, dmg, n, o, firstFrom, silent) {
+  const pool = (o.side === 'ally' ? liveEnemies() : allyAlive()).filter(h => h !== t && !h.dead && Math.hypot(h.x - t.x, h.y - t.y) <= 80);
+  pool.sort((a, b) => Math.hypot(a.x - t.x, a.y - t.y) - Math.hypot(b.x - t.x, b.y - t.y));
+  const hit = pool.slice(0, Math.min(2 * n, 6));
+  const segs = firstFrom ? [[firstFrom.x, firstFrom.y, t.x, t.y]] : [];
+  for (const h of hit) {
+    hurt(h, Math.max(1, Math.round(dmg * 0.5)), { src: o.src, frost: false });
+    segs.push([t.x, t.y, h.x, h.y]);
+  }
+  if (segs.length) G.chains.push({ segs: segs.slice(0, 8), owner: o.side, age: 0 });
+  if (hit.length && !silent) snd('shock_zap');
+  return hit.length;
+}
+function dealHit(t, dmg, ho, silent) {
+  hurt(t, dmg, ho);
+  if (ho.frost) slowIt(t);
+  if (ho.shock > 0) chainFrom(t, dmg, ho.shock, ho, null, silent);
+}
+function pickHealTarget(u) {
+  let best = null, br = 2;
+  for (const a of allyAlive()) {
+    if (a.hp >= a.maxHp || dist(u, a) > 260) continue;
+    if (G.time - a.rayT < 1.0) continue;
+    const r = a.hp / a.maxHp;
+    if (r < br) { br = r; best = a; }
+  }
+  return best;
+}
+function addHeal(t, amt, enemySide) {
+  const real = Math.min(amt, t.maxHp - t.hp);
+  if (real <= 0) return 0;
+  t.hp += real; t.healing = true;
+  if (enemySide) G.stat.enemyHealed += real; else G.stat.healed += real;
+  return real;
 }
 function runAttacks(u, side, gdt, src) {
   const hostiles = side === 'ally' ? liveEnemies() : allyAlive();
-  for (const k in u.cd) if (u.cd[k] > 0) u.cd[k] = Math.max(0, u.cd[k] - gdt);
-  const ice = u.ev.ice;
-  const ho = { src, frost: ice };
+  const E = u.ev, ice = E.ice;
+  const ho = { src, frost: ice, shock: E.shockAttach, side };
   let standing = false;
-  for (const ef of u.ev.effects) {
+  for (const ef of E.effects) {
     let tgt = null, period = 1;
     switch (ef.t) {
-      case 'ranged': tgt = nearest(u, hostiles, (t, d) => d <= 200); period = 1; break;
-      case 'melee': tgt = nearest(u, hostiles, t => contact(u, t)); period = 0.8; break;
+      case 'ranged': case 'iceArrow': tgt = nearest(u, hostiles, (t, d) => d <= 200); period = 1; break;
+      case 'melee': case 'frostSmash': case 'thunderSlash': tgt = nearest(u, hostiles, t => contact(u, t)); period = 0.8; break;
       case 'pierce': tgt = nearest(u, hostiles, (t, d) => d <= 260); period = 1; break;
-      case 'iceArrow': tgt = nearest(u, hostiles, (t, d) => d <= 200); period = 1; break;
       case 'whirl': tgt = nearest(u, hostiles, (t, d) => d <= 60); period = 0.8; break;
-      case 'frostSmash': tgt = nearest(u, hostiles, t => contact(u, t)); period = 0.8; break;
+      case 'thunderOrb': tgt = nearest(u, hostiles, (t, d) => d <= 220); period = 2; break;
+      case 'shock': tgt = nearest(u, hostiles, (t, d) => d <= 100); period = 1; break;
+      case 'healRay': tgt = pickHealTarget(u); period = 1; break;
     }
     if (!tgt) continue;
-    standing = true;
+    if (ef.t !== 'healRay') standing = true;
     if ((u.cd[ef.key] || 0) > 0) continue;
     u.cd[ef.key] = period;
     u.attackAge = 0;
     switch (ef.t) {
-      case 'ranged': spawnProj(u, tgt, ice ? 'ice' : 'normal', 10 * ef.n, side, src); snd(side === 'ally' ? 'arrow_shot' : 'enemy_shot'); break;
-      case 'melee': hurt(tgt, 14 * ef.n, ho); if (ice) slowIt(tgt); if (side === 'ally') snd('melee_hit'); break;
-      case 'iceArrow': spawnProj(u, tgt, 'ice', 10, side, src); snd('arrow_shot'); break;
+      case 'ranged': spawnProj(u, tgt, ice ? 'ice' : 'normal', 10 * ef.n, side, src, E.shockAttach); snd(side === 'ally' ? 'arrow_shot' : 'enemy_shot'); break;
+      case 'melee': dealHit(tgt, 14 * ef.n, ho); if (side === 'ally') snd('melee_hit'); break;
+      case 'iceArrow': spawnProj(u, tgt, 'ice', 10, side, src, E.shockAttach); snd('arrow_shot'); break;
       case 'pierce': {
         const ang = Math.atan2(tgt.y - u.y, tgt.x - u.x);
         const x2 = u.x + Math.cos(ang) * 260, y2 = u.y + Math.sin(ang) * 260;
         G.beams.push({ x1: u.x, y1: u.y, x2, y2, frost: ice, age: 0 });
-        for (const h of hostiles) if (segProject(u.x, u.y, x2, y2, h.x, h.y).d <= 14) { hurt(h, 14, ho); if (ice) slowIt(h); }
+        for (const h of hostiles) if (!h.dead && segProject(u.x, u.y, x2, y2, h.x, h.y).d <= 14) dealHit(h, 14, ho);
         snd('pierce_shot');
         break;
       }
       case 'whirl':
         G.areas.push({ kind: 'whirl', x: u.x, y: u.y, radius: 60, angle: 0, frost: ice, age: 0 });
-        for (const h of hostiles) if (dist(u, h) <= 60) { hurt(h, 16, ho); if (ice) slowIt(h); }
+        for (const h of hostiles) if (!h.dead && dist(u, h) <= 60) dealHit(h, 16, ho);
         snd('whirl');
         break;
       case 'frostSmash':
         G.areas.push({ kind: 'frostSmash', x: tgt.x, y: tgt.y, radius: 60, angle: 0, frost: false, age: 0 });
         hurt(tgt, 16, { src, frost: true });
+        if (E.shockAttach > 0) chainFrom(tgt, 16, E.shockAttach, ho, null, false);
         for (const h of hostiles) if (h === tgt || dist(h, tgt) <= 60) slowIt(h);
         snd('melee_hit');
         break;
+      case 'thunderSlash':
+        hurt(tgt, 22, { src, frost: ice });
+        if (ice) slowIt(tgt);
+        stun(tgt, 0.5);
+        chainFrom(tgt, 22, 1, { src, side }, null, true);
+        snd('thunder_slash');
+        break;
+      case 'thunderOrb': {
+        const a = Math.atan2(tgt.y - u.y, tgt.x - u.x);
+        G.orbs.push({ x: u.x, y: u.y, dx: Math.cos(a), dy: Math.sin(a), travel: 0, pulseT: 0, pulseAge: 0.15, src });
+        snd('thunder_orb');
+        break;
+      }
+      case 'shock': {
+        const dmg = 8 * ef.n;
+        hurt(tgt, dmg, { src, frost: ice });
+        if (ice) slowIt(tgt);
+        chainFrom(tgt, dmg, ef.n, { src, side }, u, true);
+        snd('shock_zap');
+        break;
+      }
+      case 'healRay': {
+        tgt.rayT = G.time;
+        addHeal(tgt, 15, false);
+        G.hbeams.push({ x1: u.x, y1: u.y, x2: tgt.x, y2: tgt.y, age: 0 });
+        snd('heal_ray');
+        break;
+      }
     }
   }
   return standing;
 }
 // 衝鋒衝撞: 每隻進入碰觸距離的敵人(同一隻 1 秒內只撞一次)受傷、被撞退 60、暈眩 1 秒
 function chargeHits(u) {
-  if (u.state !== 'normal' || !u.ev.charge) return;
-  const ice = u.ev.ice;
+  if (u.removed || u.state !== 'normal' || !u.ev.charge) return;
+  const ho = { src: 'unit', frost: u.ev.ice, shock: u.ev.shockAttach, side: 'ally' };
   for (const h of liveEnemies()) {
     if (!contact(u, h)) continue;
     const last = u.chHit.get(h);
     if (last !== undefined && G.time - last < 1.0) continue;
     u.chHit.set(h, G.time);
     u.attackAge = 0;
-    hurt(h, 30, { src: 'unit', frost: ice });
-    if (h.dead) { G.areas.push({ kind: 'charge', x: h.x, y: h.y, radius: 30, angle: Math.atan2(h.y - u.y, h.x - u.x), frost: ice, age: 0 }); snd('charge_hit'); continue; }
-    if (ice) slowIt(h);
+    dealHit(h, 30 * u.ev.chargeN, ho);
+    if (h.dead) { G.areas.push({ kind: 'charge', x: h.x, y: h.y, radius: 30, angle: Math.atan2(h.y - u.y, h.x - u.x), frost: ho.frost, age: 0 }); snd('charge_hit'); continue; }
     const ang = knockBack(h, u);
-    h.stunAge = 0;
-    G.areas.push({ kind: 'charge', x: h.x, y: h.y, radius: 30, angle: ang, frost: ice, age: 0 });
+    stun(h, 1.0);
+    G.areas.push({ kind: 'charge', x: h.x, y: h.y, radius: 30, angle: ang, frost: ho.frost, age: 0 });
     snd('charge_hit');
+  }
+}
+// 瞬閃: 位置瞬間換掉, 落地放電(回集結點時不放電)
+function doBlink(u, nx, ny, landing) {
+  const x1 = u.x, y1 = u.y;
+  u.x = nx; u.y = ny;
+  u.cd.blink = 3.0; u.attackAge = 0;
+  G.blinks.push({ x1, y1, x2: nx, y2: ny, age: 0 });
+  G.stat.blinks++; snd('blink');
+  if (landing) {
+    G.areas.push({ kind: 'shockBurst', x: nx, y: ny, radius: 60, angle: 0, frost: u.ev.ice, age: 0 });
+    for (const h of liveEnemies()) if (Math.hypot(h.x - nx, h.y - ny) <= 60) { hurt(h, 10, { src: 'unit', frost: u.ev.ice }); if (u.ev.ice) slowIt(h); }
+    snd('shock_zap');
+  }
+}
+function blinkLogic(u) {
+  if ((u.cd.blink || 0) > 0) return;
+  const near = liveEnemies().filter(e => Math.hypot(e.x - u.home.x, e.y - u.home.y) <= 220);
+  if (near.length) {
+    const tgt = nearest(u, near);
+    const range = u.ev.ranged ? 180 : u.half + tgt.half + 12;
+    if (dist(u, tgt) <= range) return;
+    const gap = u.half + tgt.half + 6;
+    let dx = u.x - tgt.x, dy = u.y - tgt.y, d = Math.hypot(dx, dy);
+    if (d < 1) { dx = 1; dy = 0; d = 1; }
+    doBlink(u, tgt.x + dx / d * gap, tgt.y + dy / d * gap, true);
+  } else if (Math.hypot(u.x - u.home.x, u.y - u.home.y) > 1) {
+    doBlink(u, u.home.x, u.home.y, false);
   }
 }
 
@@ -622,7 +764,7 @@ function targetLane(u) { // 離集結點最近的路線(一樣近取列在前面
   LV.lanes.forEach((P, i) => { const d = pathProject(P, u.home.x, u.home.y).d; if (d < bd - 1e-6) { bd = d; bi = i; } });
   return bi;
 }
-// 行軍 / 衝鋒: 走到目標路線 → 逆向走到出怪點 → 走出畫面 → 消失 1 秒 → 從主堡門出來繼續
+// 衝鋒 / 神聖之路: 走到目標路線 → 逆向走到出怪點 → 走出畫面 → 消失 1 秒 → 從主堡門出來繼續
 function routeMarch(u, spd, dt) {
   let m = u.m;
   if (!m) m = u.m = { phase: 'to', lane: targetLane(u), s: 0 };
@@ -656,51 +798,49 @@ function routeMarch(u, spd, dt) {
 function returnHome(u, spd, dt) {
   if (Math.hypot(u.x - u.home.x, u.y - u.home.y) > 0.5) moveToward(u, u.home.x, u.home.y, spd, dt);
 }
+// 退款(規則 26): 依出廠清單收回身上還在的出廠基本魂件, 退款 = ⌊基準 × 收回 / 出廠⌋; 沒有出廠魂件則全額基準
+function settleRefund(u, base, apply) {
+  const fac = u.factory || [];
+  const slots = u.slots.slice();
+  let back = 0;
+  for (const f of fac) { const i = slots.indexOf(f); if (i >= 0) { slots[i] = null; back++; } }
+  const refund = fac.length ? Math.floor(base * back / fac.length) : base;
+  if (apply) for (let i = 0; i < slots.length; i++) u.slots[i] = slots[i];
+  return { refund, back, rest: slots.filter(Boolean) };
+}
 function homeRefund(u) {
-  const price = u.price;
-  G.gold += price; G.stat.goldRefund += price;
-  const parts = [];
-  let k = 0;
-  for (const it of u.slots) {
-    if (!it) continue;
-    G.parts.push(mkPart(it, 1052 + 32 * k, 580, 0)); parts.push(it); k++;
-  }
-  u.removed = true;
-  G.stat.homeRefunds++;
-  ev('home_refund', { unit: unitKind(u), refund: price, parts });
+  const r = settleRefund(u, u.price, true);
+  G.gold += r.refund; G.stat.goldRefund += r.refund; G.stat.bundledBack += r.back;
+  r.rest.forEach((it, k) => G.parts.push(mkPart(it, 1052 + 32 * k, 580, 0)));
+  u.removed = true; u.moving = false; u.charging = false;
+  if (u.flagObj) { const i = G.flags.indexOf(u.flagObj); if (i >= 0) G.flags.splice(i, 1); u.flagObj = null; }
+  const kind = unitKind(u);
+  G.stat.homeRefunds[kind] = (G.stat.homeRefunds[kind] || 0) + 1;
+  ev('home_refund', { unit: kind, refund: r.refund, bundledBack: r.back, parts: r.rest.slice() });
   snd('home_refund');
 }
 function allyBehavior(u, dt, standing) {
   u.moving = false; u.charging = false;
   if (u.cat === 'castle') return;
-  const ev2 = u.ev, mult = speedMult(u), s = ev2.singles;
-  if (!ev2.charge && !(s.drum > 0)) u.m = null;
-  if (ev2.charge) { routeMarch(u, 90 * mult, dt); u.charging = u.moving; return; }
+  const E = u.ev, mult = speedMult(u), s = E.singles;
+  if (E.rooted) { u.m = null; return; } // 不動如山: 完全不移動
+  if (!E.charge) u.m = null;
+  if (E.charge) { routeMarch(u, 90 * mult, dt); u.charging = u.moving; return; }
   if (standing) return;
-  if (s.drum > 0) { routeMarch(u, 50 * mult, dt); return; }
+  if (E.blinkN > 0) { blinkLogic(u); return; }
   if (s.seek > 0) {
     const tgt = nearest(u, liveEnemies(), t => Math.hypot(t.x - u.home.x, t.y - u.home.y) <= 200);
     if (tgt) {
-      const stop = ev2.ranged ? 180 : u.half + tgt.half + 6;
+      const stop = E.ranged ? 180 : u.half + tgt.half + 6;
       if (dist(u, tgt) > stop) moveToward(u, tgt.x, tgt.y, Math.min(70 * s.seek, 140) * mult, dt);
       return;
     }
     if (!(s.march > 0)) { returnHome(u, 80 * mult, dt); return; }
   }
   if (s.march > 0) {
-    if (u.cat === 'tower' || u.cat === 'pillar') {
-      moveToward(u, CASTLE_POS.x, CASTLE_POS.y, 40 * mult, dt);
-      if (dist(u, CASTLE_POS) <= 66) homeRefund(u);
-      return;
-    }
-    const stop = CASTLE_POS.half + u.half;
-    if (dist(u, CASTLE_POS) > stop) {
-      const d = dist(u, CASTLE_POS), st = 60 * mult * dt;
-      u.moving = true;
-      const k = Math.min(st, d - stop) / d;
-      u.x += (CASTLE_POS.x - u.x) * k; u.y += (CASTLE_POS.y - u.y) * k;
-    }
-    if (dist(u, CASTLE_POS) <= stop + 0.01) { u.home = { x: u.x, y: u.y }; }
+    const spd = (u.cat === 'tower' || u.cat === 'pillar') ? 40 : 60;
+    moveToward(u, CASTLE_POS.x, CASTLE_POS.y, spd * mult, dt);
+    if (dist(u, CASTLE_POS) <= 66) homeRefund(u); // 進入主堡半徑 + 10: 消失並退款
     return;
   }
   returnHome(u, 80 * mult, dt);
@@ -732,13 +872,13 @@ function enemyBehavior(e, dt, standing) {
   }
 }
 
-// ───────── 敵人 / 屍體 / 金幣 ─────────
+// ───────── 敵人 / 倒下消散 / 金幣 ─────────
 function spawnEnemy(q) {
   const d = ENEMY_DEF[q.type];
   const e = mkUnit('enemy', 0, 0, d.half, d.items.slice());
   e.type = q.type; e.lane = q.sp; e.s = 0; e.speed = d.speed; e.wave = q.wave;
   e.hp = e.maxHp = Math.round(d.hp * LV.mul);
-  e.stunAge = 1.0; e.kb = null;
+  e.stunAge = 1.0; e.stunDur = 1.0; e.kb = null;
   const p = pathPoint(LV.lanes[q.sp], 0);
   e.x = p.x; e.y = p.y; e.dead = false; e.gone = false;
   G.enemies.push(e);
@@ -749,7 +889,7 @@ function cleanupEnemies() {
     if (e.dead) {
       e.removed = true;
       const d = ENEMY_DEF[e.type];
-      G.corpses.push({ cat: 'corpse', kind: e.type, x: e.x, y: e.y, half: d.half, life: 15, slots: e.slots, removed: false });
+      G.corpses.push({ kind: e.type, x: e.x, y: e.y, life: 0.6 }); // 只是倒下消散特效, 不可互動
       for (let i = 0; i < d.coins; i++) {
         const a = Math.random() * Math.PI * 2, r = Math.random() * 40;
         G.coins.push({ x: clamp(e.x + Math.cos(a) * r, 8, W - 8), y: clamp(e.y + Math.sin(a) * r, 58, H - 8) });
@@ -781,9 +921,9 @@ function placeInfo(kit) {
 function flagInfo() { return { x: G.player.x, y: G.player.y, valid: dist(G.player, CASTLE_POS) >= 90 }; }
 function interactables() { // 可被安裝 / 拿取的單位
   const L = [];
-  G.towers.forEach(o => L.push(o));
-  G.pillars.forEach(o => L.push(o));
-  G.soldiers.forEach(o => { if (o.state === 'normal' || o.state === 'returning') L.push(o); });
+  G.towers.forEach(o => { if (!o.removed) L.push(o); });
+  G.pillars.forEach(o => { if (!o.removed) L.push(o); });
+  G.soldiers.forEach(o => { if ((o.state === 'normal' || o.state === 'returning') && !o.removed) L.push(o); });
   G.golems.forEach(o => { if ((o.state === 'normal' || o.state === 'returning') && !o.removed) L.push(o); });
   L.push(G.castle);
   return L;
@@ -806,7 +946,6 @@ function findInstallTarget() {
 function findTakeTarget() {
   const L = interactables().filter(u => (u.cat === 'castle' || (u.cat === 'golem' && u.team === 'neutral')) ? hasItem(u) : true);
   G.parts.forEach(p => L.push(p));
-  G.corpses.forEach(c => { if (!c.removed && hasItem(c)) L.push(c); });
   liveEnemies().forEach(e => { if (hasItem(e)) L.push(e); });
   return nearestInRange(L);
 }
@@ -829,8 +968,7 @@ function actionLabel() {
   if (!t) return '';
   if (t.cat === 'enemy') return '搶奪';
   if (t.cat === 'part') return '拿起';
-  if (!hasItem(t) && (t.cat === 'tower' || t.cat === 'pillar' || isMobileAlly(t))) return '選單';
-  return '拿起';
+  return '選單';
 }
 function shopHolder() {
   for (const u of ownUnits()) {
@@ -841,18 +979,22 @@ function shopHolder() {
   }
   return null;
 }
+function shopItems() { return SHOP_ALL.filter(s => s[0] !== 'golemKit' || S.golemUnlocked); }
 
 // ───────── 更新 ─────────
 function tickAge(o, k, dur, dt) { if (o[k] < dur) o[k] = Math.min(dur, o[k] + dt); }
+function decCd(u, gdt) { for (const k in u.cd) if (u.cd[k] > 0) u.cd[k] = Math.max(0, u.cd[k] - gdt); }
 function tickUnit(u, gdt) {
   tickAge(u, 'hitAge', u.cat === 'castle' ? 0.3 : 0.2, gdt);
   tickAge(u, 'attackAge', 0.15, gdt);
   if (u.slowT > 0) u.slowT = Math.max(0, u.slowT - gdt);
+  decCd(u, gdt);
 }
 function castleHit(e) {
   G.castleHp -= ENEMY_DEF[e.type].dmg;
   G.castle.hitAge = 0;
   e.gone = true;
+  if (G.steal && G.steal.enemy === e) cancelSteal('leak');
   G.stat.leaks++; G.stat.leaksByWave[e.wave]++;
   const nm = LV.spawns[e.lane].name;
   G.stat.leaksBySpawn[nm] = (G.stat.leaksBySpawn[nm] || 0) + 1;
@@ -864,7 +1006,7 @@ function closePopup() { if (!G.popup) return; G.popup = null; snd('popup_close')
 function startClock(reason) { if (G.clockOn) return; G.clockOn = true; ev('clock_start', { reason }); }
 function unitMobileTick(u, gdt) {
   // 我方移動單位: 排隊中 / 消失中 / 歸隊中 / 正常
-  if (u.state === 'gone') return;
+  if (u.state === 'gone' || u.removed) return;
   if (u.state === 'away') {
     u.awayT -= gdt;
     if (u.awayT <= 0) {
@@ -890,6 +1032,7 @@ function unitMobileTick(u, gdt) {
 }
 // 建築也能因移動類魂件移動(away 也要計時)
 function buildingTick(u, gdt, attacks) {
+  if (u.removed) return;
   if (u.state === 'away') {
     u.awayT -= gdt;
     if (u.awayT <= 0) {
@@ -904,6 +1047,73 @@ function buildingTick(u, gdt, attacks) {
   const st = attacks ? runAttacks(u, 'ally', gdt, 'unit') : false;
   allyBehavior(u, gdt, st);
   chargeHits(u);
+}
+// 聖光軌跡: 神聖之路單位每走 12px 留一點, 每點存在 4 秒, 最多 64 點
+function trailTick(gdt) {
+  for (const u of G.towers.concat(G.pillars, G.soldiers, G.golems.filter(g => g.team === 'ally'))) {
+    if (u.removed || !u.ev.holy || u.state !== 'normal') continue;
+    let tr = u.trailObj;
+    const last = tr && tr.pts[tr.pts.length - 1];
+    if (!tr || (last && Math.hypot(u.x - last[0], u.y - last[1]) > 60)) { tr = u.trailObj = { owner: u, pts: [] }; G.trails.push(tr); }
+    const lp = tr.pts[tr.pts.length - 1];
+    if (!lp || Math.hypot(u.x - lp[0], u.y - lp[1]) >= 12) { tr.pts.push([u.x, u.y, 4]); if (tr.pts.length > 64) tr.pts.shift(); }
+  }
+  for (const tr of G.trails) { tr.pts.forEach(p => { p[2] -= gdt; }); tr.pts = tr.pts.filter(p => p[2] > 0); }
+  G.trails = G.trails.filter(tr => { if (tr.pts.length) return true; if (tr.owner.trailObj === tr) tr.owner.trailObj = null; return false; });
+}
+function onAnyTrail(a) {
+  for (const tr of G.trails) {
+    const pts = tr.pts;
+    if (pts.length === 1 && Math.hypot(a.x - pts[0][0], a.y - pts[0][1]) <= 20) return true;
+    for (let i = 1; i < pts.length; i++) {
+      const p = pts[i - 1], q = pts[i];
+      if (Math.hypot(p[0] - q[0], p[1] - q[1]) > 40) continue;
+      if (segProject(p[0], p[1], q[0], q[1], a.x, a.y).d <= 20) return true;
+    }
+  }
+  return false;
+}
+// 冰霜圈減速、治癒領域(不疊加)、聖光軌跡(不疊加)
+function updateAuras(gdt) {
+  const liveE = liveEnemies(), A = allyAlive();
+  liveE.forEach(e => { e.auraSlow = false; e.healing = false; });
+  allyMobile().forEach(u => { u.auraSlow = false; u.healing = false; u.onTrail = false; });
+  G.frostAlly = []; G.frostEnemy = []; G.healAlly = []; G.healEnemy = [];
+  for (const u of activeTowers().concat(A, [G.castle], [G.player])) {
+    if (u.ev.frostAura) { G.frostAlly.push(u); for (const e of liveE) if (dist(u, e) <= 70) e.auraSlow = true; }
+    if (u.ev.healAura) G.healAlly.push(u);
+  }
+  for (const e of liveE) {
+    if (e.ev.frostAura) { G.frostEnemy.push(e); for (const a of A) if (dist(e, a) <= 70) a.auraSlow = true; }
+    if (e.ev.healAura) G.healEnemy.push(e);
+  }
+  for (const a of A) {
+    a.onTrail = onAnyTrail(a);
+    let amt = 0;
+    if (G.healAlly.some(s => dist(s, a) <= 100)) amt += 6 * gdt;
+    if (a.onTrail) amt += 4 * gdt;
+    if (amt > 0) addHeal(a, amt, false);
+  }
+  for (const e of liveE) {
+    if (G.healEnemy.some(s => dist(s, e) <= 100)) addHeal(e, 6 * gdt, true);
+  }
+}
+function orbTick(gdt) {
+  G.orbs = G.orbs.filter(o => {
+    o.x += o.dx * 60 * gdt; o.y += o.dy * 60 * gdt; o.travel += 60 * gdt;
+    if (o.pulseAge < 0.15) o.pulseAge = Math.min(0.15, o.pulseAge + gdt);
+    o.pulseT += gdt;
+    while (o.pulseT >= 0.5) {
+      o.pulseT -= 0.5;
+      const segs = [];
+      for (const h of liveEnemies()) {
+        if (Math.hypot(h.x - o.x, h.y - o.y) <= 60) { hurt(h, 5, { src: o.src, frost: false }); segs.push([o.x, o.y, h.x, h.y]); }
+      }
+      o.pulseAge = 0;
+      if (segs.length) { G.chains.push({ segs: segs.slice(0, 8), owner: 'ally', age: 0 }); snd('shock_zap'); }
+    }
+    return o.travel < 300 && o.x > -20 && o.x < W + 20 && o.y > 30 && o.y < H + 20;
+  });
 }
 
 function update(dt) {
@@ -932,20 +1142,17 @@ function update(dt) {
     }
   }
   tickAge(P, 'attackAge', 0.15, gdt);
+  decCd(P, gdt);
 
   // 搶奪
   if (G.steal) {
     const s = G.steal, e = s.enemy;
-    if (e.removed || e.dead || e.gone) cancelSteal('dead');
+    if (e.dead) completeSteal('died');
+    else if (e.removed || e.gone) cancelSteal('leak');
     else if (dist(P, e) > e.half + 68) cancelSteal('far');
     else {
       s.t += gdt;
-      if (s.t >= 1.5) {
-        const item = e.slots[s.index];
-        G.hand = item; e.slots[s.index] = null; G.steal = null;
-        G.stat.steals.done++; snd('steal_done'); ev('steal_done', { enemy: e.type, item });
-        tutEv(10);
-      }
+      if (s.t >= 1.5) completeSteal('bar');
     }
   }
 
@@ -965,24 +1172,9 @@ function update(dt) {
       if (rem <= 6 && rem > 0 && !G.warned[G.waveStarted]) { G.warned[G.waveStarted] = true; snd('wave_warning'); }
     }
   }
-  const liveE = liveEnemies();
   G.enemies.forEach(evalEnemy);
-
-  // 冰霜減速範圍(沒有任何攻擊效果的冰霜才畫圈)
-  const frostSrcAlly = [], frostSrcEnemy = [];
-  liveE.forEach(e => { e.auraSlow = false; });
-  allyMobile().forEach(u => { u.auraSlow = false; });
-  for (const u of activeTowers().concat(allyAlive(), [G.castle], [P])) {
-    if (!u.ev.aura) continue;
-    frostSrcAlly.push(u);
-    for (const e of liveE) if (dist(u, e) <= 70) e.auraSlow = true;
-  }
-  for (const e of liveE) {
-    if (!e.ev.aura) continue;
-    frostSrcEnemy.push(e);
-    for (const a of allyAlive()) if (dist(e, a) <= 70) a.auraSlow = true;
-  }
-  G.frostAlly = frostSrcAlly; G.frostEnemy = frostSrcEnemy;
+  const liveE = liveEnemies();
+  updateAuras(gdt);
 
   // 我方
   G.towers.forEach(u => buildingTick(u, gdt, true));
@@ -992,6 +1184,9 @@ function update(dt) {
   runAttacks(P, 'ally', gdt, 'player');
   G.towers = G.towers.filter(u => !u.removed);
   G.pillars = G.pillars.filter(u => !u.removed);
+  G.soldiers = G.soldiers.filter(u => !u.removed);
+  G.golems = G.golems.filter(u => !u.removed);
+  trailTick(gdt);
 
   // 重生隊伍: 一次一隻, 每隻 5 秒
   if (G.rq.length) {
@@ -1041,8 +1236,9 @@ function update(dt) {
 
   // 敵人
   for (const e of liveE) {
+    if (e.dead) continue;
     tickUnit(e, gdt);
-    if (e.stunAge < 1.0) e.stunAge = Math.min(1.0, e.stunAge + gdt);
+    if (e.stunAge < e.stunDur) e.stunAge = Math.min(e.stunDur, e.stunAge + gdt);
     if (e.kb) {
       const k = e.kb; k.t += gdt / 0.2;
       const f = Math.min(1, k.t);
@@ -1050,16 +1246,16 @@ function update(dt) {
       else { e.x = k.x0 + (k.x1 - k.x0) * f; e.y = k.y0 + (k.y1 - k.y0) * f; if (f >= 1) e.s = pathProject(LV.lanes[e.lane], e.x, e.y).s; }
       if (f >= 1) e.kb = null;
       e.moving = false;
-    } else if (e.stunAge < 1.0) {
+    } else if (e.stunAge < e.stunDur) {
       e.moving = false;
     } else {
       const st = runAttacks(e, 'enemy', gdt, 'enemy');
       enemyBehavior(e, gdt, st);
     }
-    if (dist(e, CASTLE_POS) <= 66) castleHit(e);
+    if (!e.dead && dist(e, CASTLE_POS) <= 66) castleHit(e);
   }
 
-  // 投射物
+  // 投射物、雷電球
   G.projs = G.projs.filter(p => {
     const t = p.target;
     if (t && !t.dead && !t.gone && t.state !== 'gone' && !t.removed) p.angle = Math.atan2(t.y - p.y, t.x - p.x);
@@ -1070,21 +1266,24 @@ function update(dt) {
       if (h.dead || h.gone) continue;
       if (dist(p, h) <= h.half + 6) {
         const ice = p.kind === 'ice';
-        hurt(h, p.dmg, { src: p.src, frost: ice });
-        if (ice) slowIt(h);
+        dealHit(h, p.dmg, { src: p.src, frost: ice, shock: p.shock, side: p.owner });
         return false;
       }
     }
     return p.travel < 320;
   });
+  orbTick(gdt);
 
-  // 單次特效 / 金幣 / 屍體 / 地上魂件
-  for (const arr of [G.beams, G.areas, G.sparks, G.names, G.breaks]) arr.forEach(o => { o.age += gdt; });
+  // 單次特效 / 金幣 / 倒下消散 / 地上魂件
+  for (const arr of [G.beams, G.areas, G.sparks, G.names, G.breaks, G.chains, G.hbeams, G.blinks]) arr.forEach(o => { o.age += gdt; });
   G.beams = G.beams.filter(o => o.age < 0.15);
   G.areas = G.areas.filter(o => o.age < 0.3);
   G.sparks = G.sparks.filter(o => o.age < 0.25);
   G.names = G.names.filter(o => o.age < 1.5);
   G.breaks = G.breaks.filter(o => o.age < 0.5);
+  G.chains = G.chains.filter(o => o.age < 0.2);
+  G.hbeams = G.hbeams.filter(o => o.age < 0.3);
+  G.blinks = G.blinks.filter(o => o.age < 0.3);
   for (const p of G.parts) {
     if (p.spawnAge < 0.6) p.spawnAge = Math.min(0.6, p.spawnAge + gdt);
     if (!p.permanent) {
@@ -1108,14 +1307,14 @@ function update(dt) {
     return true;
   });
   G.corpses.forEach(c => { c.life -= gdt; });
-  G.corpses = G.corpses.filter(c => { if (c.life <= 0) { c.removed = true; return false; } return true; });
+  G.corpses = G.corpses.filter(c => c.life > 0);
 
   cleanupEnemies();
   G.parts = G.parts.filter(p => !p.removed);
 
   // 共鳴配組的組合名稱(同一幀多個只播一次: 有首次就只播 combo_new)
   for (const u of activeTowers().concat(allyAlive(), [G.castle], [P])) {
-    for (let ci = 0; ci < 5; ci++) {
+    for (let ci = 0; ci < NCOMBO; ci++) {
       let n = 0; for (const c of u.ev.matched) if (c === ci) n++;
       if (n > u.prevCombos[ci]) {
         const r = popName(u, ci);
@@ -1142,23 +1341,18 @@ function update(dt) {
   flushSnd();
 }
 
-// ───────── 新手教學 ─────────
+// ───────── 新手教學(13 階段) ─────────
+const LATE_PRE = { 6: () => pre(5), 9: () => pre(5), 11: () => G.level >= 3, 13: () => pre(12) };
 function tutEv(k) {
   const T = S.tut;
   if (T.cur === k) T.pend[k] = true;
-  else if ((k === 9 || k === 14) && !T.done[k] && pre(k === 9 ? 5 : 13)) T.late[k] = true; // 替換彈窗(階段 11)期間合成, 事後補記完成
+  else if (!T.done[k] && LATE_PRE[k] && LATE_PRE[k]()) T.late[k] = true; // 別的階段期間先做掉, 事後補記完成
 }
 function pre(k) { const T = S.tut; return !!T.done[k] || (k === 1 && G.level > 1); }
 function enemyWithItem() { return liveEnemies().filter(hasItem); }
-function drumTargets() {
-  const L = [];
-  G.corpses.forEach(c => { if (!c.removed && c.kind === 'drummer' && c.slots.indexOf('drum') >= 0) L.push(c); });
-  liveEnemies().forEach(e => { if (e.type === 'drummer' && e.slots.indexOf('drum') >= 0) L.push(e); });
-  return L;
-}
+function chargeTargets() { return liveEnemies().filter(e => e.type === 'drummer' && e.slots.indexOf('charge') >= 0); }
 function handEmpty() { return G.hand === null && !G.flag; }
-function corpsesWithItem() { return G.corpses.filter(c => !c.removed && hasItem(c)); }
-function fuseCandidates() { // 手上基本魂件 + 某單位身上有能湊成組合的基本魂件
+function fuseCandidates() { // 手上基本魂件 + 某單位身上有能和它湊成組合的基本魂件
   const h = G.hand;
   if (!h || !BASIC[h]) return [];
   return ownUnits().filter(u => {
@@ -1166,32 +1360,28 @@ function fuseCandidates() { // 手上基本魂件 + 某單位身上有能湊成�
     if ((u.cat === 'soldier' || u.cat === 'golem') && u.state !== 'normal' && u.state !== 'returning') return false;
     if (u.state === 'away') return false;
     const n = u.slots.length;
-    return u.slots.some((x, i) => {
-      if (!x || !BASIC[x]) return false;
-      const pairs = RECIPES.some(r => (r[0] === h && r[1] === x) || (r[1] === h && r[0] === x));
-      if (!pairs) return false;
+    return u.slots.some(x => {
+      if (!x || !BASIC[x] || !pairFuses(h, x)) return false;
       return u.slots.some(s => !s) || n >= 2;
     });
   });
 }
 function tutCond(k) {
   const n = G.level;
-  const sh = shopHolder();
   switch (k) {
     case 1: return n === 1;
-    case 2: return pre(1) && !!sh;
+    case 2: return pre(1) && !!shopHolder();
     case 3: return pre(2) && (!!KITS[G.hand] || !!G.flag);
     case 4: return pre(3) && handEmpty();
     case 5: return pre(4) && isSoul(G.hand) && G.pillars.length > 0;
     case 6: return pre(5) && G.coins.length > 0;
-    case 7: return pre(6) && corpsesWithItem().length > 0 && handEmpty();
+    case 7: return pre(6) && enemyWithItem().length > 0 && handEmpty();
     case 8: return pre(7) && G.pillars.some(p => p.state === 'normal' && p.slots[0] && ATTACK[p.slots[0]]) && liveEnemies().length > 0;
     case 9: return pre(5) && !!G.hand && !!BASIC[G.hand] && fuseCandidates().length > 0;
-    case 10: return n >= 2 && enemyWithItem().length > 0 && handEmpty();
-    case 11: return !!G.popup && G.popup.type === 'soul' && G.popup.mode === 'replace';
-    case 12: return n >= 3 && G.golems.some(g => g.team === 'neutral' && !g.removed);
-    case 13: return n >= 4 && drumTargets().length > 0 && handEmpty();
-    case 14: return pre(13) && G.hand === 'drum' && allyMobile().some(u => u.state === 'normal' || u.state === 'returning');
+    case 10: return !!G.popup && G.popup.type === 'soul' && G.popup.mode === 'replace';
+    case 11: return n >= 3 && G.golems.some(g => g.team === 'neutral' && !g.removed);
+    case 12: return n >= 4 && chargeTargets().length > 0 && handEmpty();
+    case 13: return pre(12) && G.hand === 'charge' && allyMobile().some(u => !u.removed && (u.state === 'normal' || u.state === 'returning'));
   }
   return false;
 }
@@ -1199,19 +1389,19 @@ function tutChoose() {
   const T = S.tut, p = G.popup;
   if (p) {
     if (p.type === 'shop') return (!T.done[2] && tutCond(2)) ? 2 : 0;
-    if (p.mode === 'replace') return !T.done[11] ? 11 : 0;
+    if (p.mode === 'replace') return !T.done[10] ? 10 : 0;
     if (!T.done[4] && tutCond(4)) return 4;
-    if (!T.done[7] && p.target && p.target.cat === 'corpse' && pre(6) && handEmpty()) return 7;
     return 0;
   }
-  for (let k = 1; k <= 14; k++) if (!T.done[k] && tutCond(k)) return k;
+  for (let k = 1; k <= 13; k++) if (!T.done[k] && tutCond(k)) return k;
   return 0;
 }
 function tutState(k) { // 狀態型完成條件
   switch (k) {
     case 4: return isSoul(G.hand);
     case 5: return G.pillars.some(hasItem);
-    case 13: return G.hand === 'drum';
+    case 12: return G.hand === 'charge' || allyMobile().some(u => u.slots.indexOf('charge') >= 0);
+    case 13: return ownUnits().some(u => !u.removed && u.slots.indexOf('charge') >= 0);
   }
   return false;
 }
@@ -1221,10 +1411,10 @@ const TUT_TEXT = {
   3: ['到路旁空地按 Z 蓋下', ['z']], '3f': ['到空地按 Z 插旗', ['z']],
   4: ['空手靠近弩塔按 Z', ['z']], '4p': ['選魂件, 按 Z 拿', ['left', 'right', 'z']],
   5: ['靠近魂柱按 Z 裝上', ['z']], 6: ['走近金幣就會撿起', []],
-  7: ['空手靠近屍體按 Z', ['z']], '7p': ['選魂件, 按 Z 拿', ['left', 'right', 'z']],
+  7: ['空手靠近活鬼按 Z 搶', ['z']],
   8: ['站進魂柱圈, 你也會攻擊', []], 9: ['裝在一起, 合成新招', ['z']],
-  10: ['空手靠近活鬼按 Z 搶', ['z']], 11: ['← → 選要換的格, Z', ['left', 'right', 'z']],
-  12: ['把鬼的進攻主堡裝給它', ['z']], 13: ['拿起鼓鬼的行軍魂件', ['z']], 14: ['裝給步兵, 合成衝鋒', ['z']]
+  10: ['← → 選要換的格, Z', ['left', 'right', 'z']],
+  11: ['把鬼的進攻主堡裝給它', ['z']], 12: ['搶下衝鬼的衝鋒', ['z']], 13: ['裝給步兵, 沿路衝鋒', ['z']]
 };
 function tipFor(o) {
   switch (o.cat) {
@@ -1235,7 +1425,6 @@ function tipFor(o) {
     case 'soldier': return { x: o.x, up: o.y - 50, down: o.y + 16 + 4 };
     case 'golem': return { x: o.x, up: o.y - 62, down: o.team === 'neutral' ? o.y + 28 + 22 + 4 : o.y + 28 + 4 };
     case 'enemy': return { x: o.x, up: o.y - o.half - 34, down: o.y + o.half + 4 };
-    case 'corpse': return { x: o.x, up: o.y - o.half - 26, down: o.y + o.half + 4 };
     case 'coin': return { x: o.x, up: o.y - 12, down: o.y + 8 + 4 };
   }
   return null;
@@ -1266,8 +1455,7 @@ function tutView(k) {
   if (p) {
     if (k === 2) return popupView(k, TUT_TEXT['2p']);
     if (k === 4) return popupView(k, TUT_TEXT['4p']);
-    if (k === 7) return popupView(k, TUT_TEXT['7p']);
-    if (k === 11) return popupView(k, TUT_TEXT[11]);
+    if (k === 10) return popupView(k, TUT_TEXT[10]);
     return null;
   }
   switch (k) {
@@ -1277,20 +1465,19 @@ function tutView(k) {
     case 4: {
       let o = near(G.towers.filter(t => hasItem(t) && !t.removed));
       if (!o) {
-        const L = ownUnits().filter(u => hasItem(u) && !u.removed && u.cat !== 'castle' && u.state !== 'gone' && u.state !== 'away').concat(corpsesWithItem());
+        const L = ownUnits().filter(u => hasItem(u) && !u.removed && u.cat !== 'castle' && u.state !== 'gone' && u.state !== 'away');
         o = near(L);
       }
       return mkView(k, TUT_TEXT[4], o);
     }
     case 5: return mkView(k, TUT_TEXT[5], near(G.pillars));
     case 6: return mkView(k, TUT_TEXT[6], near(G.coins.map(c => ({ cat: 'coin', x: c.x, y: c.y, half: 8 }))));
-    case 7: return mkView(k, TUT_TEXT[7], near(corpsesWithItem()));
+    case 7: return mkView(k, TUT_TEXT[7], near(enemyWithItem()));
     case 8: return mkView(k, TUT_TEXT[8], near(G.pillars.filter(q => q.state === 'normal' && q.slots[0] && ATTACK[q.slots[0]])));
     case 9: return mkView(k, TUT_TEXT[9], near(fuseCandidates()));
-    case 10: return mkView(k, TUT_TEXT[10], near(enemyWithItem()));
-    case 12: return mkView(k, TUT_TEXT[12], near(G.golems.filter(g => g.team === 'neutral' && !g.removed)));
-    case 13: return mkView(k, TUT_TEXT[13], near(drumTargets()));
-    case 14: return mkView(k, TUT_TEXT[14], near(allyMobile().filter(u => u.state === 'normal' || u.state === 'returning')));
+    case 11: return mkView(k, TUT_TEXT[11], near(G.golems.filter(g => g.team === 'neutral' && !g.removed)));
+    case 12: return mkView(k, TUT_TEXT[12], near(chargeTargets()));
+    case 13: return mkView(k, TUT_TEXT[13], near(allyMobile().filter(u => !u.removed && (u.state === 'normal' || u.state === 'returning'))));
   }
   return null;
 }
@@ -1306,10 +1493,10 @@ function completeStage(k) {
 function updateTutorial(dt) {
   const T = S.tut;
   if (T.fx) { T.fx.t += dt; if (T.fx.t >= 0.6) T.fx = null; return; }
-  for (const k of [9, 14]) {
+  for (const k of [6, 9, 11, 13]) {
     if (T.late[k]) {
       T.late[k] = false;
-      if (!T.done[k]) { T.done[k] = true; T.doneSt[k] = r1(RT); ev('tutorial_done', { stage: k }); snd('tutorial_done'); }
+      if (!T.done[k]) { T.done[k] = true; T.doneSt[k] = r1(RT); if (T.shownSt[k] === undefined) T.shownSt[k] = r1(RT); ev('tutorial_done', { stage: k }); snd('tutorial_done'); }
     }
   }
   if (T.cur && (T.pend[T.cur] || tutState(T.cur))) { completeStage(T.cur); return; }
@@ -1327,38 +1514,48 @@ function cancelSteal(reason) {
   G.stat.steals.canceled++; snd('steal_cancel');
   ev('steal_cancel', { enemy: s.enemy.type, item: s.enemy.slots[s.index], reason });
 }
+function completeSteal(via) {
+  const s = G.steal; if (!s) return;
+  const e = s.enemy, item = e.slots[s.index];
+  G.hand = item; e.slots[s.index] = null; G.steal = null;
+  G.stat.steals.done++; if (via === 'died') G.stat.steals.diedDone++;
+  snd('steal_done');
+  ev('steal_done', { enemy: e.type, item, via: via === 'died' ? 'died' : 'bar' });
+  tutEv(7);
+}
 function doInstall(t, mode, item, swappedOut) {
   ev('install', { item, to: unitKind(t), mode, swappedOut: swappedOut || null });
   G.stat.installs[mode]++;
-  if (item === 'march' && t.cat === 'golem' && t.team === 'neutral') tutEv(12);
-  if (mode === 'replace') tutEv(11);
+  if (item === 'march' && t.cat === 'golem' && t.team === 'neutral') tutEv(11);
+  if (item === 'charge') tutEv(13); // 替換彈窗(階段 10)期間裝上衝鋒, 事後補記階段 13 完成
+  if (mode === 'replace') tutEv(10);
   afterSlotsChange(t);
 }
 function menuCells(t) {
   const cells = t.slots.map(k => ({ type: 'slot', item: k || null }));
-  if (t.cat === 'tower' || t.cat === 'pillar') cells.push({ type: 'demolish', refund: Math.floor(t.price * 0.6) });
+  if (t.cat === 'tower' || t.cat === 'pillar') cells.push({ type: 'demolish', refund: settleRefund(t, Math.floor(t.price * 0.6), false).refund });
   else if (isMobileAlly(t)) cells.push({ type: 'rally' });
   return cells;
 }
 function demolish(t) {
-  const refund = Math.floor(t.price * 0.6);
-  G.gold += refund; G.stat.goldRefund += refund;
-  const items = t.slots.filter(Boolean), m = items.length;
+  const r = settleRefund(t, Math.floor(t.price * 0.6), true);
+  G.gold += r.refund; G.stat.goldRefund += r.refund; G.stat.bundledBack += r.back;
+  const items = r.rest, m = items.length;
   items.forEach((it, k) => G.parts.push(mkPart(it, t.x - 16 * (m - 1) + 32 * k, t.y + 30, 0)));
   t.removed = true;
   G.towers = G.towers.filter(u => !u.removed);
   G.pillars = G.pillars.filter(u => !u.removed);
   G.stat.demolishes++;
-  ev('demolish', { unit: unitKind(t), refund, x: Math.round(t.x), y: Math.round(t.y), parts: items });
+  ev('demolish', { unit: unitKind(t), refund: r.refund, bundledBack: r.back, x: Math.round(t.x), y: Math.round(t.y), parts: items.slice() });
   snd('demolish');
 }
 function popupZ() {
   const p = G.popup;
   if (p.type === 'shop') {
-    const it = SHOP[p.index], kit = it[0], price = it[2];
+    const items = shopItems();
+    const it = items[p.index], kit = it[0], price = it[2];
     const isUnit = kit === 'soldierKit' || kit === 'golemKit';
     const fail = msg => { p.msg = msg; p.shake = 0; snd('ui_invalid'); };
-    if (kit === 'golemKit' && !S.golemUnlocked) { fail('尚未解鎖'); return; }
     if (kit === 'pillarKit' && G.pillars.length + (G.hand === 'pillarKit' ? 1 : 0) >= LV.cap) { fail('已達上限'); return; }
     if (G.gold < price) { fail('金幣不足'); return; }
     if (!isUnit && (G.hand || G.flag)) { fail('手上要空著'); return; }
@@ -1381,7 +1578,6 @@ function popupZ() {
       if (t.cat === 'pillar') t.changeAge = 0;
       ev('take', { item: cell, from: unitKind(t) });
       snd('take_part');
-      if (t.cat === 'corpse') tutEv(7);
       closePopup();
     } else if (c.type === 'demolish') {
       demolish(t); closePopup();
@@ -1401,14 +1597,16 @@ function tryPlace() {
   const info = placeInfo(G.hand);
   if (!info.valid) { snd('ui_invalid'); return; }
   const k = G.hand;
-  if (k === 'crossbowKit') G.towers.push(mkTower(info.x, info.y));
+  let bundled = [];
+  if (k === 'crossbowKit') { const u = mkTower(info.x, info.y); u.slots[0] = 'ranged'; bundled = ['ranged']; G.towers.push(u); }
   else { G.pillars.push(mkPillar(info.x, info.y)); G.stat.pillarsMax = Math.max(G.stat.pillarsMax, G.pillars.length); }
-  ev('place', { kind: info.kind, x: Math.round(info.x), y: Math.round(info.y) });
+  ev('place', { kind: info.kind, x: Math.round(info.x), y: Math.round(info.y), bundled });
   G.hand = null;
   snd('place_unit'); tutEv(3);
 }
 function plantFlag() {
   const P = G.player, fi = flagInfo();
+  if (G.flag.unit && G.flag.unit.removed) { G.flag = null; return; } // 那隻兵已走回主堡退款: 旗幟直接消失
   if (!fi.valid) { snd('ui_invalid'); return; }
   const f = G.flag; G.flag = null;
   const fo = { x: P.x, y: P.y + 16, plantAge: 0 };
@@ -1477,7 +1675,7 @@ function zPress() {
     ev('steal_start', { enemy: t.type, item: t.slots[index] });
     return;
   }
-  const cells = (t.cat === 'corpse') ? t.slots.map(k => ({ type: 'slot', item: k || null })) : menuCells(t);
+  const cells = menuCells(t);
   let idx = cells.findIndex(c => c.type === 'slot' && c.item);
   if (idx < 0) idx = cells.length - 1;
   openPopup({ type: 'soul', mode: 'menu', target: t, cells, index: idx, shake: 0.25, msg: '', x: 0, y: 0 });
@@ -1488,9 +1686,7 @@ function popupTitle(t) {
   if (t.cat === 'pillar') return '魂柱';
   if (t.cat === 'soldier') return '步兵';
   if (t.cat === 'golem') return t.team === 'neutral' ? '中立石魔像' : '石魔像';
-  if (t.cat === 'castle') return '主堡';
-  if (t.cat === 'corpse') return ENEMY_DEF[t.kind].name + '的屍體';
-  return ENEMY_DEF[t.type].name;
+  return '主堡';
 }
 function attachTop(t) { // 目標最上方附屬物的頂端(槽列頂)
   switch (t.cat) {
@@ -1499,7 +1695,6 @@ function attachTop(t) { // 目標最上方附屬物的頂端(槽列頂)
     case 'soldier': return t.y - 36 - 10;
     case 'golem': return t.y - 48 - 10;
     case 'castle': return 348;
-    case 'corpse': return t.y - t.half - 12 - 10;
     default: return t.y - t.half - 20 - 10;
   }
 }
@@ -1515,18 +1710,18 @@ function popupDesc(p) {
   if (c.type === 'slot') {
     if (!c.item) return null;
     const d = DESC[c.item];
-    return { name: d[0], text: d[1], materials: d[2] ? d[2].slice() : [] };
+    return { name: d[0], text: d[1], materials: d[2] ? d[2].slice() : [], alt: d[3] || null };
   }
-  if (c.type === 'demolish') return { name: '拆除', text: '拆掉, 退還 ' + c.refund + ' 金', materials: [] };
-  return { name: '重設集結點', text: '拿旗插到新位置駐守', materials: [] };
+  if (c.type === 'demolish') return { name: '拆除', text: '拆掉, 退還 ' + c.refund + ' 金', materials: [], alt: null };
+  return { name: '重設集結點', text: '拿旗插到新位置駐守', materials: [], alt: null };
 }
 function onKey(k) {
+  if (k === 'M') { toggleMute(); return; } // 任何畫面都能切換靜音
   if (G.screen === 'title') {
     if (k === 'L' || k === 'R') {
       let c = G.cursor + (k === 'R' ? 1 : -1);
       if (c >= 0 && c <= 4 && S.unlocked[c]) { G.cursor = c; snd('ui_move'); }
     } else if (k === 'Z') { snd('ui_confirm'); startLevel(G.cursor + 1); }
-    else if (k === 'X') toggleMute();
     return;
   }
   if (G.screen === 'result') {
@@ -1551,7 +1746,7 @@ function onKey(k) {
   }
   if (k === 'Z') { if (zNeedRelease) return; zPress(); }
   else if (k === 'X') {
-    if (G.popup) closePopup(); else toggleMute();
+    if (G.popup) closePopup();
   } else if (k === 'S') {
     if (G.steal || G.popup) return;
     const h = shopHolder();
@@ -1559,13 +1754,13 @@ function onKey(k) {
   } else if (k === 'L' || k === 'R') {
     const p = G.popup;
     if (!p) return;
-    const n = p.type === 'shop' ? 4 : p.cells.length;
+    const n = p.type === 'shop' ? shopItems().length : p.cells.length;
     p.index = (p.index + (k === 'R' ? 1 : n - 1)) % n;
     if (p.type === 'shop') p.msg = '';
     snd('ui_move');
   }
 }
-const KEYMAP = { ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D', KeyZ: 'Z', KeyX: 'X', Space: 'S' };
+const KEYMAP = { ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D', KeyZ: 'Z', KeyX: 'X', Space: 'S', KeyM: 'M' };
 window.addEventListener('keydown', e => {
   const k = KEYMAP[e.code];
   if (!k) return;
@@ -1596,7 +1791,7 @@ if (document.addEventListener) {
 
 // ───────── 繪製 ─────────
 function slotCenterX(L, i, x) { return x - L * 10 + 10 + 20 * i; }
-function attackKinds(u) { const k = u.slots[0]; return (k && ATTACK[k]) ? [k] : []; }
+function resonantKinds(u) { const k = u.slots[0]; return (k && RESONANT[k]) ? [k] : []; }
 function render() {
   ctx.clearRect(0, 0, W, H);
   if (G.screen === 'title') {
@@ -1608,18 +1803,28 @@ function render() {
   }
   drawScene();
 }
-function visibleMobile(u) { return u.state === 'normal' || u.state === 'returning'; }
+function visibleMobile(u) { return (u.state === 'normal' || u.state === 'returning') && !u.removed; }
 function entityDrawList() {
   const L = [];
   const T = G.target;
   L.push({ y: G.castle.y, f: () => Art.drawCastle(ctx, { x: 1180, y: 434, hitAge: G.castle.hitAge, hitDuration: 0.3, attackAge: G.castle.attackAge, attackDuration: 0.15, targeted: T === G.castle }) });
-  G.towers.forEach(u => { if (u.state !== 'normal') return; L.push({ y: u.y, f: () => Art.drawCrossbow(ctx, { x: u.x, y: u.y, attackAge: u.attackAge, attackDuration: 0.15, moving: u.moving, charging: u.charging, resonating: u.ev.resonating, targeted: T === u }) }); });
-  G.pillars.forEach(u => { if (u.state !== 'normal') return; L.push({ y: u.y, f: () => Art.drawPillar(ctx, { x: u.x, y: u.y, kinds: attackKinds(u), moving: u.moving, charging: u.charging, targeted: T === u }) }); });
+  G.towers.forEach(u => {
+    if (u.state !== 'normal') return;
+    const ro = u.ev.rooted;
+    L.push({ y: u.y, f: () => Art.drawCrossbow(ctx, { x: u.x, y: u.y, attackAge: u.attackAge, attackDuration: 0.15, moving: !ro && u.moving, charging: !ro && u.charging, rooted: ro, resonating: u.ev.resonating, targeted: T === u }) });
+  });
+  G.pillars.forEach(u => {
+    if (u.state !== 'normal') return;
+    const ro = u.ev.rooted;
+    L.push({ y: u.y, f: () => Art.drawPillar(ctx, { x: u.x, y: u.y, kinds: resonantKinds(u), moving: !ro && u.moving, charging: !ro && u.charging, rooted: ro, targeted: T === u }) });
+  });
   const mob = (u) => {
     const ret = u.state === 'returning';
+    const ro = !ret && u.ev.rooted;
     return {
       x: u.x, y: u.y, hp: ret ? u.maxHp : u.hp, maxHp: u.maxHp, hitAge: u.hitAge, hitDuration: 0.2, attackAge: u.attackAge, attackDuration: 0.15,
-      moving: u.moving, charging: ret ? false : u.charging, resonating: ret ? false : u.ev.resonating, returning: ret, targeted: T === u
+      moving: !ro && u.moving, charging: !ro && !ret && u.charging, rooted: ro, healing: !ret && u.healing && u.hp < u.maxHp,
+      resonating: ret ? false : u.ev.resonating, returning: ret, targeted: T === u
     };
   };
   G.soldiers.forEach(u => { if (visibleMobile(u)) L.push({ y: u.y, f: () => Art.drawSoldier(ctx, mob(u)) }); });
@@ -1628,7 +1833,7 @@ function entityDrawList() {
     L.push({
       y: u.y, f: () => {
         const s = mob(u); s.team = u.team;
-        if (u.team === 'neutral') { s.hp = s.maxHp; s.charging = false; s.resonating = false; s.returning = false; }
+        if (u.team === 'neutral') { s.hp = s.maxHp; s.charging = false; s.rooted = false; s.healing = false; s.resonating = false; s.returning = false; }
         Art.drawGolem(ctx, s);
       }
     });
@@ -1636,7 +1841,8 @@ function entityDrawList() {
   G.enemies.forEach(e => L.push({
     y: e.y, f: () => Art.drawEnemy(ctx, {
       type: e.type, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, hitAge: e.hitAge, hitDuration: 0.2, attackAge: e.attackAge, attackDuration: 0.15,
-      moving: e.ev.singles.march > 0 || e.moving, slowed: e.slowT > 0 || e.auraSlow || stolenBy(e), stunAge: e.stunAge, stunDuration: 1.0, targeted: T === e
+      moving: e.ev.singles.march > 0 || e.moving, slowed: e.slowT > 0 || e.auraSlow || stolenBy(e), stunAge: e.stunAge, stunDuration: e.stunDur,
+      healing: !!e.healing && e.hp < e.maxHp, targeted: T === e
     })
   }));
   const P = G.player;
@@ -1663,10 +1869,13 @@ function drawTut(afterPopup) {
 }
 function drawScene() {
   const P = G.player, T = G.target;
+  const playing = G.screen === 'play';
   Art.drawBackground(ctx, { paths: LV.paths.map(p => p.map(q => [q[0], q[1]])) });
   const sh = shopHolder();
-  if (sh) Art.drawShopZone(ctx, { x: sh.x, y: sh.y, radius: 110, active: dist(P, sh) <= 110 });
-  G.pillars.forEach(p => { if (p.state === 'normal') Art.drawPillarRange(ctx, { x: p.x, y: p.y, radius: 150, kinds: attackKinds(p), changeAge: p.changeAge, changeDuration: 0.5 }); });
+  const dSh = sh ? dist(P, sh) : 1e9;
+  if (playing && sh && dSh <= 170) Art.drawShopZone(ctx, { x: sh.x, y: sh.y, radius: 110, active: dSh <= 110 });
+  G.trails.forEach(tr => { if (tr.pts.length >= 2) Art.drawHolyTrail(ctx, { points: tr.pts.map(p => [p[0], p[1], p[2]]), maxLife: 4 }); });
+  G.pillars.forEach(p => { if (p.state === 'normal') Art.drawPillarRange(ctx, { x: p.x, y: p.y, radius: 150, kinds: resonantKinds(p), changeAge: p.changeAge, changeDuration: 0.5 }); });
   // 共鳴線(接收者含玩家)
   for (const r of receivers()) {
     r.ev.virt.forEach(v => {
@@ -1676,9 +1885,11 @@ function drawScene() {
   }
   (G.frostAlly || []).forEach(u => Art.drawFrostAura(ctx, { x: u.x, y: u.y, radius: 70, owner: 'ally' }));
   (G.frostEnemy || []).forEach(u => Art.drawFrostAura(ctx, { x: u.x, y: u.y, radius: 70, owner: 'enemy' }));
+  (G.healAlly || []).forEach(u => Art.drawHealAura(ctx, { x: u.x, y: u.y, radius: 100, owner: 'ally' }));
+  (G.healEnemy || []).forEach(u => Art.drawHealAura(ctx, { x: u.x, y: u.y, radius: 100, owner: 'enemy' }));
   G.flags.forEach(f => Art.drawRallyFlag(ctx, { x: f.x, y: f.y, plantAge: f.plantAge, plantDuration: 0.3 }));
   G.coins.forEach(c => Art.drawCoin(ctx, { x: c.x, y: c.y }));
-  G.corpses.forEach(c => Art.drawCorpse(ctx, { kind: c.kind, x: c.x, y: c.y, life: c.life, maxLife: 15, targeted: T === c }));
+  G.corpses.forEach(c => Art.drawCorpse(ctx, { kind: c.kind, x: c.x, y: c.y, life: c.life, maxLife: 0.6 }));
   G.parts.forEach(p => Art.drawGroundPart(ctx, { item: p.item, x: p.x, y: p.y, spawnAge: p.spawnAge, spawnDuration: 0.6, life: p.permanent ? 10 : p.life, maxLife: 10, permanent: p.permanent, targeted: T === p }));
   if (G.flag) { const i = flagInfo(); Art.drawPlacePreview(ctx, { kind: 'flag', x: i.x, y: i.y, valid: i.valid }); }
   else if (KITS[G.hand]) { const i = placeInfo(G.hand); Art.drawPlacePreview(ctx, { kind: i.kind, x: i.x, y: i.y, valid: i.valid }); }
@@ -1690,20 +1901,24 @@ function drawScene() {
   G.soldiers.forEach(u => { if (visibleMobile(u)) sl(u, u.x, u.y - 36); });
   G.golems.forEach(u => { if (!visibleMobile(u)) return; if (u.team === 'ally') sl(u, u.x, u.y - 48); else Art.drawSoulSlots(ctx, { x: u.x, y: u.y - 48, slots: u.slots.slice(), virtual: [] }); });
   sl(G.castle, 1180, 358);
-  G.corpses.forEach(c => Art.drawSoulSlots(ctx, { x: c.x, y: c.y - c.half - 12, slots: c.slots.slice(), virtual: [] }));
-  G.enemies.forEach(e => { if (T === e || stolenBy(e)) Art.drawSoulSlots(ctx, { x: e.x, y: e.y - e.half - 20, slots: e.slots.slice(), virtual: [] }); });
+  G.enemies.forEach(e => { if (!e.dead && (T === e || stolenBy(e))) Art.drawSoulSlots(ctx, { x: e.x, y: e.y - e.half - 20, slots: e.slots.slice(), virtual: [] }); });
   if (G.rq.length) Art.drawRespawnQueue(ctx, { x: 1060, y: 380, kind: G.rq[0].cat === 'soldier' ? 'soldier' : 'golem', progress: Math.min(1, G.rqT / 5), count: G.rq.length });
+  if (playing && !G.popup && sh && dSh <= 110) Art.drawShopHint(ctx, { x: sh.x, y: Math.min(708, sh.y + sh.half + 18) });
   // 投射物與特效
   G.projs.forEach(p => Art.drawProjectile(ctx, { x: p.x, y: p.y, angle: p.angle, kind: p.kind, owner: p.owner }));
+  G.orbs.forEach(o => Art.drawThunderOrb(ctx, { x: o.x, y: o.y, pulseAge: o.pulseAge, pulseDuration: 0.15 }));
   G.beams.forEach(b => Art.drawPierceBeam(ctx, { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2, frost: b.frost, age: b.age, duration: 0.15 }));
+  G.hbeams.forEach(b => Art.drawHealBeam(ctx, { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2, age: b.age, duration: 0.3 }));
   G.areas.forEach(a => Art.drawAreaHit(ctx, { kind: a.kind, x: a.x, y: a.y, radius: a.radius, angle: a.angle, frost: a.frost, age: a.age, duration: 0.3 }));
+  G.chains.forEach(c => Art.drawShockChain(ctx, { segments: c.segs.map(s => s.slice()), owner: c.owner, age: c.age, duration: 0.2 }));
   G.sparks.forEach(s => Art.drawHitSpark(ctx, { x: s.x, y: s.y, frost: s.frost, age: s.age, duration: 0.25 }));
+  G.blinks.forEach(b => Art.drawBlink(ctx, { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2, age: b.age, duration: 0.3 }));
   G.breaks.forEach(b => Art.drawUnitBreak(ctx, { kind: b.kind, x: b.x, y: b.y, age: b.age, duration: 0.5 }));
   if (G.steal) {
     const e = G.steal.enemy, L = e.slots.length;
     Art.drawStealLink(ctx, { x1: P.x, y1: P.y, x2: slotCenterX(L, G.steal.index, e.x), y2: e.y - e.half - 20, progress: Math.min(1, G.steal.t / 1.5) });
   }
-  G.names.forEach(n => { if (n.unit.state !== 'gone' && n.unit.state !== 'away') Art.drawComboName(ctx, { x: n.unit.x, y: n.unit.y - n.unit.half - 44, name: n.name, isNew: n.isNew, age: n.age, duration: 1.5 }); });
+  G.names.forEach(n => { if (n.unit.state !== 'gone' && n.unit.state !== 'away' && !n.unit.removed) Art.drawComboName(ctx, { x: n.unit.x, y: n.unit.y - n.unit.half - 44, name: n.name, isNew: n.isNew, age: n.age, duration: 1.5 }); });
   // 預警
   if (G.clockOn && G.waveStarted < LV.waves.length) {
     const rem = LV.t1 + G.waveStarted * LV.gap - G.clock;
@@ -1713,7 +1928,7 @@ function drawScene() {
       LV.spawns.forEach((s, i) => { if (used[i]) Art.drawSpawnWarning(ctx, { x: s.x, y: s.y, angle: s.ang, remaining: rem, total: 6 }); });
     }
   }
-  if (G.screen === 'play' && !G.popup) {
+  if (playing && !G.popup) {
     const lb = actionLabel();
     if (lb) Art.drawActionHint(ctx, { x: P.x, y: P.y + 30, label: lb });
   }
@@ -1740,12 +1955,11 @@ function drawScene() {
 function drawPopup() {
   const p = G.popup;
   if (p.type === 'shop') {
-    const items = SHOP.map((s, i) => {
+    const items = shopItems().map(s => {
       const isP = s[0] === 'pillarKit';
       const count = G.pillars.length + (G.hand === 'pillarKit' ? 1 : 0);
       let state = G.gold < s[2] ? 'poor' : 'ok';
-      if (s[0] === 'golemKit' && !S.golemUnlocked) state = 'locked';
-      else if (isP && count >= LV.cap) state = 'max';
+      if (isP && count >= LV.cap) state = 'max';
       return { item: s[0], name: s[1], price: s[2], state, count: isP ? count : null, cap: isP ? LV.cap : null };
     });
     Art.drawShopPopup(ctx, { items, cursorIndex: p.index, message: p.msg, shakeAge: p.shake, shakeDuration: 0.25 });

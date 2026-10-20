@@ -15,6 +15,10 @@
 | RD-80 | 80 CC0 RPG SFX | https://opengameart.org/content/80-cc0-rpg-sfx | rubberduck | CC0 |
 | EG-HORN | War Horns | https://opengameart.org/content/war-horns | Eldritch Grim | CC0(作者表示署名可有可無) |
 | BSB-TOM | Bass Tom #1(BigSoundBank 編號 2338) | https://bigsoundbank.com/bass-tom-1-s2338.html | Joseph Sardin (bigsoundbank.com) | CC0 |
+| FX-EL | Electricity Game Sound Pack | https://opengameart.org/node/150369 | faxcorp | CC0 |
+| SM-CURE | Cure Magic | https://opengameart.org/content/cure-magic | Someoneman | CC0 |
+| BSB-STR | Electric strike #1(BigSoundBank 編號 3442) | https://bigsoundbank.com/electric-strike-1-s3442.html | Joseph Sardin (bigsoundbank.com) | CC0 |
+| BSB-THU | Thunder #2(BigSoundBank 編號 3113) | https://bigsoundbank.com/thunder-2-s3113.html | Joseph Sardin & Axeline T. (bigsoundbank.com) | CC0 |
 | FU-WIN | Win Jingle | https://opengameart.org/content/win-jingle | Fupi | CC0 |
 | KM | incompetech 曲庫 | https://incompetech.com/music/royalty-free/ | Kevin MacLeod | CC BY 4.0 |
 
@@ -49,6 +53,11 @@
 | sfx_melee_hit.mp3 | melee_hit | K-IMP / impactPunch_medium_000.ogg | Kenney | CC0 | 截前 0.3 秒 |
 | sfx_whirl.mp3 | whirl | AD-BAT / swish_3.wav | artisticdude | CC0 | 無 |
 | sfx_charge_hit.mp3 | charge_hit | K-IMP / impactPunch_heavy_000.ogg + impactPlank_medium_001.ogg | Kenney | CC0 | 兩層疊合(木板聲 −4 dB), 各截 0.4~0.45 秒 |
+| sfx_shock_zap.mp3 | shock_zap | FX-EL / groundhit.wav + BSB-STR / 3442.wav(BWF 原檔 `https://bigsoundbank.com/UPLOAD/bwf-en/3442.wav`) | faxcorp、Joseph Sardin | CC0 | 兩層疊合: 門鎖電嗡 −8 dB、截 0.15 秒 |
+| sfx_thunder_slash.mp3 | thunder_slash | K-IMP / impactPunch_heavy_002.ogg + FX-EL / groundhit.wav + BSB-THU / 3113.wav(BWF 原檔 `https://bigsoundbank.com/UPLOAD/bwf-en/3113.wav`) | Kenney、faxcorp、Joseph Sardin & Axeline T. | CC0 | 三層疊合: 重拳截 0.4 秒; 放電 −3 dB; 雷聲取原檔 2.19~3.14 秒(最陡的一次起音)、−2 dB、延後 0.03 秒、尾端淡出 0.45 秒 |
+| sfx_thunder_orb.mp3 | thunder_orb | FX-EL / charge.wav + groundhit.wav + AD-BAT / swish_4.wav | faxcorp、artisticdude | CC0 | 三層疊合: 電嗡取原檔 0.5~0.82 秒、由 −12 dB 漸強到 0 dB; 風聲降速 0.85 倍、−4 dB、延後 0.26 秒; 放電 −6 dB、延後 0.27 秒 |
+| sfx_blink.mp3 | blink | FX-EL / teleport.wav + AD-BAT / swish_2.wav | faxcorp、artisticdude | CC0 | 瞬移聲升速 1.1 倍; 風聲升速 1.15 倍、−7 dB |
+| sfx_heal_ray.mp3 | heal_ray | SM-CURE / Cure3.wav | Someoneman | CC0 | 截前 0.8 秒、尾端淡出 0.25 秒 |
 | sfx_enemy_shot.mp3 | enemy_shot | AD-BAT / Bow.wav | artisticdude | CC0 | 降速 0.7 倍(較低沉), 截 0.4 秒 |
 | sfx_enemy_die.mp3 | enemy_die | AD-RPG / NPC/shade/shade1.wav + RD-80 / item_gem_02.ogg | artisticdude、rubberduck | CC0 | 鬼聲截 0.45 秒; 寶石聲 −8 dB、延後 0.05 秒 |
 | sfx_unit_down.mp3 | unit_down | K-JIN / jingles_PIZZI00.ogg | Kenney | CC0 | 無 |

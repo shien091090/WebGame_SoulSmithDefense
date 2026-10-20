@@ -1,9 +1,5 @@
-# 音效經驗提案(SoulSmithDefense 打磨第 2 輪 音效 build)
+# 音效經驗提案(SoulSmithDefense 打磨第 3 輪 build)
 
-## 提案 1 → 放進「素材來源」分類(新條目)
+## 放進「素材來源」分類(新條目)
 
-- `辨識` **要「戰鼓重擊」幾響, OpenGameArt 搜 war drums 只有密集的鼓組循環** → CC0 的戰鼓素材(例: William Hector「Horde War Drums loop」)是 130 BPM 整段鼓組, 量 5 毫秒低頻起音每 0.1~0.12 秒就一擊, 挑不出單獨一下重擊; 號角類也多是整首曲子 → 鼓改用 BigSoundBank 的低音通鼓單擊(`https://bigsoundbank.com/bass-tom-1-s2338.html`, CC0, 單擊約 0.5 秒、約 175 Hz), 視窗化 sinc 降速 0.62~0.7 倍變成 120 Hz 上下的大鼓, 自己排三響(間隔 0.3 秒, 最後一響最重)。號角從整首曲子裡用每 50 毫秒的音高相關係數找「相關 ≥ 0.99 且持續 1.5 秒以上」的段落, 那就是單獨一支號角在長鳴、沒有別的聲部(例: Eldritch Grim「War Horns」CC0 的 15.0~16.95 秒, E3 一短一長)。(SoulSmithDefense 打磨第 2 輪 build, 聽感待試玩)
-
-## 提案 2 → 放進「素材來源」分類(新條目; 性質 `品味`, 效果待下一輪試玩確認後再決定是否保留)
-
-- `品味` **開戰音只用一支合成感的號角, 被嫌難聽** → 單一號角素材(StumpyStrust「Their Coming」截 2.4 秒)沒有打擊起頭, 只有一條長音 → 改成「戰鼓三響 + 號角一短一長」2.6 秒, 鼓與號角響度相近(各約 −14 dB), 讓開頭 0.6 秒先有打擊的氣勢再接號角。(SoulSmithDefense 打磨第 2 輪, 規格轉述的回饋「上一輪的聲音難聽, 要重做」; 效果待試玩)
+- `辨識` **要一整套「電擊 / 雷電」系音效(短促劈啪、帶電重擊、蓄電發射、閃電瞬移), 搜 electric / zap 多半是要署名的 AI 站或付費包; BigSoundBank 搜 electric 的「Electric strike」其實是電子門鎖的嗡嗡聲, 不是電弧** → 只看標題會選錯, 要讀頁面說明 → OpenGameArt 上 faxcorp 的「Electricity Game Sound Pack」(CC0, `https://opengameart.org/node/150369`, 免登入, 16 個 WAV 可直接用 `https://opengameart.org/sites/default/files/<檔名>` 下載)一包湊得齊: `groundhit.wav` 0.22 秒、7 毫秒到峰值一成的放電「啪」, `charge.wav` 4 秒穩定電嗡(截一段再以 dB 線性漸強就是蓄電), `teleport.wav` 0.7 秒瞬移; 同一包做出所有電擊事件, 聽起來是同一種電。雷聲用 BigSoundBank 的「Thunder #2」(CC0, 編號 3113, 單發雷聲無雨聲), 用 5 毫秒包絡找最陡的那次起音(本例 2.225 秒處 +23 dB)截 1 秒內疊在重拳上, 就是「帶電重砍 + 一聲雷」。治癒音: Someoneman 的「Cure Magic」(CC0, `https://opengameart.org/content/cure-magic`, zip 內 8 支約 1 秒的合成鈴), 用每 80 毫秒自相關音高挑最穩定的一支(本例 Cure3 穩在 441 / 221 Hz), 比和弦亂跳的那幾支柔和。(SoulSmithDefense 打磨第 3 輪 build, 聽感待試玩)

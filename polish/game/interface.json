@@ -1,115 +1,129 @@
 {
   "canvas": { "width": 1280, "height": 720 },
   "conventions": {
-    "itemKinds": "物品種類字串。基本魂件 6 種: \"ranged\"(遠攻)、\"melee\"(近戰)、\"frost\"(冰霜)、\"seek\"(自動索敵, 原「索敵」改名, 字串不變)、\"march\"(進攻主堡)、\"drum\"(行軍)。組合魂件 5 種(本輪回到槽位與手上, 由合成產生): \"pierce\"(穿透箭)、\"iceArrow\"(冰箭)、\"whirl\"(旋風斬)、\"frostSmash\"(冰霜重擊)、\"charge\"(衝鋒)。購買魂件 1 種: \"shop\"(全場唯一, 外觀要一眼看出是特別的)。建築材料: \"crossbowKit\"(弩塔)、\"pillarKit\"(魂柱)。\"soldierKit\"、\"golemKit\" 只用在 drawShopPopup 的品項圖示, 不會出現在 handItem(買兵改成舉旗)。擴槽石 \"slotStone\" 刪除。這 12 種魂件的圖示在 drawSoulSlots、drawGroundPart、drawPlayer、drawSoulPopup 中是同一套; 組合魂件圖示要看得出是兩種材料的融合(例: 雙色、比基本魂件多一圈外框)",
-    "attackKinds": "會共鳴的攻擊類魂件: ranged、melee、frost、pierce、iceArrow、whirl、frostSmash。drawPillarRange、drawPillar 的 kinds、drawResonanceLine 的 kind、drawSoulSlots 的 virtual 只會出現這 7 種",
-    "enemyTypes": "敵人種類字串: \"imp\"(小鬼)、\"archer\"(弓鬼)、\"ice\"(冰鬼)、\"drummer\"(鼓鬼, 背著戰鼓, 和行軍魂件的圖示呼應)、\"brute\"(狂鬼, 較大)。drawEnemy、drawCorpse 用同一套造型",
-    "teams": "陣營字串: \"ally\"(我方或玩家發出的攻擊)與 \"enemy\"(敵人發出的攻擊, 只會打我方移動單位)。drawProjectile、drawFrostAura 用 owner 欄位區分, 兩邊要一眼分得出, 顏色交給美術",
+    "itemKinds": "物品種類字串。基本魂件 8 種: \"ranged\"(遠攻)、\"melee\"(近戰)、\"frost\"(冰霜)、\"shock\"(電擊, 本輪新增)、\"heal\"(治癒, 本輪新增)、\"seek\"(自動索敵)、\"march\"(進攻主堡)、\"charge\"(衝鋒, 本輪改成基本魂件: 圖示要改成基本魂件的樣式, 不再是融合外觀)。組合魂件 10 種: \"pierce\"(穿透箭)、\"iceArrow\"(冰箭)、\"whirl\"(旋風斬)、\"frostSmash\"(冰霜重擊)、\"thunderSlash\"(雷霆斬, 新)、\"thunderOrb\"(雷電球, 新)、\"blink\"(瞬閃, 新)、\"healRay\"(治癒光線, 新)、\"holyPath\"(神聖之路, 新)、\"steadfast\"(不動如山, 新)。購買魂件 1 種: \"shop\"(全場唯一, 外觀要一眼看出是特別的)。行軍 \"drum\" 刪除。建築材料: \"crossbowKit\"(弩塔)、\"pillarKit\"(魂柱)。\"soldierKit\"、\"golemKit\" 只用在 drawShopPopup 的品項圖示, 不會出現在 handItem。這 19 種魂件的圖示在 drawSoulSlots、drawGroundPart、drawPlayer、drawSoulPopup 中是同一套; 組合魂件圖示要看得出是兩種材料的融合(例: 雙色、比基本魂件多一圈外框), 基本魂件一律沒有融合外觀",
+    "resonantKinds": "會共鳴的魂件(原 attackKinds, 本輪加入電擊、治癒與它們的攻擊 / 支援組合): ranged、melee、frost、shock、heal、pierce、iceArrow、whirl、frostSmash、thunderSlash、thunderOrb、healRay, 共 12 種。drawPillarRange、drawPillar 的 kinds、drawResonanceLine 的 kind、drawSoulSlots 的 virtual 只會出現這 12 種; 移動類(seek、march、charge、blink、holyPath、steadfast)與 shop 不會出現在這些欄位",
+    "enemyTypes": "敵人種類字串: \"imp\"(小鬼)、\"archer\"(弓鬼)、\"ice\"(冰鬼)、\"drummer\"(衝鬼, 原鼓鬼; 字串不變, 本輪身上改帶衝鋒, 造型從背戰鼓改成頭上有角、身體前傾的衝撞樣, 和衝鋒魂件的圖示呼應)、\"thunder\"(雷鬼, 新, 身上帶電、和電擊魂件呼應)、\"healer\"(醫鬼, 新, 帶治癒意象、和治癒魂件呼應, 一眼看得出「先打牠」)、\"brute\"(狂鬼, 較大)。drawEnemy、drawCorpse 用同一套造型",
+    "teams": "陣營字串: \"ally\"(我方或玩家發出的)與 \"enemy\"(敵人發出的)。drawProjectile、drawFrostAura、drawHealAura、drawShockChain 用 owner 欄位區分, 兩邊要一眼分得出, 顏色交給美術",
     "frost": "附冰: drawProjectile(kind \"ice\")、drawPierceBeam / drawAreaHit / drawHitSpark(frost = true)表示這一擊帶冰霜減速, 都用冰箭那一套冰藍意象, 一眼看得出「這下有冰」",
-    "keycap": "按鍵圖示一律畫成鍵帽: 圓角矩形 + 底部較深的厚邊(看起來是可以按下去的鍵), 中間印鍵名; Z、X 印字母, 方向鍵印箭頭, 空白鍵寬為 2 倍、印「空白」。鍵帽與後面的說明文字隔 4px, 不和文字黏在一起。尺寸: drawTitle / drawHud / drawSoulPopup / drawShopPopup / drawResult / drawShopZone 22×22(空白鍵 44×22); drawActionHint 16×16; drawTutorial 26×26(空白鍵 52×26)。下文 notes 中寫成 [Z]、[空白鍵]、[←] 的就是鍵帽",
-    "timers": "所有 xxxAge / xxxDuration 成對欄位: Age 是事件發生後經過的秒數, 閒置時 Age = Duration(不是 0), 0 ≤ Age < Duration 表示正在播。Age 以遊戲時間計(慢動作時也跟著變慢); 例外: drawTutorial 的 doneAge 與 drawResult 的 starAge 以真實時間計",
+    "shock": "電擊意象(本輪新增): drawShockChain、drawThunderOrb、drawBlink、drawAreaHit 的 shockBurst, 以及 shock / thunderSlash / thunderOrb / blink 圖示用同一套電光意象; 要和冰霜的冰藍、治癒、購買的金色一眼分得開, 顏色交給美術",
+    "heal": "治癒意象(本輪新增): drawHealAura、drawHealBeam、drawHolyTrail、單位與敵人的 healing 狀態, 以及 heal / healRay / holyPath 圖示用同一套意象; 要和購買區的金色、魂柱範圍、冰霜圈分得開, 顏色交給美術",
+    "keycap": "按鍵圖示一律畫成鍵帽: 圓角矩形 + 底部較深的厚邊(看起來是可以按下去的鍵), 中間印鍵名; Z、X、M 印字母, 方向鍵印箭頭, 空白鍵寬為 2 倍、印「空白」。鍵帽與後面的說明文字隔 4px, 不和文字黏在一起。尺寸: drawTitle / drawHud / drawSoulPopup / drawShopPopup / drawResult / drawShopHint 22×22(空白鍵 44×22); drawActionHint 16×16; drawTutorial 26×26(空白鍵 52×26)。下文 notes 中寫成 [Z]、[空白鍵]、[M]、[←] 的就是鍵帽",
+    "timers": "所有 xxxAge / xxxDuration 成對欄位: Age 是事件發生後經過的秒數, 閒置時 Age = Duration(不是 0), 0 ≤ Age < Duration 表示正在播。Age 以遊戲時間計(慢動作時也跟著變慢); 例外: drawTutorial 的 doneAge 與 drawResult 的 starAge 以真實時間計。life / maxLife 成對欄位: life 是剩餘秒數, 從 maxLife 往下數到 0, RD 只在 life > 0 時呼叫",
     "position": "所有 x, y 都是物件中心(例外: drawRallyFlag 的 x, y 是旗桿插進地面的點, 見該函式); size 是判定框 [寬, 高], 以中心對齊。互動目標外框(targeted)一律畫在框外: 內緣貼齊 size 外邊, 寬 3",
     "indexing": "所有陣列的「第 N 項」、cursorIndex、index 都從 0 起算",
-    "drawOrder": "開始畫面: 只呼叫 drawTitle。關卡中 RD 依序呼叫: drawBackground → drawShopZone(有購買區時) → drawPillarRange(每根魂柱) → drawResonanceLine(每條共鳴線) → drawFrostAura → drawRallyFlag → drawCoin → drawCorpse → drawGroundPart → drawPlacePreview → 單位與敵人與玩家(drawCastle、drawCrossbow、drawPillar、drawSoldier、drawGolem、drawEnemy、drawPlayer, 依 y 由小到大; 歸隊中的兵也在這裡) → drawSoulSlots(每個我方 / 中立單位、魂柱、主堡、屍體; 活敵人只在它是互動目標或正被搶奪時畫; 玩家沒有) → drawRespawnQueue(重生隊伍不空時) → drawProjectile → drawPierceBeam → drawAreaHit → drawHitSpark → drawUnitBreak → drawStealLink → drawComboName → drawSpawnWarning → drawActionHint → drawTutorial(泡泡指著場上物件時) → drawHud → drawSlowMo → drawSoulPopup / drawShopPopup → drawTutorial(泡泡貼著彈窗時, side 為 left / right) → drawResult。同一幀 drawTutorial 只會被呼叫一次",
-    "textOwnership": "除了新手教學(drawTutorial, 分工照美術 / RD 任務), 畫面上所有文字都由美術在各繪製函式內畫(依 state 傳入的字串或數值), RD 不另外畫字。有文字的函式: drawTitle(大標題、「第 N 關」、關名、操作提示)、drawGolem(中立時的「中立」牌)、drawRespawnQueue(「重生中」、「×N」)、drawShopZone(空白鍵鍵帽, 無字)、drawComboName(組合名稱)、drawActionHint(label)、drawSoulPopup(標題、「手上」、選項格下方的「+N 金」/「移防」、說明區的名稱與說明、動作提示、操作提示)、drawShopPopup(標題、品名、價格、已有 / 上限、底部提示、操作提示)、drawHud(關名、數值與標籤、「準備中」、操作提示)、drawSlowMo(「慢動作」)、drawResult(標題、關名、波次、主堡生命、組合數、按鈕文字、操作提示)",
-    "renames": "相對上一輪(polish-1)的欄位異動(美術沿用舊版會讀到不存在的欄位, 請逐一改): drawCastle 刪除 zoneActive(購買區改由新函式 drawShopZone 畫, drawCastle 不再畫主堡區圈); drawHud 刪除 combos(拿掉組合區塊), 喇叭圖示中心 (1010,25) → (860,25), 右側操作提示改鍵帽; drawSoulPopup: mode \"take\" → \"menu\", slots → cells(每項由字串改成物件, 可含選項格), 刪除 w、h(改固定 320×180), 新增 desc; drawShopPopup: items 8 項 → 4 項, 每項新增 count、cap, state 新增 \"max\", 面板 760×150 → 480×150; drawPlayer 新增 holdingFlag、resonating、attackAge、attackDuration; drawPlacePreview 的 kind \"soldier\" / \"golem\" → \"flag\"; drawGroundPart 新增 life、maxLife、permanent, item 不再有 \"slotStone\"、新增組合魂件與 \"shop\"; drawSoulSlots 的 slots 長度上限 4 → 3, 項目新增組合魂件與 \"shop\", virtual 的 kind 新增組合魂件; drawPillar 新增 moving、charging, kinds 長度 0~2 → 0~1; drawPillarRange 的 kinds 長度 0~2 → 0~1; drawCrossbow 新增 charging; drawPierceBeam、drawAreaHit、drawHitSpark 新增 frost; drawTutorial 的 side 新增 \"left\" / \"right\", stage 1~12 → 1~14; drawActionHint 的 label 刪除「擴槽」, 新增「選單」「插旗」「不能插」; drawGolem 中立時多畫「中立」牌(無新欄位)。新增函式: drawShopZone、drawRespawnQueue、drawRallyFlag"
+    "drawOrder": "開始畫面: 只呼叫 drawTitle。關卡中 RD 依序呼叫: drawBackground → drawShopZone(玩家靠近帶購買的單位時) → drawHolyTrail(每條聖光軌跡) → drawPillarRange(每根魂柱) → drawResonanceLine(每條共鳴線) → drawFrostAura → drawHealAura → drawRallyFlag → drawCoin → drawCorpse(倒下消散中的敵人) → drawGroundPart → drawPlacePreview → 單位與敵人與玩家(drawCastle、drawCrossbow、drawPillar、drawSoldier、drawGolem、drawEnemy、drawPlayer, 依 y 由小到大; 歸隊中的兵也在這裡) → drawSoulSlots(每個我方 / 中立單位、魂柱、主堡; 活敵人只在它是互動目標或正被搶奪時畫; 玩家與倒下消散中的敵人沒有) → drawRespawnQueue(重生隊伍不空時) → drawShopHint(玩家在購買區內時) → drawProjectile → drawThunderOrb → drawPierceBeam → drawHealBeam → drawAreaHit → drawShockChain → drawHitSpark → drawBlink → drawUnitBreak → drawStealLink → drawComboName → drawSpawnWarning → drawActionHint → drawTutorial(泡泡指著場上物件時) → drawHud → drawSlowMo → drawSoulPopup / drawShopPopup → drawTutorial(泡泡貼著彈窗時, side 為 left / right) → drawResult。同一幀 drawTutorial 只會被呼叫一次",
+    "textOwnership": "除了新手教學(drawTutorial, 分工照美術 / RD 任務), 畫面上所有文字都由美術在各繪製函式內畫(依 state 傳入的字串或數值), RD 不另外畫字。有文字的函式: drawTitle(大標題、「第 N 關」、關名、操作提示)、drawGolem(中立時的「中立」牌)、drawRespawnQueue(「重生中」、「×N」)、drawShopHint(「商店」與空白鍵鍵帽, 本輪新增)、drawComboName(組合名稱)、drawActionHint(label)、drawSoulPopup(標題、「手上」、選項格下方的「+N 金」/「移防」、說明區的名稱與說明、動作提示、操作提示)、drawShopPopup(標題、品名、價格、已有 / 上限、底部提示、操作提示)、drawHud(關名、數值與標籤、「準備中」、操作提示)、drawSlowMo(「慢動作」)、drawResult(標題、關名、波次、主堡生命、組合數、按鈕文字、操作提示)。drawShopZone 本輪起不畫任何字或鍵帽",
+    "renames": "相對上一輪(polish-2)的異動(美術沿用舊版會讀到不存在的欄位或畫錯, 請逐一改): conventions.attackKinds → resonantKinds(多 shock、heal、thunderSlash、thunderOrb、healRay); itemKinds 刪除 \"drum\", \"charge\" 改成基本魂件外觀, 新增 shock、heal、thunderSlash、thunderOrb、blink、healRay、holyPath、steadfast; enemyTypes 新增 thunder、healer, drummer 造型改成衝鋒意象(字串不變); drawCorpse 改成「倒下消散」特效: 刪除 targeted, maxLife 15 → 0.6, 不再有槽列、不再閃爍; drawEnemy 新增 healing, stunDuration 由固定 1.0 改成 1.0 或 0.5; drawSoldier、drawGolem 新增 healing、rooted; drawCrossbow、drawPillar 新增 rooted; drawShopZone 只在玩家靠近時呼叫, 刪除圈內的 [空白鍵] 鍵帽(改由新函式 drawShopHint 畫在單位旁); drawShopPopup 的 items 由固定 4 項改成 3~4 項(只列已解鎖)且置中排列, state 刪除 \"locked\", message 刪除「尚未解鎖」; drawSoulPopup 的 desc 新增 alt, title 不再有「…的屍體」, demolish 的 refund 可能是 0; drawAreaHit 的 kind 新增 \"shockBurst\"; drawHud 右側提示改「[Z] 互動  [M] 靜音」(刪除 [空白鍵] 商店); drawTitle 底部提示 [X] 靜音 → [M] 靜音; drawResult 組合數 / 5 → / 10; drawTutorial 的 stage 1~14 → 1~13。新增函式: drawShopHint、drawHealAura、drawHealBeam、drawHolyTrail、drawShockChain、drawThunderOrb、drawBlink"
   },
   "draw": [
     {
       "name": "drawTitle",
       "state": ["levels", "cursorIndex", "muted", "blinkTime"],
       "size": [1280, 720],
-      "notes": "開始畫面, 蓋滿整張畫布(背景自行畫, 可用草地 + 路線的意象)。固定版位: 大標題「魂匠守衛者」中心 (640,170); 5 張關卡卡片一排, 每張 200×150, 中心 x = 640 + (i−2)×220(i 從 0 起算 → 200, 420, 640, 860, 1080), 中心 y = 400; 底部操作提示「[←][→] 選關  [Z] 開始  [X] 靜音」中心 (640,650), 按鍵畫成鍵帽(conventions.keycap); 右上角喇叭圖示中心 (1230,40), 36×36, muted 時打叉。levels: 固定 5 項陣列(從 0 起算 = 第 1~5 關), 每項 {name, unlocked, bestStars}: name 關名字串(「初陣」「雙路」「長蛇」「夾擊」「三叉」), unlocked 布林, bestStars 0~3(未通過過為 0; 未解鎖時一律 0)。卡片內: 上方「第 N 關」小字、中間 name、下方 3 顆星(亮 bestStars 顆, 其餘暗); 未解鎖的卡片變暗並在中央畫鎖, 不畫星。cursorIndex: 只會落在已解鎖的卡片, 選中的卡片要非常明顯(外框發光 + 放大 1.06 倍, 整張卡片連內容一起放大, 放大後 212×159 仍不和相鄰卡片(間隔 20)重疊)。blinkTime: 開始畫面出現後經過的真實秒數, 給「Z 開始」閃爍或標題微動用"
+      "notes": "開始畫面, 蓋滿整張畫布(背景自行畫, 可用草地 + 路線的意象)。固定版位: 大標題「魂匠守衛者」中心 (640,170); 5 張關卡卡片一排, 每張 200×150, 中心 x = 640 + (i−2)×220(i 從 0 起算 → 200, 420, 640, 860, 1080), 中心 y = 400; 底部操作提示「[←][→] 選關  [Z] 開始  [M] 靜音」中心 (640,650), 按鍵畫成鍵帽(conventions.keycap; 本輪靜音由 X 改 M); 右上角喇叭圖示中心 (1230,40), 36×36, muted 時打叉。levels: 固定 5 項陣列(從 0 起算 = 第 1~5 關), 每項 {name, unlocked, bestStars}: name 關名字串(「初陣」「雙路」「長蛇」「夾擊」「三叉」), unlocked 布林, bestStars 0~3(未通過過為 0; 未解鎖時一律 0)。卡片內: 上方「第 N 關」小字、中間 name、下方 3 顆星(亮 bestStars 顆, 其餘暗); 未解鎖的卡片變暗並在中央畫鎖, 不畫星。cursorIndex: 只會落在已解鎖的卡片, 選中的卡片要非常明顯(外框發光 + 放大 1.06 倍, 整張卡片連內容一起放大, 放大後 212×159 仍不和相鄰卡片(間隔 20)重疊)。blinkTime: 開始畫面出現後經過的真實秒數, 給「Z 開始」閃爍或標題微動用"
     },
     {
       "name": "drawBackground",
       "state": ["paths"],
       "size": [1280, 720],
-      "notes": "整張 1280×720 填滿(HUD 會蓋住上方 0~50)。草地 + 路線。paths: 這關的路線陣列, 長度 1~3; 每條是點陣列 [[x,y], ...](長度 3~8), 從出怪點(第 0 點, 在畫面邊緣)依序連到主堡中心 (1180,434); 路寬 56, 給的是全寬(中線兩側各 28)。每條的最後一段都是 y = 434 的水平線, 畫到主堡左緣 x = 1124 為止。多條路線重疊的段落畫成同一條路(重疊處不可變深色或出現接縫), 轉角與分岔處接順。出怪點那一端(第 0 點)畫出路從畫面外延伸進來的感覺(行軍 / 衝鋒的單位會從這裡走出畫面)。路以外的草地上淡淡畫出 48×48 蓋塔格線(格子中心 (24+48i, 74+48j), i = 0~26, j = 0~13), 淡到不干擾辨識; 路線上不畫格線。購買區與魂柱範圍不在這裡畫。各關 paths 見 spec「關卡」表; 第 4 關的路線從畫面上緣 (360,50) 與下緣 (360,720) 進來"
+      "notes": "沿用上一輪, 無異動。整張 1280×720 填滿(HUD 會蓋住上方 0~50)。草地 + 路線。paths: 這關的路線陣列, 長度 1~3; 每條是點陣列 [[x,y], ...](長度 3~8), 從出怪點(第 0 點, 在畫面邊緣)依序連到主堡中心 (1180,434); 路寬 56, 給的是全寬(中線兩側各 28)。每條的最後一段都是 y = 434 的水平線, 畫到主堡左緣 x = 1124 為止。多條路線重疊的段落畫成同一條路(重疊處不可變深色或出現接縫), 轉角與分岔處接順。出怪點那一端(第 0 點)畫出路從畫面外延伸進來的感覺(衝鋒的單位會從這裡走出畫面)。路以外的草地上淡淡畫出 48×48 蓋塔格線(格子中心 (24+48i, 74+48j), i = 0~26, j = 0~13), 淡到不干擾辨識; 路線上不畫格線。購買區、魂柱範圍、聖光軌跡不在這裡畫。各關 paths 見 spec「關卡」表; 第 4 關的路線從畫面上緣 (360,50) 與下緣 (360,720) 進來"
     },
     {
       "name": "drawShopZone",
       "state": ["x", "y", "radius", "active"],
       "size": [220, 220],
-      "notes": "新函式。購買區: 帶著「購買」魂件的我方單位(開局是主堡)中心 110 內, 在那裡按空白鍵開商店。畫在地面層(魂柱範圍之下、所有單位之下), 跟著帶購買的單位移動。(x, y) = 該單位中心; radius = 110, 指圓的外緣(就是判定邊界, 不畫到外緣之外)。淡淡的地面圈, 帶一點金色(和購買魂件的意象一致), 要和魂柱範圍(帶攻擊魂件意象色)、冰霜圈分得開; 顏色交給美術。active: 玩家在圈內時為 true, 圈變明顯, 並在圈內 (x, y+86) 畫一個 [空白鍵] 鍵帽(44×22)表示可以購買; false 時不畫鍵帽。購買魂件在地上、在手上、或帶它的單位正在重生 / 走出畫面時, RD 不呼叫本函式"
+      "notes": "購買區: 帶著「購買」魂件的我方單位(開局是主堡)中心 110 內, 在那裡按空白鍵開商店。**本輪改成靠近才畫**: RD 只在玩家中心離 (x, y) ≤ 170 時呼叫(使用者: 範圍提示不要常駐)。畫在地面層(所有單位之下, 聖光軌跡與魂柱範圍之下), 跟著帶購買的單位移動。(x, y) = 該單位中心; radius = 110, 指圓的外緣(就是判定邊界, 不畫到外緣之外)。淡淡的地面圈, 帶一點金色(和購買魂件的意象一致), 要和魂柱範圍、冰霜圈、治癒領域分得開; 顏色交給美術。active: 玩家在圈內(≤ 110)時為 true, 圈變明顯; false(玩家在 110~170 之間)時很淡, 只是讓玩家知道再走近一點。**本輪起圈內不畫鍵帽**(提示改由 drawShopHint 畫在單位旁)。購買魂件在地上、在手上、或帶它的單位正在重生 / 走出畫面時, RD 不呼叫本函式"
+    },
+    {
+      "name": "drawShopHint",
+      "state": ["x", "y"],
+      "size": [88, 24],
+      "notes": "新函式。商店提示: 玩家在購買區內(drawShopZone active 為 true)時, 畫在帶購買的單位正下方, 告訴玩家「這裡可以按空白鍵開店」(取代上一輪 HUD 右上角常駐的空白鍵提示, 使用者: 會讓人誤會隨時都能開店)。RD 傳 (單位 x, 單位 y + 半邊長 + 18), y 夾在 ≤ 708; 主堡時為 (1180,508), 範圍 x 1136~1224、y 496~520, 在主堡本體(下緣 490)之下, 不壓重生中提示(y 362~398)。畫在單位之上(drawRespawnQueue 之後)。內容: 半透明小底板 88×24, 左邊一個 [空白鍵] 鍵帽(44×22, conventions.keycap), 隔 4px 接「商店」兩個字, 整組在底板內置中; 帶一點金色呼應購買魂件。商店彈窗開著、結算時 RD 不呼叫"
+    },
+    {
+      "name": "drawHolyTrail",
+      "state": ["points", "maxLife"],
+      "size": [0, 0],
+      "notes": "新函式。聖光軌跡(神聖之路走過留下的路), 畫在地面層(drawShopZone 之後、drawPillarRange 之前), 一次呼叫畫一個單位留下的整條。points: 點陣列 [[x, y, life], ...], 依留下的先後排列, 長度 2~64(RD 每走 12px 加一點, 超過 64 點丟掉最舊的); life 是該點剩餘秒數, maxLife = 4。畫成一條寬 40 的光帶(40 指全寬, 中線兩側各 20, 外緣就是判定邊界, 不畫到外緣之外), 兩端與轉角圓頭接順; 每一段的亮度依兩端點的 life / maxLife 變化, 越舊越淡, life → 0 時完全消失。治癒意象(conventions.heal), 淡淡的(多條軌跡、和路線重疊時仍看得清路線與單位)。size 給 [0, 0] 因為是線狀, 範圍由 points 決定"
     },
     {
       "name": "drawPillarRange",
       "state": ["x", "y", "radius", "kinds", "changeAge", "changeDuration"],
       "size": [300, 300],
-      "notes": "魂柱的共鳴範圍, 畫在地面層(所有單位之下, drawShopZone 之上)。radius = 150, 指圓的外緣(就是判定邊界, 不可畫到外緣之外)。範圍跟著魂柱移動(魂柱裝了移動類魂件時)。kinds: 魂柱身上會共鳴的攻擊類魂件陣列(conventions.attackKinds), 長度 0~1; 0 時(空的, 或身上是移動類 / 購買)畫成很淡的空圈; 有魂件時範圍帶有該魂件的意象色(組合魂件用它的融合色), 範圍內地面淡淡染色, 不可蓋住路線與單位的辨識。changeDuration = 0.5: 魂柱的魂件剛被換過(裝上、拿下、互換)時, 一圈波紋從中心擴到外緣, 閒置 changeAge = 0.5。多根魂柱的範圍重疊時各自畫, 要看得出重疊"
+      "notes": "魂柱的共鳴範圍, 畫在地面層(所有單位之下, drawHolyTrail 之上)。radius = 150, 指圓的外緣(就是判定邊界, 不可畫到外緣之外)。範圍跟著魂柱移動(魂柱裝了移動類魂件時; 瞬閃時直接跳到新位置)。kinds: 魂柱身上會共鳴的魂件陣列(conventions.resonantKinds, 本輪多了電擊、治癒等), 長度 0~1; 0 時(空的, 或身上是移動類 / 購買)畫成很淡的空圈; 有魂件時範圍帶有該魂件的意象色(組合魂件用它的融合色), 範圍內地面淡淡染色, 不可蓋住路線與單位的辨識。changeDuration = 0.5: 魂柱的魂件剛被換過(裝上、拿下、互換)時, 一圈波紋從中心擴到外緣, 閒置 changeAge = 0.5。多根魂柱的範圍重疊時各自畫, 要看得出重疊"
     },
     {
       "name": "drawResonanceLine",
       "state": ["x1", "y1", "x2", "y2", "kind", "active"],
       "size": [0, 0],
-      "notes": "共鳴線: 從魂柱中心 (x1,y1) 到範圍內某個接收者中心 (x2,y2) 的細線(長度 0~150), 每個接收者一條(魂柱只有 1 格)。接收者: 弩塔、我方步兵 / 石魔像(歸隊中與重生中除外)、主堡、**玩家**(本輪新增; 玩家走動時線跟著玩家)。kind: 這條傳的魂件字串(conventions.attackKinds)。active: false 畫成很細很淡(寬 1~2), true(這件虛魂件有被配進組合, 或以附冰 / 單件效果在生效)變亮並沿線往接收者流動, 寬至多 4(寬度以中線為準, 兩側各一半)。要和搶奪連線分得開"
+      "notes": "共鳴線: 從魂柱中心 (x1,y1) 到範圍內某個接收者中心 (x2,y2) 的細線(長度 0~150), 每個接收者一條(魂柱只有 1 格)。接收者: 弩塔、我方步兵 / 石魔像(歸隊中與重生中除外)、主堡、玩家。kind: 這條傳的魂件字串(conventions.resonantKinds)。active: false 畫成很細很淡(寬 1~2), true(這件虛魂件在生效: 配進組合、附冰、附電或單件效果)變亮並沿線往接收者流動, 寬至多 4(寬度以中線為準, 兩側各一半)。要和搶奪連線、治癒光線、電擊連鎖分得開"
     },
     {
       "name": "drawCastle",
       "state": ["x", "y", "hitAge", "hitDuration", "attackAge", "attackDuration", "targeted"],
       "size": [112, 112],
-      "notes": "固定在 (1180,434)。hitDuration = 0.3(敵人抵達主堡時閃一下, 只改顏色不放大), 閒置 hitAge = 0.3。attackDuration = 0.15(主堡身上的攻擊魂件發動時的動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。本輪不再畫主堡區圈(zoneActive 刪除; 購買區改由 drawShopZone 畫, 購買魂件拔走後主堡就沒有購買區)。主堡左緣 (1124,434) 是兵走出來的門, 畫出一道門。主堡魂件槽列由 RD 呼叫 drawSoulSlots 畫在 (1180, 434−56−20)"
+      "notes": "沿用上一輪, 無異動。固定在 (1180,434)。hitDuration = 0.3(敵人抵達主堡時閃一下, 只改顏色不放大), 閒置 hitAge = 0.3。attackDuration = 0.15(主堡身上的攻擊魂件發動時的動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。不畫購買區(由 drawShopZone 畫)。主堡左緣 (1124,434) 是兵走出來、也是兵 / 建築走回來消失的門, 畫出一道門。主堡魂件槽列由 RD 呼叫 drawSoulSlots 畫在 (1180, 434−56−20)"
     },
     {
       "name": "drawRespawnQueue",
       "state": ["x", "y", "kind", "progress", "count"],
       "size": [132, 36],
-      "notes": "新函式。重生中提示, 重生隊伍不空時 RD 才呼叫, 位置固定: RD 傳 (1060,380)(主堡左上方, 範圍 x 994~1126、y 362~398: 在匯流段路線 y 406 以上, 不壓主堡本體(y = 398 處主堡左緣 x ≈ 1137)與主堡槽列(x 1150~1210))。畫在單位之上(drawSoulSlots 之後)。半透明小底板 132×36, 內容: 左邊圓盤, 中心 (x−48, y), 半徑 15 指圓盤外緣, 環寬 4(往內), progress 0~1 從正上方順時針填滿(排頭已等秒數 / 5); 圓盤中央畫排頭的小圖示(kind: \"soldier\" | \"golem\")。圓盤右邊文字「重生中」(左緣 x−28), 最右邊「×count」(右緣 x+60)。count: 隊伍人數(含排頭), 1 以上, 沒有上限, 數字照實寫(兩位數也放得下)。progress 從 0 填到 1 後換下一隻時直接回 0, 不另做特效"
+      "notes": "沿用上一輪, 無異動。重生中提示, 重生隊伍不空時 RD 才呼叫, 位置固定: RD 傳 (1060,380)(主堡左上方, 範圍 x 994~1126、y 362~398: 在匯流段路線 y 406 以上, 不壓主堡本體(y = 398 處主堡左緣 x ≈ 1137)與主堡槽列(x 1150~1210))。畫在單位之上(drawSoulSlots 之後)。半透明小底板 132×36, 內容: 左邊圓盤, 中心 (x−48, y), 半徑 15 指圓盤外緣, 環寬 4(往內), progress 0~1 從正上方順時針填滿(排頭已等秒數 / 5); 圓盤中央畫排頭的小圖示(kind: \"soldier\" | \"golem\")。圓盤右邊文字「重生中」(左緣 x−28), 最右邊「×count」(右緣 x+60)。count: 隊伍人數(含排頭), 1 以上, 沒有上限, 數字照實寫(兩位數也放得下)。progress 從 0 填到 1 後換下一隻時直接回 0, 不另做特效"
     },
     {
       "name": "drawCrossbow",
-      "state": ["x", "y", "attackAge", "attackDuration", "moving", "charging", "resonating", "targeted"],
+      "state": ["x", "y", "attackAge", "attackDuration", "moving", "charging", "rooted", "resonating", "targeted"],
       "size": [48, 48],
-      "notes": "弩塔(建築, 沒有生命, 不會受傷)。attackDuration = 0.15(攻擊動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: 正在移動(裝了自動索敵、進攻主堡、行軍)。charging: 正在衝鋒(本輪起建築也能衝鋒), 畫出前衝姿勢與速度線(速度線可畫到框外後方 12px); charging 為 true 時 moving 也是 true。resonating: 至少一件虛魂件在生效(配進組合、附冰或單件效果)時為 true, 本體帶一層微光(畫在框內)。魂件槽列由 RD 另外呼叫 drawSoulSlots 畫在 (x, y−24−20)"
+      "notes": "弩塔(建築, 沒有生命, 不會受傷; 本輪起新蓋的也帶一件遠攻)。attackDuration = 0.15(攻擊動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: 正在移動(裝了自動索敵、進攻主堡、衝鋒、神聖之路; 瞬閃是瞬間換位置, 不算 moving)。charging: 正在衝鋒(衝鋒或神聖之路), 畫出前衝姿勢與速度線(速度線可畫到框外後方 12px); charging 為 true 時 moving 也是 true。rooted(本輪新增): 身上有不動如山時為 true, 畫出「紮根、更堅固」的樣子(例: 底座多一圈岩石 / 盾光), 畫在框內; rooted 為 true 時 moving、charging 一律 false。resonating: 至少一件虛魂件在生效時為 true, 本體帶一層微光(畫在框內)。魂件槽列由 RD 另外呼叫 drawSoulSlots 畫在 (x, y−24−20)"
     },
     {
       "name": "drawPillar",
-      "state": ["x", "y", "kinds", "moving", "charging", "targeted"],
+      "state": ["x", "y", "kinds", "moving", "charging", "rooted", "targeted"],
       "size": [36, 36],
-      "notes": "魂柱(建築): 一根發光的柱子, 不攻擊, 一眼要和弩塔分開。kinds: 身上會共鳴的攻擊類魂件陣列(conventions.attackKinds), 長度 0~1; 柱頂的光帶有該魂件的意象色(和 drawPillarRange 一致), 0 時柱頂不亮(身上是移動類 / 購買時也是 0, 那件魂件由槽列畫)。moving / charging: 同 drawCrossbow(魂柱裝了移動類魂件會走動或衝鋒; 速度線可畫到框外後方 12px)。魂件槽列(1 格)由 RD 畫在 (x, y−18−20)"
+      "notes": "魂柱(建築): 一根發光的柱子, 不攻擊, 一眼要和弩塔分開。kinds: 身上會共鳴的魂件陣列(conventions.resonantKinds), 長度 0~1; 柱頂的光帶有該魂件的意象色(和 drawPillarRange 一致), 0 時柱頂不亮(身上是移動類 / 購買時也是 0, 那件魂件由槽列畫)。moving / charging / rooted: 同 drawCrossbow(魂柱裝了移動類魂件會走動、衝鋒或瞬移; 速度線可畫到框外後方 12px; rooted 的紮根樣子畫在框內)。魂件槽列(1 格)由 RD 畫在 (x, y−18−20)"
     },
     {
       "name": "drawSoldier",
-      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "charging", "resonating", "returning", "targeted"],
+      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "charging", "rooted", "healing", "resonating", "returning", "targeted"],
       "size": [32, 32],
-      "notes": "步兵(移動單位, 固守集結點, 不巡邏)。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackAge / attackDuration / moving / charging / resonating 規則同 drawCrossbow。returning: 歸隊中(重生後、買來後、重設集結點後走向集結點; 不攻擊也不會被打), 畫成半透明 + 淡淡的魂光拖尾(拖尾可畫到框外後方 12px), 一眼看得出「暫時不在戰鬥」; 歸隊中 hp = maxHp、charging = false、resonating = false。潰散、重生排隊中、行軍 / 衝鋒走出畫面後消失的 1 秒內 RD 不呼叫本函式(潰散由 drawUnitBreak 畫)。血條只在 hp < maxHp 時畫, 在框外上方, 中心 (x, y−16−6), 寬 32, 高 4; 魂件槽列由 RD 畫在 (x, y−16−20)"
+      "notes": "步兵(移動單位, 固守集結點, 不巡邏)。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackAge / attackDuration / moving / charging / rooted / resonating 規則同 drawCrossbow(rooted 時受到的傷害減半, 外觀要比平常更厚實)。healing(本輪新增): 這一幀正被治癒(治癒領域、治癒光線、聖光軌跡任一, 且還沒滿血)時為 true, 身上一層治癒意象的微光 + 小小的十字 / 光點往上飄(conventions.heal), 畫在框內; 滿血時 RD 傳 false。returning: 歸隊中(重生後、買來後、重設集結點後走向集結點; 不攻擊也不會被打), 畫成半透明 + 淡淡的魂光拖尾(拖尾可畫到框外後方 12px), 一眼看得出「暫時不在戰鬥」; 歸隊中 hp = maxHp、charging = false、healing = false、resonating = false。潰散、重生排隊中、衝鋒走出畫面後消失的 1 秒內、走回主堡消失後 RD 不呼叫本函式(潰散由 drawUnitBreak 畫)。瞬閃是瞬間換座標, 特效由 drawBlink 畫。血條只在 hp < maxHp 時畫, 在框外上方, 中心 (x, y−16−6), 寬 32, 高 4; 魂件槽列由 RD 畫在 (x, y−16−20)"
     },
     {
       "name": "drawGolem",
-      "state": ["x", "y", "team", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "charging", "resonating", "returning", "targeted"],
+      "state": ["x", "y", "team", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "charging", "rooted", "healing", "resonating", "returning", "targeted"],
       "size": [56, 56],
-      "notes": "石魔像。team: \"neutral\"(中立, 灰暗、看得出不屬於任何一方; 中立時 hp = maxHp、charging / resonating / returning = false)或 \"ally\"(我方)。**中立時腳下掛一塊「中立」小牌**: 牌中心 (x, y+28+12), 40×18, 屬框外的允許例外(牌底 y+49), 文字「中立」由美術畫, 牌子顏色要和我方 / 敵方都分得開; 我方不畫牌。其餘欄位規則同 drawSoldier(血條中心 (x, y−28−6), 寬 56; returning 拖尾可畫到框外後方 12px); 魂件槽列由 RD 畫在 (x, y−28−20)"
+      "notes": "石魔像。team: \"neutral\"(中立, 灰暗、看得出不屬於任何一方; 中立時 hp = maxHp、charging / rooted / healing / resonating / returning = false)或 \"ally\"(我方)。中立時腳下掛一塊「中立」小牌: 牌中心 (x, y+28+12), 40×18, 屬框外的允許例外(牌底 y+49), 文字「中立」由美術畫, 牌子顏色要和我方 / 敵方都分得開; 我方不畫牌。其餘欄位規則同 drawSoldier(血條中心 (x, y−28−6), 寬 56; returning 拖尾可畫到框外後方 12px; rooted、healing 畫在框內); 魂件槽列由 RD 畫在 (x, y−28−20)"
     },
     {
       "name": "drawRallyFlag",
       "state": ["x", "y", "plantAge", "plantDuration"],
       "size": [24, 40],
-      "notes": "新函式。集結旗: 玩家插下旗幟後, 立在地上直到對應的兵走到為止(RD 在兵到達時停止呼叫)。畫在地面層(drawFrostAura 之後、金幣之前)。(x, y) 是旗桿插進地面的點(不是框中心): 判定框是 x−4 ~ x+20、y−40 ~ y, 旗桿在 x, 旗面往右飄; 旗子用我方的顏色, 和舉在玩家手上的旗幟(drawPlayer)、放置預覽(drawPlacePreview flag)是同一面旗。plantDuration = 0.3: 插下時往下一戳、地面揚起一圈小塵土(塵土可超出框外至多 8px), 閒置 plantAge = 0.3。同時可能有多支(每隻在路上的兵一支)"
+      "notes": "沿用上一輪, 無異動。集結旗: 玩家插下旗幟後, 立在地上直到對應的兵走到為止(RD 在兵到達、或那隻兵走回主堡退款時停止呼叫)。畫在地面層(drawHealAura 之後、金幣之前)。(x, y) 是旗桿插進地面的點(不是框中心): 判定框是 x−4 ~ x+20、y−40 ~ y, 旗桿在 x, 旗面往右飄; 旗子用我方的顏色, 和舉在玩家手上的旗幟(drawPlayer)、放置預覽(drawPlacePreview flag)是同一面旗。plantDuration = 0.3: 插下時往下一戳、地面揚起一圈小塵土(塵土可超出框外至多 8px), 閒置 plantAge = 0.3。同時可能有多支(每隻在路上的兵一支)"
     },
     {
       "name": "drawUnitBreak",
       "state": ["kind", "x", "y", "age", "duration"],
       "size": { "soldier": [96, 96], "golem": [120, 120] },
-      "notes": "我方移動單位生命歸 0 時, 在倒下的地方播放的一次性「潰散」特效: 單位化成幾道魂光, 往主堡方向(右)飛散後消失, 讓玩家知道「它回主堡排隊了, 沒有死」; 要和敵人的死亡(變屍體)分得開。kind: \"soldier\" | \"golem\"。duration = 0.5, RD 只在 0 ≤ age < duration 時呼叫; 魂光不超出 size(依 kind)。之後主堡左上方出現 drawRespawnQueue"
+      "notes": "沿用上一輪, 無異動。我方移動單位生命歸 0 時, 在倒下的地方播放的一次性「潰散」特效: 單位化成幾道魂光, 往主堡方向(右)飛散後消失, 讓玩家知道「它回主堡排隊了, 沒有死」; 要和敵人的倒下消散(drawCorpse)分得開。kind: \"soldier\" | \"golem\"。duration = 0.5, RD 只在 0 ≤ age < duration 時呼叫; 魂光不超出 size(依 kind)。之後主堡左上方出現 drawRespawnQueue"
     },
     {
       "name": "drawEnemy",
-      "state": ["type", "x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "stunAge", "stunDuration", "targeted"],
-      "size": { "imp": [32, 32], "archer": [32, 32], "ice": [32, 32], "drummer": [36, 36], "brute": [44, 44] },
-      "notes": "沿用上一輪, 無異動。type 見 conventions.enemyTypes。一眼要和我方單位分開。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackDuration = 0.15(打我方移動單位時的出手動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: false 表示被拆掉進攻主堡後停在原地, 畫成呆站(例: 頭上一個問號, 畫在框內)。slowed: 正被減速(含被搶奪、被附冰打中), 加一層冰藍色調(只改顏色)。stunDuration = 1.0: 被衝鋒撞到後暈眩, 0 ≤ stunAge < 1.0 時頭頂畫繞圈的星星(畫在框內上半部, 不超出框; 和呆站問號同時出現時星星優先, 問號不畫), 閒置 stunAge = 1.0; 撞退的位移由 RD 更新座標。血條只在 hp < maxHp 時畫, 在框外上方, 中心 (x, y−高/2−6), 寬 = 該種類寬, 高 4; 敵人是互動目標或正被搶奪時, RD 另外呼叫 drawSoulSlots 畫在 (x, y−高/2−20)"
+      "state": ["type", "x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "stunAge", "stunDuration", "healing", "targeted"],
+      "size": { "imp": [32, 32], "archer": [32, 32], "ice": [32, 32], "drummer": [36, 36], "thunder": [36, 36], "healer": [36, 36], "brute": [44, 44] },
+      "notes": "type 見 conventions.enemyTypes(本輪新增 thunder、healer; drummer 改成衝鋒造型)。一眼要和我方單位分開。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackDuration = 0.15(打我方移動單位時的出手動作, 含雷鬼放電; 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: false 表示被拿掉進攻主堡後停在原地, 畫成呆站(例: 頭上一個問號, 畫在框內)。slowed: 正被減速(含被搶奪、被附冰打中), 加一層冰藍色調(只改顏色)。stunDuration: 本輪起依來源不同, 衝鋒 / 神聖之路撞到為 1.0、雷霆斬為 0.5; 0 ≤ stunAge < stunDuration 時頭頂畫繞圈的星星(畫在框內上半部, 不超出框; 和呆站問號同時出現時星星優先, 問號不畫); 沒在暈眩時 stunAge = stunDuration = 1.0; 撞退的位移由 RD 更新座標。healing(本輪新增): 這一幀正被醫鬼治癒且沒滿血時為 true, 畫法同 drawSoldier 的 healing(治癒意象, 畫在框內), 讓玩家看出「這群鬼在被補血」。血條只在 hp < maxHp 時畫, 在框外上方, 中心 (x, y−高/2−6), 寬 = 該種類寬, 高 4; 敵人是互動目標或正被搶奪時, RD 另外呼叫 drawSoulSlots 畫在 (x, y−高/2−20)"
     },
     {
       "name": "drawCorpse",
-      "state": ["kind", "x", "y", "life", "maxLife", "targeted"],
-      "size": { "imp": [32, 32], "archer": [32, 32], "ice": [32, 32], "drummer": [36, 36], "brute": [44, 44] },
-      "notes": "沿用上一輪, 無異動。敵人屍體。kind 同 drawEnemy 的 type。life: 剩餘秒數, maxLife = 15; life < 3 時閃爍(本函式依 life 自行判斷節奏), 其餘時間維持清楚可辨。魂件槽列由 RD 畫在 (x, y−高/2−12)"
+      "state": ["kind", "x", "y", "life", "maxLife"],
+      "size": { "imp": [32, 32], "archer": [32, 32], "ice": [32, 32], "drummer": [36, 36], "thunder": [36, 36], "healer": [36, 36], "brute": [44, 44] },
+      "notes": "**本輪改成敵人的「倒下消散」特效**(屍體不能再拿魂件, 使用者: 魂件只能拔活著的敵人)。kind 同 drawEnemy 的 type。maxLife = 0.6(上一輪 15), life 從 0.6 數到 0, RD 只在 life > 0 時呼叫; 畫成倒下的鬼一路變淡、往下沉或化成煙消散, life → 0 時完全消失, 不閃爍。不是互動目標(targeted 刪除), 不畫槽列。要和我方的潰散(drawUnitBreak, 魂光往主堡飛)一眼分得開。畫在 size 內"
     },
     {
       "name": "drawGroundPart",
       "state": ["item", "x", "y", "spawnAge", "spawnDuration", "life", "maxLife", "permanent", "targeted"],
       "size": [28, 28],
-      "notes": "地上的魂件(玩家丟下、拆除 / 建築退款 / 招募掉出)。item: conventions.itemKinds 的 12 種魂件之一(基本、組合或 \"shop\")。life: 剩餘秒數, maxLife = 10; life < 3 時閃爍(節奏和 drawCorpse 一致, 本函式依 life 判斷), 讓玩家知道快消失了。permanent: item 為 \"shop\"(購買)時為 true, 此時 life = maxLife = 10 不變、不閃爍, 改畫特殊外觀: 底下一圈金色光座 + 緩慢脈動的光(光座畫在 36×36 內, 屬框外的允許例外), 一眼看出「這個不會消失」; 其他魂件一律 false。spawnDuration = 0.6: 從主堡方向(招募、建築退款)或從拆掉的建築(拆除)彈出落地並閃光(彈出的位移與光芒可超出框外, 至多 24px), 閒置 spawnAge = 0.6; 玩家丟下的、互換放下的 RD 直接傳閒置值"
+      "notes": "地上的魂件(玩家丟下、拆除 / 走回主堡退款 / 招募掉出)。item: conventions.itemKinds 的 19 種魂件之一(基本、組合或 \"shop\")。life: 剩餘秒數, maxLife = 10; life < 3 時閃爍(本函式依 life 判斷節奏), 讓玩家知道快消失了。permanent: item 為 \"shop\"(購買)時為 true, 此時 life = maxLife = 10 不變、不閃爍, 改畫特殊外觀: 底下一圈金色光座 + 緩慢脈動的光(光座畫在 36×36 內, 屬框外的允許例外), 一眼看出「這個不會消失」; 其他魂件一律 false。spawnDuration = 0.6: 從主堡方向(招募、走回主堡退款)或從拆掉的建築(拆除)彈出落地並閃光(彈出的位移與光芒可超出框外, 至多 24px), 閒置 spawnAge = 0.6; 玩家丟下的、互換放下的 RD 直接傳閒置值"
     },
     {
       "name": "drawCoin",
@@ -121,67 +135,97 @@
       "name": "drawPlayer",
       "state": ["x", "y", "moving", "handItem", "holdingFlag", "stealing", "stealProgress", "resonating", "attackAge", "attackDuration"],
       "size": [32, 32],
-      "notes": "玩家魂匠, 一眼要和所有單位分得開。玩家身上沒有魂件槽, 頭上不畫槽列。handItem: 手上「拿著」的物品(conventions.itemKinds 的魂件或建築材料字串)或 null; 畫在身體右側、像是捧在手上, 圖示中心 (x+28, y), 22×22, 屬框外的允許例外。holdingFlag: 舉著旗幟(買兵或重設集結點後)時為 true: 這時手上只畫旗幟、不畫 handItem(handItem 可能仍有值, 被旗幟蓋住), 旗幟畫在 (x+28, y−6) 為中心的 22×34 內(旗桿頂到 y−23, 屬框外的允許例外), 和 drawRallyFlag 是同一面旗。stealing: 正在搶奪活敵人的魂件; stealProgress: 0~1, 不在搶奪時 stealing = false、stealProgress = 0; 進度畫成繞著玩家的圓環, 半徑 24 指圓環外緣, 環寬 4(往內), 從正上方順時針填滿, 圓環超出 32×32 是允許的例外。resonating(本輪加回): 玩家站在帶攻擊魂件的魂柱範圍內、有共鳴效果時為 true, 身上帶一層微光(畫在框內, 和弩塔 resonating 同一套感覺)。attackDuration = 0.15(玩家的共鳴攻擊出手時的動作, 位移不超出框外 4px), 閒置 attackAge = 0.15; 投射物、斬擊特效另由 drawProjectile 等畫"
+      "notes": "沿用上一輪, 欄位無異動(handItem 多了新魂件字串)。玩家魂匠, 一眼要和所有單位分得開。玩家身上沒有魂件槽, 頭上不畫槽列。handItem: 手上「拿著」的物品(conventions.itemKinds 的魂件或建築材料字串)或 null; 畫在身體右側、像是捧在手上, 圖示中心 (x+28, y), 22×22, 屬框外的允許例外。holdingFlag: 舉著旗幟(買兵或重設集結點後)時為 true: 這時手上只畫旗幟、不畫 handItem(handItem 可能仍有值, 被旗幟蓋住), 旗幟畫在 (x+28, y−6) 為中心的 22×34 內(旗桿頂到 y−23, 屬框外的允許例外), 和 drawRallyFlag 是同一面旗。stealing: 正在搶奪活敵人的魂件; stealProgress: 0~1, 不在搶奪時 stealing = false、stealProgress = 0(讀條中敵人倒下直接完成時, 進度不會補到 1, 直接結束); 進度畫成繞著玩家的圓環, 半徑 24 指圓環外緣, 環寬 4(往內), 從正上方順時針填滿, 圓環超出 32×32 是允許的例外。resonating: 玩家站在帶會共鳴魂件的魂柱範圍內、有共鳴效果時為 true, 身上帶一層微光(畫在框內, 和弩塔 resonating 同一套感覺)。attackDuration = 0.15(玩家的共鳴攻擊出手時的動作, 位移不超出框外 4px), 閒置 attackAge = 0.15; 投射物、斬擊特效另由 drawProjectile 等畫"
     },
     {
       "name": "drawActionHint",
       "state": ["x", "y", "label"],
       "size": [96, 22],
-      "notes": "Z 情境提示, 常駐在玩家腳下: RD 傳 (玩家 x, 玩家 y + 30), 本體 96×22(y 範圍 玩家 y+19 ~ y+41, 不壓玩家本體 y+16 以內; 搶奪圓環外緣 y+24 會和提示上緣重疊 5px, 提示畫在圓環之上)。內容: 左邊一個 [Z] 鍵帽(16×16, conventions.keycap), 隔 4px 接 label 文字。label(RD 依 spec 規則 39 算): 「拿起」「選單」「搶奪」「裝上」「替換」「互換」「丟下」「蓋下」「不能蓋」「插旗」「不能插」「取消搶奪」; 空字串時 RD 不呼叫。「不能蓋」「不能插」畫成灰色 / 紅色, 其他一般色。彈窗開著或結算時 RD 不呼叫。半透明小底板, 不可擋住地上的東西太多"
+      "notes": "沿用上一輪, 無異動。Z 情境提示, 常駐在玩家腳下: RD 傳 (玩家 x, 玩家 y + 30), 本體 96×22(y 範圍 玩家 y+19 ~ y+41, 不壓玩家本體 y+16 以內; 搶奪圓環外緣 y+24 會和提示上緣重疊 5px, 提示畫在圓環之上)。內容: 左邊一個 [Z] 鍵帽(16×16, conventions.keycap), 隔 4px 接 label 文字。label(RD 依 spec 規則 42 算): 「拿起」「選單」「搶奪」「裝上」「替換」「互換」「丟下」「蓋下」「不能蓋」「插旗」「不能插」「取消搶奪」; 空字串時 RD 不呼叫。「不能蓋」「不能插」畫成灰色 / 紅色, 其他一般色。彈窗開著或結算時 RD 不呼叫。半透明小底板, 不可擋住地上的東西太多"
     },
     {
       "name": "drawPlacePreview",
       "state": ["kind", "x", "y", "valid"],
       "size": { "crossbow": [48, 48], "pillar": [48, 48], "flag": [24, 40] },
-      "notes": "放置預覽。kind: \"crossbow\" | \"pillar\"(拿著建築材料)或 \"flag\"(舉著旗幟; 取代上一輪的 soldier / golem)。弩塔與魂柱時 (x, y) 是玩家所站蓋塔格的中心, 畫出 48×48 的格子框(魂柱本體 36×36 畫在格子框中央); 例外: pillar 另外畫出半徑 150 的範圍圈(虛線, 150 指外緣), 讓玩家放之前看到會蓋到誰。flag 時 (x, y) 是玩家中心, 在玩家腳下畫一支半透明的旗幟輪廓, 判定框同 drawRallyFlag(以 (x, y+16) 為旗桿插地點: x−4 ~ x+20、y−24 ~ y+16)。半透明輪廓, 畫在 size 內。valid: true 畫成可放(例: 綠), false 畫成不可放(例: 紅 + 叉)"
+      "notes": "沿用上一輪, 無異動。放置預覽。kind: \"crossbow\" | \"pillar\"(拿著建築材料)或 \"flag\"(舉著旗幟)。弩塔與魂柱時 (x, y) 是玩家所站蓋塔格的中心, 畫出 48×48 的格子框(魂柱本體 36×36 畫在格子框中央); 例外: pillar 另外畫出半徑 150 的範圍圈(虛線, 150 指外緣), 讓玩家放之前看到會蓋到誰。flag 時 (x, y) 是玩家中心, 在玩家腳下畫一支半透明的旗幟輪廓, 判定框同 drawRallyFlag(以 (x, y+16) 為旗桿插地點: x−4 ~ x+20、y−24 ~ y+16)。半透明輪廓, 畫在 size 內。valid: true 畫成可放(例: 綠), false 畫成不可放(例: 紅 + 叉)"
     },
     {
       "name": "drawSoulSlots",
       "state": ["x", "y", "slots", "virtual"],
       "size": [20, 20],
-      "notes": "單位、魂柱、主堡、屍體(以及是互動目標或正被搶奪的活敵人)頭上的魂件槽列; 玩家沒有槽列。x, y 是實體槽列的中心。slots: 陣列, 長度 1~3(= 槽位上限: 魂柱 1、弩塔 2、步兵 2、石魔像 3、主堡 3; 屍體 / 敵人 = 身上魂件數 1~3), 每項是 conventions.itemKinds 的魂件字串(基本、組合或 \"shop\")或 null(空格), 由左到右。每格 18×18, 格距 20, 實體槽列寬 = 長度×20(size 給的是單格)。空格與有魂件的格子要一眼分得出來; 組合魂件的圖示在 18×18 內也要看得出和基本魂件不同。virtual: 共鳴來的虛魂件陣列, 每項 {kind, used}: kind 是 conventions.attackKinds 字串, used 為 true 表示它正在生效(配進組合、附冰或單件效果; 本輪起沒配到的虛魂件也有效果, 所以接收者身上的虛魂件幾乎都是 true, false 只在 RD 判斷完全沒作用時出現), false 較淡; 長度 0 以上(多根魂柱重疊時可能很多), 依魂柱遠近排列。畫在實體槽列右邊, 中間隔 6px, 每格 14×14、格距 16, 半透明 / 虛線框, 一眼看得出「不是自己的、是借來的」。長度 ≤ 3 全畫; 超過 3 項時只畫前 2 項, 第 3 格畫「+N」(N = 剩下的項數), 所以虛魂件區最寬 3 格 = 48px, 由本函式畫在框外右側(允許的例外)。只有接收者(弩塔、我方步兵 / 石魔像且非歸隊中、主堡)會傳非空的 virtual, 其他一律傳 []"
+      "notes": "單位、魂柱、主堡(以及是互動目標或正被搶奪的活敵人)頭上的魂件槽列; 玩家沒有槽列, 倒下消散中的敵人也沒有(本輪起沒有可拿的屍體)。x, y 是實體槽列的中心。slots: 陣列, 長度 1~3(= 槽位上限: 魂柱 1、弩塔 2、步兵 2、石魔像 3、主堡 3; 敵人 = 身上魂件數 1~3), 每項是 conventions.itemKinds 的魂件字串(基本、組合或 \"shop\")或 null(空格), 由左到右。每格 18×18, 格距 20, 實體槽列寬 = 長度×20(size 給的是單格)。空格與有魂件的格子要一眼分得出來; 組合魂件的圖示在 18×18 內也要看得出和基本魂件不同。virtual: 共鳴來的虛魂件陣列, 每項 {kind, used}: kind 是 conventions.resonantKinds 字串, used 為 true 表示它正在生效(配進組合、附冰、附電或單件效果), false 較淡; 長度 0 以上(多根魂柱重疊時可能很多), 依魂柱遠近排列。畫在實體槽列右邊, 中間隔 6px, 每格 14×14、格距 16, 半透明 / 虛線框, 一眼看得出「不是自己的、是借來的」。長度 ≤ 3 全畫; 超過 3 項時只畫前 2 項, 第 3 格畫「+N」(N = 剩下的項數), 所以虛魂件區最寬 3 格 = 48px, 由本函式畫在框外右側(允許的例外)。只有接收者(弩塔、我方步兵 / 石魔像且非歸隊中、主堡)會傳非空的 virtual, 其他一律傳 []"
     },
     {
       "name": "drawFrostAura",
       "state": ["x", "y", "radius", "owner"],
       "size": [140, 140],
-      "notes": "冰霜圈: 身上有冰霜、但沒配進組合也沒附冰(這個單位沒有任何攻擊效果)的我方單位, 以及帶冰霜的敵人腳下的減速範圍, 跟著移動。radius = 70, 指外緣; owner 見 conventions.teams。淡淡的冰霜地面圈, 不蓋住單位辨識, 要和冰霜魂柱的範圍分得開(這個小、跟著單位走)"
+      "notes": "沿用上一輪, 無異動。冰霜圈: 身上有冰霜、但沒配進組合也沒附冰(這個單位沒有任何攻擊效果)的我方單位, 以及帶冰霜的敵人腳下的減速範圍, 跟著移動。radius = 70, 指外緣; owner 見 conventions.teams。淡淡的冰霜地面圈, 不蓋住單位辨識, 要和冰霜魂柱的範圍、治癒領域分得開(這個小、跟著單位走)"
+    },
+    {
+      "name": "drawHealAura",
+      "state": ["x", "y", "radius", "owner"],
+      "size": [200, 200],
+      "notes": "新函式。治癒領域: 身上有治癒單件效果(實體或共鳴來的虛治癒、且沒配進組合)的我方單位 / 主堡 / 弩塔 / 玩家, 以及醫鬼腳下的補血範圍, 跟著移動。畫在地面層(drawFrostAura 之後)。radius = 100, 指圓的外緣(就是判定邊界)。owner: \"ally\"(補我方兵)或 \"enemy\"(醫鬼補鬼), 兩邊一眼分得出(conventions.teams); 治癒意象(conventions.heal), 帶緩慢往上飄的光點。治癒魂柱旁會有好幾個單位同時帶領域, 範圍大量重疊: 每個要畫得很淡, 重疊 3 層仍不可蓋住路線與單位的辨識, 要和魂柱範圍、冰霜圈、購買區分得開"
+    },
+    {
+      "name": "drawHealBeam",
+      "state": ["x1", "y1", "x2", "y2", "age", "duration"],
+      "size": [0, 0],
+      "notes": "新函式。治癒光線: 從施放者中心 (x1,y1) 射到被治癒的友軍中心 (x2,y2) 的一道光(長度 0~260), 治癒意象(conventions.heal)。光束全寬至多 8(中線兩側各 4); 末端在友軍身上綻開一團光, 畫在以 (x2,y2) 為中心的 24×24 內。duration = 0.3, RD 只在 0 ≤ age < duration 時呼叫, 越接近結束越淡。要和穿透箭光束(攻擊)、共鳴線一眼分得開: 這是「補」不是「打」"
     },
     {
       "name": "drawProjectile",
       "state": ["x", "y", "angle", "kind", "owner"],
       "size": [10, 10],
-      "notes": "投射物。angle: 飛行方向(弧度, 0 = 向右)。kind: \"normal\"(遠攻)或 \"ice\"(冰箭, 以及附冰的遠攻箭), 兩種要分得開。owner 見 conventions.teams(弓鬼射兵是 enemy; 玩家與我方單位射的都是 ally)"
+      "notes": "沿用上一輪, 無異動。投射物。angle: 飛行方向(弧度, 0 = 向右)。kind: \"normal\"(遠攻)或 \"ice\"(冰箭, 以及附冰的遠攻箭), 兩種要分得開。owner 見 conventions.teams(弓鬼射兵是 enemy; 玩家與我方單位射的都是 ally)。雷電球不是投射物, 由 drawThunderOrb 畫"
+    },
+    {
+      "name": "drawThunderOrb",
+      "state": ["x", "y", "pulseAge", "pulseDuration"],
+      "size": [120, 120],
+      "notes": "新函式。雷電球(雷電球組合射出, 只有我方與玩家會放): 直線緩慢前進的一顆電球, 位置由 RD 更新。本體: 中心 24×24 的電球, 表面有細小電弧跳動(電擊意象, conventions.shock)。它每 0.5 秒電擊周圍 60 內所有敵人: 以 (x, y) 為中心畫一圈淡淡的電場, 半徑 60 指外緣(就是判定邊界, 不畫到外緣之外), 讓玩家看出它電得到多遠。pulseDuration = 0.15: 每次放電時電場閃亮一下(只改亮度, 不放大), 閒置 pulseAge = 0.15。電到誰的電弧另由 drawShockChain 畫"
     },
     {
       "name": "drawPierceBeam",
       "state": ["x1", "y1", "x2", "y2", "frost", "age", "duration"],
       "size": [0, 0],
-      "notes": "穿透箭(只有我方與玩家會射): 從射手中心 (x1,y1) 到射程終點 (x2,y2) 的直線光束, 判定線寬 28(中線兩側各 14, 28 指全寬), 畫的寬度不超過 28。frost: 附冰時為 true, 光束帶冰藍意象(conventions.frost), 一眼看得出「這道穿透箭有冰」——這是使用者回報想看到的效果。duration = 0.15, RD 只在 0 ≤ age < duration 時呼叫, 越接近結束越淡"
+      "notes": "沿用上一輪, 無異動。穿透箭(只有我方與玩家會射): 從射手中心 (x1,y1) 到射程終點 (x2,y2) 的直線光束, 判定線寬 28(中線兩側各 14, 28 指全寬), 畫的寬度不超過 28。frost: 附冰時為 true, 光束帶冰藍意象(conventions.frost)。duration = 0.15, RD 只在 0 ≤ age < duration 時呼叫, 越接近結束越淡"
     },
     {
       "name": "drawAreaHit",
       "state": ["kind", "x", "y", "radius", "angle", "frost", "age", "duration"],
       "size": [120, 120],
-      "notes": "範圍攻擊 / 撞擊的一次性特效(只有我方與玩家會放), 中心 (x, y)。kind: \"whirl\"(旋風斬, 繞中心旋轉一圈的斬擊, radius 60)、\"frostSmash\"(冰霜重擊的減速波, radius 60)、\"charge\"(衝鋒撞擊, radius 30, 畫在被撞的敵人中心: 一記猛烈的撞擊 + 朝撞退方向噴出的衝擊線)。radius 指效果外緣, 畫不超出外緣。angle: 只有 charge 用, 撞退方向(弧度, 0 = 向右), 其他 kind 傳 0。frost: 附冰時為 true(whirl、charge 才可能; frostSmash 本身就是冰, 一律傳 false), 加上冰藍意象。duration = 0.3, RD 只在 0 ≤ age < duration 時呼叫"
+      "notes": "範圍攻擊 / 撞擊的一次性特效(只有我方與玩家會放), 中心 (x, y)。kind: \"whirl\"(旋風斬, 繞中心旋轉一圈的斬擊, radius 60)、\"frostSmash\"(冰霜重擊的減速波, radius 60)、\"charge\"(衝鋒 / 神聖之路撞擊, radius 30, 畫在被撞的敵人中心: 一記猛烈的撞擊 + 朝撞退方向噴出的衝擊線)、\"shockBurst\"(本輪新增: 瞬閃落地時的放電爆開, radius 60, 畫在落點, 電擊意象 conventions.shock)。radius 指效果外緣, 畫不超出外緣。angle: 只有 charge 用, 撞退方向(弧度, 0 = 向右), 其他 kind 傳 0。frost: 附冰時為 true(whirl、charge、shockBurst 才可能; frostSmash 本身就是冰, 一律傳 false), 加上冰藍意象。duration = 0.3, RD 只在 0 ≤ age < duration 時呼叫"
+    },
+    {
+      "name": "drawShockChain",
+      "state": ["segments", "owner", "age", "duration"],
+      "size": [0, 0],
+      "notes": "新函式。電擊的電弧(放電、附電 / 雷霆斬的連鎖、雷電球的每次放電、雷鬼電兵), 電擊意象(conventions.shock)。segments: 線段陣列 [[x1,y1,x2,y2], ...], 長度 1~8(一次電到更多隻時 RD 只傳前 8 段), 每段是一道從 (x1,y1) 跳到 (x2,y2) 的鋸齒閃電(例: 放電 = 施放者 → 主目標 + 主目標 → 各連鎖目標; 雷電球 = 球心 → 每隻被電的敵人)。每道閃電的鋸齒偏離中線至多 6px(全寬至多 12), 兩端各一個小亮點(直徑 ≤ 10)。owner: \"ally\" | \"enemy\"(雷鬼電我方兵), 兩邊一眼分得出(conventions.teams)。duration = 0.2, RD 只在 0 ≤ age < duration 時呼叫, 鋸齒形狀可以每幀抖動, 越接近結束越淡"
     },
     {
       "name": "drawHitSpark",
       "state": ["x", "y", "frost", "age", "duration"],
       "size": [24, 24],
-      "notes": "命中火花, 單體傷害命中時在被打的單位中心播放(敵人或我方移動單位)。frost: 這一擊附冰時為 true, 火花帶冰屑(conventions.frost)。duration = 0.25, RD 只在 0 ≤ age < duration 時呼叫"
+      "notes": "沿用上一輪, 無異動。命中火花, 單體傷害命中時在被打的單位中心播放(敵人或我方移動單位)。frost: 這一擊附冰時為 true, 火花帶冰屑(conventions.frost)。duration = 0.25, RD 只在 0 ≤ age < duration 時呼叫"
+    },
+    {
+      "name": "drawBlink",
+      "state": ["x1", "y1", "x2", "y2", "age", "duration"],
+      "size": [0, 0],
+      "notes": "新函式。瞬閃: 單位(或魂柱、弩塔)從 (x1,y1) 一瞬間移到 (x2,y2)(衝到敵人面前或回集結點), 單位本身已經畫在新位置。畫一道從起點劈到終點的閃電軌跡(全寬至多 12, 中線兩側各 6), 起點留一團逐漸散去的殘影光、終點一閃, 兩團光各畫在以端點為中心的 40×40 內。電擊意象(conventions.shock)。duration = 0.3, RD 只在 0 ≤ age < duration 時呼叫, 越接近結束越淡。落地放電另由 drawAreaHit shockBurst 畫(回集結點時沒有)"
     },
     {
       "name": "drawStealLink",
       "state": ["x1", "y1", "x2", "y2", "progress"],
       "size": [0, 0],
-      "notes": "沿用上一輪, 無異動。搶奪中的連線, 從玩家中心 (x1,y1) 連到敵人身上被搶的那一格中心 (x2,y2): 該敵人的槽列畫在 (敵人 x, 敵人 y − 高/2 − 20), 第 i 格中心 x = 敵人 x − 槽數×10 + 10 + 20i。progress: 0~1, 越接近 1 越強烈。RD 只在搶奪中呼叫"
+      "notes": "沿用上一輪, 無異動。搶奪中的連線, 從玩家中心 (x1,y1) 連到敵人身上被搶的那一格中心 (x2,y2): 該敵人的槽列畫在 (敵人 x, 敵人 y − 高/2 − 20), 第 i 格中心 x = 敵人 x − 槽數×10 + 10 + 20i。progress: 0~1, 越接近 1 越強烈。RD 只在搶奪中呼叫(讀條中敵人倒下就直接完成, 那一幀起不再呼叫)"
     },
     {
       "name": "drawComboName",
       "state": ["x", "y", "name", "isNew", "age", "duration"],
       "size": [200, 36],
-      "notes": "單位(含玩家)多出組合時頭上跳出的組合名稱, 合成與共鳴配組都用這個。x, y: RD 傳 (單位 x, 單位 y − 半邊長 − 44), 在槽列之上; 玩家是 (x, y−16−44)。name: 組合名稱字串。isNew: 這次開網頁以來第一次出現時為 true, 文字改成「新組合! 」+ name 並更醒目, size 放寬為 [280, 48]。duration = 1.5, RD 只在 0 ≤ age < duration 時呼叫; 出現時可彈一下(整塊放大至多 1.2 倍), 之後往上飄至多 16px 並淡出, 都算在 size 內"
+      "notes": "沿用上一輪, 無異動(name 多了雷霆斬、雷電球、瞬閃、治癒光線、神聖之路、不動如山)。單位(含玩家)多出組合時頭上跳出的組合名稱, 合成與共鳴配組都用這個。x, y: RD 傳 (單位 x, 單位 y − 半邊長 − 44), 在槽列之上; 玩家是 (x, y−16−44)。name: 組合名稱字串(至多 4 個字)。isNew: 這次開網頁以來第一次出現時為 true, 文字改成「新組合! 」+ name 並更醒目, size 放寬為 [280, 48]。duration = 1.5, RD 只在 0 ≤ age < duration 時呼叫; 出現時可彈一下(整塊放大至多 1.2 倍), 之後往上飄至多 16px 並淡出, 都算在 size 內"
     },
     {
       "name": "drawSpawnWarning",
@@ -193,13 +237,13 @@
       "name": "drawTutorial",
       "state": ["stage", "text", "keys", "pressedKeys", "tipX", "tipY", "side", "bodyX", "bodyY", "doneAge", "doneDuration"],
       "size": [300, 72],
-      "notes": "新手教學泡泡(一次只有一個)。stage: 階段編號 1~14(spec「新手教學」表)。text: 提示文字(一句, 15 字內; 同一階段可能依情境換文字, 例: 階段 2 商店沒開 / 開著)。keys: 要顯示的按鍵圖示陣列, 長度 0~4, 項目為 \"left\" | \"right\" | \"up\" | \"down\" | \"z\" | \"x\" | \"space\", 依序由左到右排成一列(鍵帽 26×26、間距 6; 空白鍵 52×26)。pressedKeys: keys 裡這個階段已按過的那些(長度 0~4), 已按過的鍵帽亮起 / 打勾; 只有階段 1 會用到, 其他階段傳 []。版位: 泡泡本體 300×72, 中心 (bodyX, bodyY)(RD 已依 spec「位置規則」算好並夾在畫面內), 文字中心在本體中心上方 14px, 按鍵列中心在本體中心下方 16px; keys 為空時文字置中。箭頭: 從本體朝尖端 (tipX, tipY) 的三角形, 長 20, 底邊寬 20。side 表示本體在尖端的哪一邊: \"up\" 本體在尖端上方(箭頭從本體下緣往下指, 箭頭底邊中點 x = 尖端 x; 本體被水平夾住時箭頭偏離本體中心, 但仍在本體寬度內)、\"down\" 本體在尖端下方(從本體上緣往上指)、\"left\" 本體在尖端左邊(本輪新增, 箭頭從本體右緣往右指, 底邊中點 y = 尖端 y = 本體中心 y)、\"right\" 本體在尖端右邊(從本體左緣往左指)。left / right 只用在泡泡貼著彈窗時(箭頭指著彈窗側邊), 這時 RD 在彈窗之後才呼叫本函式。doneDuration = 0.6: 完成特效, 0 ≤ doneAge < 0.6 時本體內打勾、整個泡泡(本體 + 箭頭, 以本體中心為軸)先放大到 1.15 倍再淡出, 放大後 345×83 屬允許的框外例外; 沒在播時 doneAge = 0.6。完成特效播完後 RD 才換下一個階段; 完成當下彈窗關掉了也照樣在原位置播完。泡泡要和組合名稱、彈窗一眼分得開(像是「教練的提示」)"
+      "notes": "新手教學泡泡(一次只有一個)。stage: 階段編號 1~13(spec「新手教學」表; 本輪由 14 階段改成 13)。text: 提示文字(一句, 15 字內; 同一階段可能依情境換文字, 例: 階段 2 商店沒開 / 開著)。keys: 要顯示的按鍵圖示陣列, 長度 0~4, 項目為 \"left\" | \"right\" | \"up\" | \"down\" | \"z\" | \"x\" | \"space\", 依序由左到右排成一列(鍵帽 26×26、間距 6; 空白鍵 52×26)。pressedKeys: keys 裡這個階段已按過的那些(長度 0~4), 已按過的鍵帽亮起 / 打勾; 只有階段 1 會用到, 其他階段傳 []。版位: 泡泡本體 300×72, 中心 (bodyX, bodyY)(RD 已依 spec「位置規則」算好並夾在畫面內), 文字中心在本體中心上方 14px, 按鍵列中心在本體中心下方 16px; keys 為空時文字置中。箭頭: 從本體朝尖端 (tipX, tipY) 的三角形, 長 20, 底邊寬 20。side 表示本體在尖端的哪一邊: \"up\" 本體在尖端上方(箭頭從本體下緣往下指, 箭頭底邊中點 x = 尖端 x; 本體被水平夾住時箭頭偏離本體中心, 但仍在本體寬度內)、\"down\" 本體在尖端下方(從本體上緣往上指)、\"left\" 本體在尖端左邊(箭頭從本體右緣往右指, 底邊中點 y = 尖端 y = 本體中心 y)、\"right\" 本體在尖端右邊(從本體左緣往左指)。left / right 只用在泡泡貼著彈窗時(箭頭指著彈窗側邊), 這時 RD 在彈窗之後才呼叫本函式。doneDuration = 0.6: 完成特效, 0 ≤ doneAge < 0.6 時本體內打勾、整個泡泡(本體 + 箭頭, 以本體中心為軸)先放大到 1.15 倍再淡出, 放大後 345×83 屬允許的框外例外; 沒在播時 doneAge = 0.6。完成特效播完後 RD 才換下一個階段; 完成當下彈窗關掉了也照樣在原位置播完。泡泡要和組合名稱、彈窗一眼分得開(像是「教練的提示」)"
     },
     {
       "name": "drawHud",
       "state": ["level", "levelName", "gold", "castleHp", "castleMaxHp", "wave", "totalWaves", "nextWaveIn", "clockPaused", "muted"],
       "size": [1280, 50],
-      "notes": "固定在畫面頂端 (0,0)~(1280,50)。固定版位(皆為該項目的左緣 x, 垂直置中 y = 25): 關卡「第 level 關 levelName」x = 16(level 1~5); 金幣 x = 230; 主堡生命 castleHp / castleMaxHp(20)x = 350; 波次 wave / totalWaves x = 500(第一波開始前 wave = 0); 倒數 x = 640: nextWaveIn 為距下一波秒數(無條件進位), 已無下一波時為 −1(不顯示); clockPaused 為 true(第 1 關教學階段 5 完成前)時不顯示秒數, 改顯示「準備中」。**上一輪的「組合」區塊整個拿掉**(使用者: 對玩家沒幫助)。喇叭圖示中心 (860,25), 28×28, muted 時打叉。右側操作提示右緣對齊 x = 1264, 左緣不小於 x = 900:「[Z] 互動  [空白鍵] 商店  [X] 靜音」, 按鍵畫成鍵帽(22×22, 空白鍵 44×22, conventions.keycap), 鍵帽和後面的字隔 4px、每組之間隔 14px。所有文字由美術畫"
+      "notes": "固定在畫面頂端 (0,0)~(1280,50)。固定版位(皆為該項目的左緣 x, 垂直置中 y = 25): 關卡「第 level 關 levelName」x = 16(level 1~5); 金幣 x = 230; 主堡生命 castleHp / castleMaxHp(20)x = 350; 波次 wave / totalWaves x = 500(第一波開始前 wave = 0); 倒數 x = 640: nextWaveIn 為距下一波秒數(無條件進位), 已無下一波時為 −1(不顯示); clockPaused 為 true(第 1 關教學階段 5 完成前)時不顯示秒數, 改顯示「準備中」。喇叭圖示中心 (860,25), 28×28, muted 時打叉。右側操作提示右緣對齊 x = 1264, 左緣不小於 x = 900:「[Z] 互動  [M] 靜音」(**本輪刪除 [空白鍵] 商店**: 使用者說會讓人誤會隨時都能開店, 改由 drawShopHint 在帶購買的單位旁提示; 靜音由 X 改 M), 按鍵畫成鍵帽(22×22, conventions.keycap), 鍵帽和後面的字隔 4px、兩組之間隔 14px。所有文字由美術畫"
     },
     {
       "name": "drawSlowMo",
@@ -211,19 +255,19 @@
       "name": "drawSoulPopup",
       "state": ["mode", "x", "y", "title", "cells", "index", "hand", "actionLabel", "desc", "shakeAge", "shakeDuration"],
       "size": [320, 180],
-      "notes": "單位選單 / 替換彈窗(同一種面板, 本輪改版, 固定 320×180)。mode: \"menu\"(手空, 對單位開的選單; 原 \"take\")或 \"replace\"(手上有魂件、目標裝滿, 選一格互換); replace 時標題下方或面板邊框用不同色調暗示「換掉」, 兩種一眼分得開。RD 算好中心 (x, y) 傳入: 放在目標上方(面板下緣 = 目標最上方附屬物頂端 − 8), 上緣 < 50 時改到目標下方; 中心 x 夾在 160~1120、y 夾在 140~630。版位(相對面板中心): 標題中心 (0, −70), title 是目標名稱字串(例「弩塔」「魂柱」「小鬼的屍體」「主堡」「石魔像」「中立石魔像」)。格子一排, 每格 40×40、格距 48, 第 i 格中心 (−120 + 48i, −30), 格子靠左排。cells: 陣列, 長度 1~4, 每項是下列之一: {type: \"slot\", item}(item 為 conventions.itemKinds 的魂件字串或 null 空格)、{type: \"demolish\", refund}(拆除格, 畫一個拆除圖示, 例: 鎚子; refund 為返還金幣整數 7 或 9)、{type: \"rally\"}(重設集結點格, 畫旗幟圖示, 和 drawRallyFlag 同一面旗)。選項格(demolish / rally)最多 1 格, 一定在最後; 要和魂件格一眼分得開(例: 不同底色)。選項格下方中心 (格 x, −2) 一行小字: demolish 寫「+refund 金」, rally 寫「移防」; 魂件格下方不寫字。replace 時 cells 只有 slot。面板右側的「手上」格, 中心 (116, −30), 40×40, 上方小字「手上」(中心 (116, −58)), 和格子之間在 x = 70 畫一條分隔線。index: 游標格(cells 的索引), 要非常明顯。hand: 手上物品字串或 null(menu 時一律 null, 手上格畫成空)。說明區(本輪新增): 面板內 x −148~148、y 10~62 的淺色底板; desc 為 null 時(游標在空格)底板留空; 否則 desc = {name, text, materials}: 第一行(y = 24)左邊 name(左緣 x = −140)、右邊 materials(右緣 x = 140), materials 是長度 0 或 2 的基本魂件字串陣列, 2 時畫成「[圖示] + [圖示]」(每個 16×16, 中間一個「+」), 0 時不畫; 第二行(y = 48, 左緣 x = −140)text 一句效果(15 字內, 文字見 spec「魂件說明」表)。底部一行 y = 78: 左邊 actionLabel(左緣 x = −148; RD 依游標決定: menu 時游標在魂件格「拿起」、在拆除格「拆除」、在重設集結點格「移防」、在空格為空字串; replace 時「互換」), 右邊「[Z] 確定  [X] 關閉」(右緣 x = 148, 鍵帽 22×22)。shakeDuration = 0.25, 無效操作時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+      "notes": "單位選單 / 替換彈窗(同一種面板, 固定 320×180)。mode: \"menu\"(手空, 對單位開的選單)或 \"replace\"(手上有魂件、目標裝滿, 選一格互換); replace 時標題下方或面板邊框用不同色調暗示「換掉」, 兩種一眼分得開。RD 算好中心 (x, y) 傳入: 放在目標上方(面板下緣 = 目標最上方附屬物頂端 − 8), 上緣 < 50 時改到目標下方; 中心 x 夾在 160~1120、y 夾在 140~630。版位(相對面板中心): 標題中心 (0, −70), title 是目標名稱字串(「弩塔」「魂柱」「主堡」「步兵」「石魔像」「中立石魔像」; 本輪起不再有「…的屍體」)。格子一排, 每格 40×40、格距 48, 第 i 格中心 (−120 + 48i, −30), 格子靠左排。cells: 陣列, 長度 1~4, 每項是下列之一: {type: \"slot\", item}(item 為 conventions.itemKinds 的魂件字串或 null 空格)、{type: \"demolish\", refund}(拆除格, 畫一個拆除圖示, 例: 鎚子; refund 為當下退款整數 0~9, 本輪起會因出廠魂件不在身上而變 0)、{type: \"rally\"}(重設集結點格, 畫旗幟圖示, 和 drawRallyFlag 同一面旗)。選項格(demolish / rally)最多 1 格, 一定在最後; 要和魂件格一眼分得開(例: 不同底色)。選項格下方中心 (格 x, −2) 一行小字: demolish 寫「+refund 金」(0 也照寫「+0 金」), rally 寫「移防」; 魂件格下方不寫字。replace 時 cells 只有 slot。面板右側的「手上」格, 中心 (116, −30), 40×40, 上方小字「手上」(中心 (116, −58)), 和格子之間在 x = 70 畫一條分隔線。index: 游標格(cells 的索引), 要非常明顯。hand: 手上物品字串或 null(menu 時一律 null, 手上格畫成空)。說明區: 面板內 x −148~148、y 10~62 的淺色底板; desc 為 null 時(游標在空格)底板留空; 否則 desc = {name, text, materials, alt}: 第一行(y = 24)左邊 name(左緣 x = −140, 至多 5 個字)、右邊材料(右緣 x = 140): materials 是長度 0 或 2 的基本魂件字串陣列, 2 時畫成「[圖示] + [圖示]」(每個 16×16, 中間一個「+」), 0 時不畫; alt(本輪新增)為基本魂件字串或 null, 只有不動如山會給(\"charge\"), 這時接在後面畫「/ [圖示]」, 表示第二件材料也可以換成它(整串「[進攻主堡] + [自動索敵] / [衝鋒]」寬約 80, 落在 x 60~140, 不和左邊的 name 重疊); 第二行(y = 48, 左緣 x = −140)text 一句效果(15 字內, 文字見 spec「魂件說明」表)。底部一行 y = 78: 左邊 actionLabel(左緣 x = −148; RD 依游標決定: menu 時游標在魂件格「拿起」、在拆除格「拆除」、在重設集結點格「移防」、在空格為空字串; replace 時「互換」), 右邊「[Z] 確定  [X] 關閉」(右緣 x = 148, 鍵帽 22×22)。shakeDuration = 0.25, 無效操作時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
     },
     {
       "name": "drawShopPopup",
       "state": ["items", "cursorIndex", "message", "shakeAge", "shakeDuration"],
       "size": [480, 150],
-      "notes": "商店彈窗, 固定中心 (640,400), 480×150(上一輪 760×150)。標題「商店」中心 (0, −58)(相對面板中心)。一排 4 項, 每項一格 80×72(圖示 + 品名 + 價格), 第 i 格中心 (−132 + 88i, −4)。items: 固定 4 項陣列, 順序 0 魂柱、1 弩塔、2 步兵、3 石魔像, 每項 {item, name, price, state, count, cap}: item 是 \"pillarKit\" | \"crossbowKit\" | \"soldierKit\" | \"golemKit\"(畫該單位的小圖); state: \"ok\" | \"poor\"(金幣不足, 變暗)| \"locked\"(畫鎖、不畫品名, 只有石魔像會鎖)| \"max\"(本輪新增, 只有魂柱: 已達上限, 變暗並把 count / cap 標紅); count / cap: 只有魂柱有值(整數, cap 1~3, count 0~cap), 其他項傳 null; 魂柱格右上角(格內, 中心 (格 x + 24, −32))畫小字「count/cap」, 例「1/2」——這是畫面上唯一顯示魂柱上限的地方。不再賣魂件與擴槽石。cursorIndex: 游標格要非常明顯。底部一行 y = 58: 左邊 message(\"\" | \"金幣不足\" | \"尚未解鎖\" | \"已達上限\" | \"手上要空著\" | \"先放下手上的東西\", 左緣 x = −228), 右邊「[←][→] 選  [Z] 購買  [X] 關閉」(右緣 x = 228, 鍵帽 22×22)。shakeDuration = 0.25, 購買失敗時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+      "notes": "商店彈窗, 固定中心 (640,400), 480×150。標題「商店」中心 (0, −58)(相對面板中心)。**本輪只列已解鎖的品項**(使用者: 商店不需要出現尚未解鎖的項目): items 長度 3 或 4, 順序 0 魂柱、1 弩塔、2 步兵, 招募過石魔像後才有第 3 項石魔像。每項一格 80×72(圖示 + 品名 + 價格), 整排置中: 第 i 格中心 x = (i − (n−1)/2) × 88(n = items 長度; n = 3 → −88, 0, 88; n = 4 → −132, −44, 44, 132), y = −4。每項 {item, name, price, state, count, cap}: item 是 \"pillarKit\" | \"crossbowKit\" | \"soldierKit\" | \"golemKit\"(畫該單位的小圖; 弩塔的小圖可帶一支箭暗示附帶遠攻); state: \"ok\" | \"poor\"(金幣不足, 變暗)| \"max\"(只有魂柱: 已達上限, 變暗並把 count / cap 標紅); 本輪刪除 \"locked\"。count / cap: 只有魂柱有值(整數, cap 1~3, count 0~cap), 其他項傳 null; 魂柱格右上角(格內, 中心 (格 x + 24, −32))畫小字「count/cap」, 例「1/2」——這是畫面上唯一顯示魂柱上限的地方。cursorIndex: 游標格要非常明顯。底部一行 y = 58: 左邊 message(\"\" | \"金幣不足\" | \"已達上限\" | \"手上要空著\" | \"先放下手上的東西\", 左緣 x = −228), 右邊「[←][→] 選  [Z] 購買  [X] 關閉」(右緣 x = 228, 鍵帽 22×22)。shakeDuration = 0.25, 購買失敗時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
     },
     {
       "name": "drawResult",
       "state": ["win", "allClear", "level", "levelName", "wave", "totalWaves", "castleHp", "castleMaxHp", "stars", "starAge", "starDuration", "comboCount", "options", "cursorIndex"],
       "size": [1280, 720],
-      "notes": "沿用上一輪, 只有底部操作提示改鍵帽。結算畫面, 蓋在整個畫面上(半透明底 + 中央面板)。固定版位: 面板中心 (640,370), 680×440; 標題中心 (640,200): win 為 false 畫「主堡被攻陷」, win 為 true 畫「勝利」, allClear 為 true(第 5 關勝利)畫「全部通關!」; 關名「第 level 關 levelName」中心 (640,245); 3 顆星中心 (560,310)、(640,310)、(720,310), 每顆 56×56; 數據兩行中心 (640,380)「第 wave / totalWaves 波  主堡 castleHp / castleMaxHp」、(640,415)「發現組合 comboCount / 5」; 按鈕一排中心 y = 510, 每顆 170×50, 間距 20, 置中排列(3 顆時中心 x = 450, 640, 830; 2 顆時 545, 735)。stars: 0~3(失敗為 0), 亮的星依序跳出: starDuration = 1.2, starAge 是結算出現後的真實秒數(閒置 / 播完 = 1.2), 第 k 顆(k < stars)在 starAge ≥ 0.4k 時出現並彈一下(單顆星整顆放大至多 1.3 倍, 屬允許的框外例外), 未亮的星一直畫成暗的空星。options: 按鈕文字陣列, 長度 2~3(「下一關」「重玩」「重來」「標題」的組合, 見 spec 勝負與結束)。cursorIndex: 選中的按鈕要非常明顯。按鈕下方中心 (640,560)「[←][→] 選  [Z] 確定」(鍵帽 22×22)。所有文字由美術畫"
+      "notes": "結算畫面, 蓋在整個畫面上(半透明底 + 中央面板)。固定版位: 面板中心 (640,370), 680×440; 標題中心 (640,200): win 為 false 畫「主堡被攻陷」, win 為 true 畫「勝利」, allClear 為 true(第 5 關勝利)畫「全部通關!」; 關名「第 level 關 levelName」中心 (640,245); 3 顆星中心 (560,310)、(640,310)、(720,310), 每顆 56×56; 數據兩行中心 (640,380)「第 wave / totalWaves 波  主堡 castleHp / castleMaxHp」、(640,415)「發現組合 comboCount / 10」(**本輪組合由 5 種變 10 種**, comboCount 0~10); 按鈕一排中心 y = 510, 每顆 170×50, 間距 20, 置中排列(3 顆時中心 x = 450, 640, 830; 2 顆時 545, 735)。stars: 0~3(失敗為 0), 亮的星依序跳出: starDuration = 1.2, starAge 是結算出現後的真實秒數(閒置 / 播完 = 1.2), 第 k 顆(k < stars)在 starAge ≥ 0.4k 時出現並彈一下(單顆星整顆放大至多 1.3 倍, 屬允許的框外例外), 未亮的星一直畫成暗的空星。options: 按鈕文字陣列, 長度 2~3(「下一關」「重玩」「重來」「標題」的組合, 見 spec 勝負與結束)。cursorIndex: 選中的按鈕要非常明顯。按鈕下方中心 (640,560)「[←][→] 選  [Z] 確定」(鍵帽 22×22)。所有文字由美術畫"
     }
   ],
   "sounds": [
@@ -232,8 +276,9 @@
     "purchase", "place_unit", "flag_plant", "demolish", "home_refund", "coin_pickup",
     "steal_start", "steal_done", "steal_cancel",
     "combo", "combo_new",
-    "arrow_shot", "pierce_shot", "melee_hit", "whirl", "charge_hit", "enemy_shot",
-    "enemy_die", "unit_down", "unit_return", "recruit",
+    "arrow_shot", "pierce_shot", "melee_hit", "whirl", "charge_hit",
+    "shock_zap", "thunder_slash", "thunder_orb", "blink", "heal_ray",
+    "enemy_shot", "enemy_die", "unit_down", "unit_return", "recruit",
     "wave_warning", "wave_start", "castle_hit",
     "tutorial_done", "level_win", "level_lose", "star"
   ],
