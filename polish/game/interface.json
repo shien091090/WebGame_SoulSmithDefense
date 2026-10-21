@@ -8,20 +8,26 @@
     "frost": "附冰: drawProjectile(kind \"ice\")、drawPierceBeam / drawAreaHit / drawHitSpark(frost = true)表示這一擊帶冰霜減速, 都用冰箭那一套冰藍意象, 一眼看得出「這下有冰」",
     "shock": "電擊意象(本輪新增): drawShockChain、drawThunderOrb、drawBlink、drawAreaHit 的 shockBurst, 以及 shock / thunderSlash / thunderOrb / blink 圖示用同一套電光意象; 要和冰霜的冰藍、治癒、購買的金色一眼分得開, 顏色交給美術",
     "heal": "治癒意象(本輪新增): drawHealAura、drawHealBeam、drawHolyTrail、單位與敵人的 healing 狀態, 以及 heal / healRay / holyPath 圖示用同一套意象; 要和購買區的金色、魂柱範圍、冰霜圈分得開, 顏色交給美術",
-    "keycap": "按鍵圖示一律畫成鍵帽: 圓角矩形 + 底部較深的厚邊(看起來是可以按下去的鍵), 中間印鍵名; Z、X、M 印字母, 方向鍵印箭頭, 空白鍵寬為 2 倍、印「空白」。鍵帽與後面的說明文字隔 4px, 不和文字黏在一起。尺寸: drawTitle / drawHud / drawSoulPopup / drawShopPopup / drawResult / drawShopHint 22×22(空白鍵 44×22); drawActionHint 16×16; drawTutorial 26×26(空白鍵 52×26)。下文 notes 中寫成 [Z]、[空白鍵]、[M]、[←] 的就是鍵帽",
-    "timers": "所有 xxxAge / xxxDuration 成對欄位: Age 是事件發生後經過的秒數, 閒置時 Age = Duration(不是 0), 0 ≤ Age < Duration 表示正在播。Age 以遊戲時間計(慢動作時也跟著變慢); 例外: drawTutorial 的 doneAge 與 drawResult 的 starAge 以真實時間計。life / maxLife 成對欄位: life 是剩餘秒數, 從 maxLife 往下數到 0, RD 只在 life > 0 時呼叫",
+    "keycap": "按鍵圖示一律畫成鍵帽: 圓角矩形 + 底部較深的厚邊(看起來是可以按下去的鍵), 中間印鍵名; Z、X、M、C 印字母, Esc 印「Esc」, 方向鍵印箭頭, 空白鍵寬為 2 倍、印「空白」。鍵帽與後面的說明文字隔 4px, 不和文字黏在一起。尺寸: drawTitle / drawHud / drawSoulPopup / drawShopPopup / drawResult / drawShopHint / drawPause / drawCodex / drawComboReveal / drawTutorialClear / drawGuide 卡片文字裡的 [Z] 22×22(空白鍵 44×22, **Esc 32×22**, 本輪新增 Esc 與 C); drawActionHint 16×16; drawTutorial 26×26(空白鍵 52×26); drawGuide 卡片右下的 [Z] 26×26。下文 notes 中寫成 [Z]、[空白鍵]、[M]、[C]、[Esc]、[←] 的就是鍵帽",
+    "timers": "所有 xxxAge / xxxDuration 成對欄位: Age 是事件發生後經過的秒數, 閒置時 Age = Duration(不是 0), 0 ≤ Age < Duration 表示正在播。Age 以遊戲時間計(慢動作時也跟著變慢, 暫停 / 圖鑑 / 引導卡 / 合成演出時停住); 例外(以真實時間計, 因為它們播的時候遊戲是停住的或不在關卡中): drawTutorial 的 doneAge、drawResult 的 starAge、drawTitle 的 tokenAge / unlockAge、drawTutorialClear、drawGuide、drawComboReveal 的所有時間欄位。life / maxLife 成對欄位: life 是剩餘秒數, 從 maxLife 往下數到 0, RD 只在 life > 0 時呼叫",
     "position": "所有 x, y 都是物件中心(例外: drawRallyFlag 的 x, y 是旗桿插進地面的點, 見該函式); size 是判定框 [寬, 高], 以中心對齊。互動目標外框(targeted)一律畫在框外: 內緣貼齊 size 外邊, 寬 3",
     "indexing": "所有陣列的「第 N 項」、cursorIndex、index 都從 0 起算",
-    "drawOrder": "開始畫面: 只呼叫 drawTitle。關卡中 RD 依序呼叫: drawBackground → drawShopZone(玩家靠近帶購買的單位時) → drawHolyTrail(每條聖光軌跡) → drawPillarRange(每根魂柱) → drawResonanceLine(每條共鳴線) → drawFrostAura → drawHealAura → drawRallyFlag → drawCoin → drawCorpse(倒下消散中的敵人) → drawGroundPart → drawPlacePreview → 單位與敵人與玩家(drawCastle、drawCrossbow、drawPillar、drawSoldier、drawGolem、drawEnemy、drawPlayer, 依 y 由小到大; 歸隊中的兵也在這裡) → drawSoulSlots(每個我方 / 中立單位、魂柱、主堡; 活敵人只在它是互動目標或正被搶奪時畫; 玩家與倒下消散中的敵人沒有) → drawRespawnQueue(重生隊伍不空時) → drawShopHint(玩家在購買區內時) → drawProjectile → drawThunderOrb → drawPierceBeam → drawHealBeam → drawAreaHit → drawShockChain → drawHitSpark → drawBlink → drawUnitBreak → drawStealLink → drawComboName → drawSpawnWarning → drawActionHint → drawTutorial(泡泡指著場上物件時) → drawHud → drawSlowMo → drawSoulPopup / drawShopPopup → drawTutorial(泡泡貼著彈窗時, side 為 left / right) → drawResult。同一幀 drawTutorial 只會被呼叫一次",
-    "textOwnership": "除了新手教學(drawTutorial, 分工照美術 / RD 任務), 畫面上所有文字都由美術在各繪製函式內畫(依 state 傳入的字串或數值), RD 不另外畫字。有文字的函式: drawTitle(大標題、「第 N 關」、關名、操作提示)、drawGolem(中立時的「中立」牌)、drawRespawnQueue(「重生中」、「×N」)、drawShopHint(「商店」與空白鍵鍵帽, 本輪新增)、drawComboName(組合名稱)、drawActionHint(label)、drawSoulPopup(標題、「手上」、選項格下方的「+N 金」/「移防」、說明區的名稱與說明、動作提示、操作提示)、drawShopPopup(標題、品名、價格、已有 / 上限、底部提示、操作提示)、drawHud(關名、數值與標籤、「準備中」、操作提示)、drawSlowMo(「慢動作」)、drawResult(標題、關名、波次、主堡生命、組合數、按鈕文字、操作提示)。drawShopZone 本輪起不畫任何字或鍵帽",
-    "renames": "相對上一輪(polish-2)的異動(美術沿用舊版會讀到不存在的欄位或畫錯, 請逐一改): conventions.attackKinds → resonantKinds(多 shock、heal、thunderSlash、thunderOrb、healRay); itemKinds 刪除 \"drum\", \"charge\" 改成基本魂件外觀, 新增 shock、heal、thunderSlash、thunderOrb、blink、healRay、holyPath、steadfast; enemyTypes 新增 thunder、healer, drummer 造型改成衝鋒意象(字串不變); drawCorpse 改成「倒下消散」特效: 刪除 targeted, maxLife 15 → 0.6, 不再有槽列、不再閃爍; drawEnemy 新增 healing, stunDuration 由固定 1.0 改成 1.0 或 0.5; drawSoldier、drawGolem 新增 healing、rooted; drawCrossbow、drawPillar 新增 rooted; drawShopZone 只在玩家靠近時呼叫, 刪除圈內的 [空白鍵] 鍵帽(改由新函式 drawShopHint 畫在單位旁); drawShopPopup 的 items 由固定 4 項改成 3~4 項(只列已解鎖)且置中排列, state 刪除 \"locked\", message 刪除「尚未解鎖」; drawSoulPopup 的 desc 新增 alt, title 不再有「…的屍體」, demolish 的 refund 可能是 0; drawAreaHit 的 kind 新增 \"shockBurst\"; drawHud 右側提示改「[Z] 互動  [M] 靜音」(刪除 [空白鍵] 商店); drawTitle 底部提示 [X] 靜音 → [M] 靜音; drawResult 組合數 / 5 → / 10; drawTutorial 的 stage 1~14 → 1~13。新增函式: drawShopHint、drawHealAura、drawHealBeam、drawHolyTrail、drawShockChain、drawThunderOrb、drawBlink"
+    "drawOrder": "開始畫面(關卡預覽頁): drawTitle → drawTutorialClear(大提示出現時)。關卡中 RD 依序呼叫: drawBackground → drawShopZone(玩家靠近帶購買的單位時) → drawHolyTrail(每條聖光軌跡) → drawPillarRange(每根魂柱) → drawResonanceLine(每條共鳴線) → drawFrostAura → drawHealAura → drawRallyFlag → drawCoin → drawCorpse(倒下消散中的敵人) → drawGroundPart → drawPlacePreview → 單位與敵人與玩家(drawCastle、drawCrossbow、drawPillar、drawSoldier、drawGolem、drawEnemy、drawPlayer, 依 y 由小到大; 歸隊中的兵也在這裡) → drawSoulSlots(每個我方 / 中立單位、魂柱、主堡; 活敵人只在它是互動目標或正被搶奪時畫; 玩家與倒下消散中的敵人沒有) → drawRespawnQueue(重生隊伍不空時) → drawShopHint(玩家在購買區內時) → drawProjectile → drawThunderOrb → drawPierceBeam → drawHealBeam → drawAreaHit → drawShockChain → drawHitSpark → drawBlink → drawUnitBreak → drawStealLink → drawComboName → drawSpawnWarning → drawSpawnMark(第 1 關教學中) → drawActionHint → drawTutorialWarn → drawTutorial(泡泡指著場上物件時) → drawHud → drawWavePanel → drawWaveBanner(播放中) → drawSlowMo → drawSoulPopup / drawShopPopup → drawTutorial(泡泡指著商店格或貼著彈窗時) → drawGuide(引導卡) → drawComboReveal(合成演出) → drawCodex(圖鑑) → drawPause(Esc 暫停) → drawResult。同一幀 drawTutorial 只會被呼叫一次; 引導卡、合成演出開著時 drawTutorial 不呼叫; drawGuide、drawComboReveal、drawCodex、drawPause 同一幀至多一個(spec 規則 55)。這四個開著時底下的關卡畫面照常畫(停在暫停那一刻)",
+    "textOwnership": "除了新手教學(drawTutorial、drawGuide、drawTutorialWarn, 分工照美術 / RD 任務), 畫面上所有文字都由美術在各繪製函式內畫(依 state 傳入的字串或數值), RD 不另外畫字。有文字的函式: drawTitle(大標題、「第 N 關」、關名、操作提示)、drawTutorialClear(「恭喜完成新手任務!」與「[Z] 繼續」, 本輪新增, 固定字串)、drawGolem(中立時的「中立」牌)、drawCastle(血量牌上的「hp/maxHp」, 本輪新增)、drawRespawnQueue(「重生中」、「×N」)、drawShopHint(「商店」與空白鍵鍵帽)、drawComboName(組合名稱)、drawActionHint(label)、drawSoulPopup(標題、「手上」、選項格下方的「+N 金」/「移防」、說明區的名稱與說明、動作提示(含本輪新增的「教學中不能動」)、操作提示)、drawShopPopup(標題、品名、價格、已有 / 上限、底部提示(含本輪新增的「教學期間不能買」)、操作提示)、drawHud(關名、金幣、操作提示)、drawWavePanel(「第 w / N 波」「開戰前」「下一波 S 秒」「完成新手任務後開始」「最後一波!」, 本輪新增)、drawWaveBanner(「第 N 波」「共 T 波」「最後一波!」, 本輪新增)、drawSlowMo(「慢動作」)、drawPause(「暫停」「[Esc] 繼續」, 本輪新增)、drawCodex(「組合圖鑑」「已發現 n / 10」「已組過」、關閉提示為固定字串; 每列的魂件名稱與效果由 RD 傳字串, 美術畫; 本輪新增)、drawComboReveal(「新組合!」「[Z] 確定」為固定字串; 組合名稱、效果、材料名稱由 RD 傳字串, 美術畫; 本輪新增)、drawResult(標題、關名、波次、主堡生命、組合數、按鈕文字、操作提示)。drawShopZone、drawSpawnMark 不畫任何字",
+    "renames": "相對上一輪(polish-3)的異動(美術沿用舊版會讀到不存在的欄位, 悄悄退回預設值看不出錯, 請逐一改): **drawHud** state 刪除 castleHp、castleMaxHp、wave、totalWaves、nextWaveIn、clockPaused(主堡生命 → drawCastle 的 hp / maxHp; 波次與倒數 → 新函式 drawWavePanel 的 wave / totalWaves / nextWaveIn / status; clockPaused → drawWavePanel status \"tutorial\"), 金幣左緣 x 230 → 340, 右側提示改「[Z] 互動 [C] 圖鑑 [Esc] 暫停 [M] 靜音」; **drawCastle** 新增 hp、maxHp(血量牌); **drawTitle** levels 每項新增 tutorial, 新增 tokenIndex、tokenFrom、tokenAge、tokenDuration、unlockIndex、unlockAge、unlockDuration, 大標題中心 y 170 → 150; **drawTutorial** stage 1~13 → 4~27 的「新手任務」階段(引導卡階段改由 drawGuide 畫), 新增 checklist, 本體左上角加「新手任務」標籤, 多了「指著商店格」的版位(side 照樣是 \"up\"); **drawShopPopup** items 的 state 加回 \"locked\"(意思改成「教學鎖住」, 不是未解鎖), message 新增「教學期間不能買」; **drawSoulPopup** cells 每項新增 locked, actionLabel 新增「教學中不能動」; **drawActionHint** label 新增「不能裝」「不能搶」; **drawCoin** 新增 spawnAge、spawnDuration(落地彈跳); **drawEnemy** 新增 swift(輕快小鬼); **drawGroundPart** 新增 frozen; **drawResult** options 的字改成「繼續」「重玩」「重來」「關卡預覽」(刪除「下一關」「標題」); conventions.keycap 新增 Esc、C。新增函式: drawTutorialClear、drawGuide、drawTutorialWarn、drawSpawnMark、drawWavePanel、drawWaveBanner、drawComboReveal、drawCodex、drawPause"
   },
   "draw": [
     {
       "name": "drawTitle",
-      "state": ["levels", "cursorIndex", "muted", "blinkTime"],
+      "state": ["levels", "cursorIndex", "muted", "blinkTime", "tokenIndex", "tokenFrom", "tokenAge", "tokenDuration", "unlockIndex", "unlockAge", "unlockDuration"],
       "size": [1280, 720],
-      "notes": "開始畫面, 蓋滿整張畫布(背景自行畫, 可用草地 + 路線的意象)。固定版位: 大標題「魂匠守衛者」中心 (640,170); 5 張關卡卡片一排, 每張 200×150, 中心 x = 640 + (i−2)×220(i 從 0 起算 → 200, 420, 640, 860, 1080), 中心 y = 400; 底部操作提示「[←][→] 選關  [Z] 開始  [M] 靜音」中心 (640,650), 按鍵畫成鍵帽(conventions.keycap; 本輪靜音由 X 改 M); 右上角喇叭圖示中心 (1230,40), 36×36, muted 時打叉。levels: 固定 5 項陣列(從 0 起算 = 第 1~5 關), 每項 {name, unlocked, bestStars}: name 關名字串(「初陣」「雙路」「長蛇」「夾擊」「三叉」), unlocked 布林, bestStars 0~3(未通過過為 0; 未解鎖時一律 0)。卡片內: 上方「第 N 關」小字、中間 name、下方 3 顆星(亮 bestStars 顆, 其餘暗); 未解鎖的卡片變暗並在中央畫鎖, 不畫星。cursorIndex: 只會落在已解鎖的卡片, 選中的卡片要非常明顯(外框發光 + 放大 1.06 倍, 整張卡片連內容一起放大, 放大後 212×159 仍不和相鄰卡片(間隔 20)重疊)。blinkTime: 開始畫面出現後經過的真實秒數, 給「Z 開始」閃爍或標題微動用"
+      "notes": "開始畫面 = 關卡預覽頁, 蓋滿整張畫布(背景自行畫, 可用草地 + 路線的意象)。固定版位: 大標題「魂匠守衛者」中心 (640,150)(本輪由 170 上移, 讓出玩家記號的位置); 5 張關卡卡片一排, 每張 200×150, 中心 x = 200 + 220i(i 從 0 起算 → 200, 420, 640, 860, 1080), 中心 y = 400; 相鄰卡片之間(間隔 20)畫一小段路把卡片連起來; 底部操作提示「[←][→] 選關  [Z] 開始  [M] 靜音」中心 (640,650), 按鍵畫成鍵帽; 右上角喇叭圖示中心 (1230,40), 36×36, muted 時打叉。levels: 固定 5 項陣列(從 0 起算 = 第 1~5 關), 每項 {name, unlocked, bestStars, tutorial}: name 關名字串(「新手教學・初陣」「新手教學・雙路」「長蛇」「夾擊」「三叉」, 至多 7 個字), unlocked 布林, bestStars 0~3(未通過過為 0; 未解鎖時一律 0), tutorial 布林(本輪新增, 第 1、2 關為 true): true 的卡片用和其他關不同的教學配色(例: 綠色系 + 一片新芽小圖示, 畫在卡片內), 讓玩家一眼看出這兩關是新手教學。卡片內: 上方「第 N 關」小字、中間 name、下方 3 顆星(亮 bestStars 顆, 其餘暗); 未解鎖的卡片變暗並在中央畫鎖, 不畫星。cursorIndex: 只會落在已解鎖的卡片, 選中的卡片要非常明顯(外框發光 + 放大 1.06 倍, 整張卡片連內容一起放大, 放大後 212×159 仍不和相鄰卡片重疊); 推進動畫播放中 cursorIndex = tokenFrom。blinkTime: 開始畫面出現後經過的真實秒數, 給「Z 開始」閃爍或標題微動用。**玩家記號**(本輪新增): 一個魂匠小頭像 40×40(和 drawPlayer 同一個角色), 靜止時中心 (200 + 220 × tokenIndex, 297)(卡片上緣 325 之上, 記號 y 277~317)。tokenIndex: 記號所在的卡(目前進度 = 最大的已解鎖關, 0~4)。推進動畫: tokenFrom 是出發的卡, tokenDuration = 0.8, 0 ≤ tokenAge < 0.8 時記號沿弧線從 (200 + 220 × tokenFrom, 297) 跳到 (200 + 220 × tokenIndex, 297), 弧線最高點比兩端高 60(y 237), 落地時壓扁彈一下(都畫在 48×48 內); 閒置時 tokenFrom = tokenIndex、tokenAge = 0.8。跳的期間 levels[tokenIndex].unlocked 仍是 false(卡片還鎖著)。**開鎖動畫**(本輪新增): 記號落地後 RD 把那張卡設為 unlocked = true 並傳 unlockIndex = 那張卡、unlockDuration = 0.6, 0 ≤ unlockAge < 0.6 時在那張卡中央畫鎖頭碎成幾片往外飛散(碎片不超出卡片外 20px)、卡片從暗變亮; 閒置時 unlockIndex = −1、unlockAge = 0.6"
+    },
+    {
+      "name": "drawTutorialClear",
+      "state": ["age", "ready", "closing", "closeAge", "closeDuration"],
+      "size": { "dim": [1280, 720], "panel": [680, 220] },
+      "notes": "新函式。新手教學完成大提示(使用者: 兩關新手教學都結束之後回到關卡畫面, 跳出大提示「恭喜完成新手任務!」), 畫在關卡預覽頁(drawTitle)之上, 這次開網頁只出現一次。蓋滿全畫面: 黑色壓暗 0.55 + 中央面板 680×220, 中心 (640,360)(x 300~980、y 250~470)。面板內: 大字「恭喜完成新手任務!」中心 (640,340), 要很醒目(金色、粗); ready 為 true 時下方 (640,420) 畫閃爍的「[Z] 繼續」(鍵帽 22×22)。文字由美術畫(固定字串)。age: 出現後經過的真實秒數(從 0 一直往上數, 沒有上限): 0~0.4 秒面板從 0.3 倍彈到 1.1 倍再回 1.0(整塊連字一起放大, 放大時 748×242 屬允許的框外例外); 一直有慶祝效果: 面板背後放射光芒緩慢轉動(畫在 dim 範圍內)、彩帶紙花從畫面上方灑下(0~2.5 秒灑完, 之後不再灑)。ready: age ≥ 1.0 時為 true(之前按 Z 無效)。closing: 玩家按 Z 後為 true, closeDuration = 0.3, closeAge 0 → 0.3 期間面板與壓暗一起淡出; 沒在關閉時 closing = false、closeAge = 0.3。關閉播完後 RD 不再呼叫, 接著在 drawTitle 播推進動畫"
     },
     {
       "name": "drawBackground",
@@ -61,9 +67,9 @@
     },
     {
       "name": "drawCastle",
-      "state": ["x", "y", "hitAge", "hitDuration", "attackAge", "attackDuration", "targeted"],
+      "state": ["x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "targeted"],
       "size": [112, 112],
-      "notes": "沿用上一輪, 無異動。固定在 (1180,434)。hitDuration = 0.3(敵人抵達主堡時閃一下, 只改顏色不放大), 閒置 hitAge = 0.3。attackDuration = 0.15(主堡身上的攻擊魂件發動時的動作, 位移不超出框外 4px), 閒置 attackAge = 0.15。不畫購買區(由 drawShopZone 畫)。主堡左緣 (1124,434) 是兵走出來、也是兵 / 建築走回來消失的門, 畫出一道門。主堡魂件槽列由 RD 呼叫 drawSoulSlots 畫在 (1180, 434−56−20)"
+      "notes": "固定在 (1180,434)。**本輪新增血量牌**(使用者: 主堡血量不要放在上 Bar, 改到主堡身上且常駐顯示): hp 0~20 整數、maxHp = 20, 一直畫, 不隱藏。血量牌中心 (1180,472)、100×20(主堡本體下半部、在框內: 主堡框 y 378~490), 半透明深底板: 左邊一顆小愛心 14×14 中心 (1142,472)、中間生命條 x 1152~1200(寬 48、高 8, 中心 y 472, 依 hp / maxHp 填色)、右邊數字「hp/maxHp」右緣 x 1228。hp ≤ 5 時整塊牌子變紅並緩慢閃爍(週期約 1 秒, 只改顏色)。hitDuration = 0.3(敵人抵達主堡時主堡與血量牌一起閃一下, 只改顏色不放大), 閒置 hitAge = 0.3。attackDuration = 0.15(主堡身上的攻擊魂件發動時的動作, 位移不超出框外 4px; 血量牌跟著動), 閒置 attackAge = 0.15。不畫購買區(由 drawShopZone 畫)。主堡左緣 (1124,434) 是兵走出來、也是兵 / 建築走回來消失的門, 畫出一道門。主堡魂件槽列由 RD 呼叫 drawSoulSlots 畫在 (1180, 434−56−20); 血量牌不和槽列(y 348~368)、重生中提示(y 362~398)、商店提示(y 496~520)重疊"
     },
     {
       "name": "drawRespawnQueue",
@@ -109,9 +115,9 @@
     },
     {
       "name": "drawEnemy",
-      "state": ["type", "x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "stunAge", "stunDuration", "healing", "targeted"],
+      "state": ["type", "x", "y", "hp", "maxHp", "hitAge", "hitDuration", "attackAge", "attackDuration", "moving", "slowed", "stunAge", "stunDuration", "healing", "swift", "targeted"],
       "size": { "imp": [32, 32], "archer": [32, 32], "ice": [32, 32], "drummer": [36, 36], "thunder": [36, 36], "healer": [36, 36], "brute": [44, 44] },
-      "notes": "type 見 conventions.enemyTypes(本輪新增 thunder、healer; drummer 改成衝鋒造型)。一眼要和我方單位分開。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackDuration = 0.15(打我方移動單位時的出手動作, 含雷鬼放電; 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: false 表示被拿掉進攻主堡後停在原地, 畫成呆站(例: 頭上一個問號, 畫在框內)。slowed: 正被減速(含被搶奪、被附冰打中), 加一層冰藍色調(只改顏色)。stunDuration: 本輪起依來源不同, 衝鋒 / 神聖之路撞到為 1.0、雷霆斬為 0.5; 0 ≤ stunAge < stunDuration 時頭頂畫繞圈的星星(畫在框內上半部, 不超出框; 和呆站問號同時出現時星星優先, 問號不畫); 沒在暈眩時 stunAge = stunDuration = 1.0; 撞退的位移由 RD 更新座標。healing(本輪新增): 這一幀正被醫鬼治癒且沒滿血時為 true, 畫法同 drawSoldier 的 healing(治癒意象, 畫在框內), 讓玩家看出「這群鬼在被補血」。血條只在 hp < maxHp 時畫, 在框外上方, 中心 (x, y−高/2−6), 寬 = 該種類寬, 高 4; 敵人是互動目標或正被搶奪時, RD 另外呼叫 drawSoulSlots 畫在 (x, y−高/2−20)"
+      "notes": "type 見 conventions.enemyTypes。swift(本輪新增): 只有第 1 關第 2 波的「輕快小鬼」(type 仍是 \"imp\", 生命 12、速度 70)為 true, 其他一律 false; 畫成看得出「輕、快、血薄」的小鬼變體(例: 較淺的體色、頭上綁帶飄動、身形略瘦), 畫在框內(32×32), 一眼和一般小鬼分得開。一眼要和我方單位分開。hitDuration = 0.2(受擊閃一下, 只改顏色), 閒置 hitAge = 0.2。attackDuration = 0.15(打我方移動單位時的出手動作, 含雷鬼放電; 位移不超出框外 4px), 閒置 attackAge = 0.15。moving: false 表示被拿掉進攻主堡後停在原地, 畫成呆站(例: 頭上一個問號, 畫在框內)。slowed: 正被減速(含被搶奪、被附冰打中), 加一層冰藍色調(只改顏色)。stunDuration: 本輪起依來源不同, 衝鋒 / 神聖之路撞到為 1.0、雷霆斬為 0.5; 0 ≤ stunAge < stunDuration 時頭頂畫繞圈的星星(畫在框內上半部, 不超出框; 和呆站問號同時出現時星星優先, 問號不畫); 沒在暈眩時 stunAge = stunDuration = 1.0; 撞退的位移由 RD 更新座標。healing(本輪新增): 這一幀正被醫鬼治癒且沒滿血時為 true, 畫法同 drawSoldier 的 healing(治癒意象, 畫在框內), 讓玩家看出「這群鬼在被補血」。血條只在 hp < maxHp 時畫, 在框外上方, 中心 (x, y−高/2−6), 寬 = 該種類寬, 高 4; 敵人是互動目標或正被搶奪時, RD 另外呼叫 drawSoulSlots 畫在 (x, y−高/2−20)"
     },
     {
       "name": "drawCorpse",
@@ -121,15 +127,15 @@
     },
     {
       "name": "drawGroundPart",
-      "state": ["item", "x", "y", "spawnAge", "spawnDuration", "life", "maxLife", "permanent", "targeted"],
+      "state": ["item", "x", "y", "spawnAge", "spawnDuration", "life", "maxLife", "permanent", "frozen", "targeted"],
       "size": [28, 28],
-      "notes": "地上的魂件(玩家丟下、拆除 / 走回主堡退款 / 招募掉出)。item: conventions.itemKinds 的 19 種魂件之一(基本、組合或 \"shop\")。life: 剩餘秒數, maxLife = 10; life < 3 時閃爍(本函式依 life 判斷節奏), 讓玩家知道快消失了。permanent: item 為 \"shop\"(購買)時為 true, 此時 life = maxLife = 10 不變、不閃爍, 改畫特殊外觀: 底下一圈金色光座 + 緩慢脈動的光(光座畫在 36×36 內, 屬框外的允許例外), 一眼看出「這個不會消失」; 其他魂件一律 false。spawnDuration = 0.6: 從主堡方向(招募、走回主堡退款)或從拆掉的建築(拆除)彈出落地並閃光(彈出的位移與光芒可超出框外, 至多 24px), 閒置 spawnAge = 0.6; 玩家丟下的、互換放下的 RD 直接傳閒置值"
+      "notes": "地上的魂件(玩家丟下、拆除 / 走回主堡退款 / 招募掉出)。item: conventions.itemKinds 的 19 種魂件之一(基本、組合或 \"shop\")。life: 剩餘秒數, maxLife = 10; life < 3 時閃爍(本函式依 life 判斷節奏), 讓玩家知道快消失了。permanent: item 為 \"shop\"(購買)時為 true, 此時 life = maxLife = 10 不變、不閃爍, 改畫特殊外觀: 底下一圈金色光座 + 緩慢脈動的光(光座畫在 36×36 內, 屬框外的允許例外), 一眼看出「這個不會消失」; 其他魂件一律 false。spawnDuration = 0.6: 從主堡方向(招募、走回主堡退款)或從拆掉的建築(拆除)彈出落地並閃光(彈出的位移與光芒可超出框外, 至多 24px), 閒置 spawnAge = 0.6; 玩家丟下的、互換放下的 RD 直接傳閒置值。frozen(本輪新增): 新手教學期間地上魂件不會消失(計時停住)時為 true, 這時即使 life < 3 也不閃爍, 照一般外觀畫(不另畫特殊外觀); 其他時候 false"
     },
     {
       "name": "drawCoin",
-      "state": ["x", "y"],
+      "state": ["x", "y", "spawnAge", "spawnDuration"],
       "size": [16, 16],
-      "notes": "沿用上一輪, 無異動。金幣, 不會消失。被吸向玩家時位置由 RD 更新, 本函式不必另畫飛行效果"
+      "notes": "金幣, 不會消失。**本輪新增落地過程**: 敵人倒下時金幣從倒下處彈出, spawnDuration = 0.4: 0 ≤ spawnAge < 0.4 時 RD 把 (x, y) 從倒下處直線移到落點(40 內), 本函式另外把金幣往上抬 14 × sin(π × spawnAge / 0.4)(像跳一下), 地面上留影子在 (x, y); 抬起的部分畫到框外上方至多 14px(允許的例外)。閒置(已落定)spawnAge = 0.4。被吸向玩家時位置由 RD 更新, 本函式不必另畫飛行效果"
     },
     {
       "name": "drawPlayer",
@@ -141,7 +147,13 @@
       "name": "drawActionHint",
       "state": ["x", "y", "label"],
       "size": [96, 22],
-      "notes": "沿用上一輪, 無異動。Z 情境提示, 常駐在玩家腳下: RD 傳 (玩家 x, 玩家 y + 30), 本體 96×22(y 範圍 玩家 y+19 ~ y+41, 不壓玩家本體 y+16 以內; 搶奪圓環外緣 y+24 會和提示上緣重疊 5px, 提示畫在圓環之上)。內容: 左邊一個 [Z] 鍵帽(16×16, conventions.keycap), 隔 4px 接 label 文字。label(RD 依 spec 規則 42 算): 「拿起」「選單」「搶奪」「裝上」「替換」「互換」「丟下」「蓋下」「不能蓋」「插旗」「不能插」「取消搶奪」; 空字串時 RD 不呼叫。「不能蓋」「不能插」畫成灰色 / 紅色, 其他一般色。彈窗開著或結算時 RD 不呼叫。半透明小底板, 不可擋住地上的東西太多"
+      "notes": "Z 情境提示, 常駐在玩家腳下: RD 傳 (玩家 x, 玩家 y + 30), 本體 96×22(y 範圍 玩家 y+19 ~ y+41, 不壓玩家本體 y+16 以內; 搶奪圓環外緣 y+24 會和提示上緣重疊 5px, 提示畫在圓環之上)。內容: 左邊一個 [Z] 鍵帽(16×16, conventions.keycap), 隔 4px 接 label 文字。label(RD 依 spec 規則 42 算): 「拿起」「選單」「搶奪」「裝上」「替換」「互換」「丟下」「蓋下」「不能蓋」「插旗」「不能插」「取消搶奪」, 以及本輪新增的「不能裝」(裝上 / 替換被新手教學擋住)、「不能搶」(搶奪被新手教學擋住); 空字串時 RD 不呼叫。「不能蓋」「不能插」「不能裝」「不能搶」畫成灰色 / 紅色, 其他一般色。彈窗開著或結算時 RD 不呼叫。半透明小底板, 不可擋住地上的東西太多"
+    },
+    {
+      "name": "drawTutorialWarn",
+      "state": ["x", "y", "text", "age", "duration"],
+      "size": [240, 30],
+      "notes": "新函式。新手教學的「擋下提示」: 玩家做了教學期間不允許的操作(位置不對、裝錯、拿鎖住的魂件…)時, 在玩家腳下跳一行字(spec「新手教學 / 教學鎖」)。text: 「教學期間不能放這裡」或「教學期間不可這樣操作」(RD 傳, 新手教學分工照美術 / RD 任務)。RD 傳 (玩家 x 夾在 120~1160, min(玩家 y + 60, 702)): 在 Z 提示(drawActionHint, 到玩家 y+41)的下方; 玩家在畫面最下方時可能和 Z 提示重疊, 本函式畫在它之上。半透明小底板 240×30, 帶警示色但不刺眼(和 ui_invalid 的「不行」同一種感覺), 和新手任務泡泡同一套風格。duration = 1.2, RD 只在 0 ≤ age < 1.2 時呼叫: 0~0.15 秒整塊從 1.1 倍縮回 1.0(放大時 264×33 屬允許的框外例外), 最後 0.3 秒淡出。同一時間只有一行, 新的出現時直接換掉舊的(age 從 0 重來)"
     },
     {
       "name": "drawPlacePreview",
@@ -228,6 +240,12 @@
       "notes": "沿用上一輪, 無異動(name 多了雷霆斬、雷電球、瞬閃、治癒光線、神聖之路、不動如山)。單位(含玩家)多出組合時頭上跳出的組合名稱, 合成與共鳴配組都用這個。x, y: RD 傳 (單位 x, 單位 y − 半邊長 − 44), 在槽列之上; 玩家是 (x, y−16−44)。name: 組合名稱字串(至多 4 個字)。isNew: 這次開網頁以來第一次出現時為 true, 文字改成「新組合! 」+ name 並更醒目, size 放寬為 [280, 48]。duration = 1.5, RD 只在 0 ≤ age < duration 時呼叫; 出現時可彈一下(整塊放大至多 1.2 倍), 之後往上飄至多 16px 並淡出, 都算在 size 內"
     },
     {
+      "name": "drawSpawnMark",
+      "state": ["x", "y", "t"],
+      "size": [48, 64],
+      "notes": "新函式。新手教學專用的出怪點「!」標示(使用者: 指著道路盡頭, 同時出現一個驚嘆號標示, 只有新手教學關會出現, 之後都一律是原本倒數的設計)。只在第 1 關教學中呼叫: 從新手教學階段 3 的引導卡出現起, 到第 1 波預警開始時停止(之後由 drawSpawnWarning 畫倒數)。RD 傳第 1 關出怪點 (40,290)。畫一個醒目的警告牌 + 大「!」(不是文字, 是符號), 和 drawSpawnWarning 同一套警示配色; t: 遊戲時間(秒, 一直往上數), 用來上下彈跳(位移至多 8px)與脈動, 都畫在 48×64 內。引導卡開著時 t 停住"
+    },
+    {
       "name": "drawSpawnWarning",
       "state": ["x", "y", "angle", "remaining", "total"],
       "size": [64, 64],
@@ -235,15 +253,33 @@
     },
     {
       "name": "drawTutorial",
-      "state": ["stage", "text", "keys", "pressedKeys", "tipX", "tipY", "side", "bodyX", "bodyY", "doneAge", "doneDuration"],
-      "size": [300, 72],
-      "notes": "新手教學泡泡(一次只有一個)。stage: 階段編號 1~13(spec「新手教學」表; 本輪由 14 階段改成 13)。text: 提示文字(一句, 15 字內; 同一階段可能依情境換文字, 例: 階段 2 商店沒開 / 開著)。keys: 要顯示的按鍵圖示陣列, 長度 0~4, 項目為 \"left\" | \"right\" | \"up\" | \"down\" | \"z\" | \"x\" | \"space\", 依序由左到右排成一列(鍵帽 26×26、間距 6; 空白鍵 52×26)。pressedKeys: keys 裡這個階段已按過的那些(長度 0~4), 已按過的鍵帽亮起 / 打勾; 只有階段 1 會用到, 其他階段傳 []。版位: 泡泡本體 300×72, 中心 (bodyX, bodyY)(RD 已依 spec「位置規則」算好並夾在畫面內), 文字中心在本體中心上方 14px, 按鍵列中心在本體中心下方 16px; keys 為空時文字置中。箭頭: 從本體朝尖端 (tipX, tipY) 的三角形, 長 20, 底邊寬 20。side 表示本體在尖端的哪一邊: \"up\" 本體在尖端上方(箭頭從本體下緣往下指, 箭頭底邊中點 x = 尖端 x; 本體被水平夾住時箭頭偏離本體中心, 但仍在本體寬度內)、\"down\" 本體在尖端下方(從本體上緣往上指)、\"left\" 本體在尖端左邊(箭頭從本體右緣往右指, 底邊中點 y = 尖端 y = 本體中心 y)、\"right\" 本體在尖端右邊(從本體左緣往左指)。left / right 只用在泡泡貼著彈窗時(箭頭指著彈窗側邊), 這時 RD 在彈窗之後才呼叫本函式。doneDuration = 0.6: 完成特效, 0 ≤ doneAge < 0.6 時本體內打勾、整個泡泡(本體 + 箭頭, 以本體中心為軸)先放大到 1.15 倍再淡出, 放大後 345×83 屬允許的框外例外; 沒在播時 doneAge = 0.6。完成特效播完後 RD 才換下一個階段; 完成當下彈窗關掉了也照樣在原位置播完。泡泡要和組合名稱、彈窗一眼分得開(像是「教練的提示」)"
+      "state": ["stage", "text", "keys", "pressedKeys", "checklist", "tipX", "tipY", "side", "bodyX", "bodyY", "doneAge", "doneDuration"],
+      "size": { "body": [300, 72], "tag": [72, 18] },
+      "notes": "新手任務泡泡(一次只有一個; 本輪起只畫「新手任務」類階段, 引導卡階段由 drawGuide 畫)。stage: 階段編號, 只會是 spec「新手教學」表中標「任務」的階段: 4~7、11~14、16、19~27。text: 提示文字(一句, 15 字內; 同一階段會依情境換文字, 例: 階段 6 商店沒開 / 開著)。keys: 要顯示的按鍵圖示陣列, 長度 0~4, 項目為 \"left\" | \"right\" | \"up\" | \"down\" | \"z\" | \"x\" | \"space\", 依序由左到右排成一列(鍵帽 26×26、間距 6; 空白鍵 52×26)。pressedKeys: keys 裡這個階段已按過的那些(長度 0~4), 已按過的鍵帽亮起 / 打勾; 只有階段 4 會用到, 其他階段傳 []。checklist(本輪新增): 只有階段 16 有值, 其他傳 []; 長度 0 或 3, 每項 {item, to, done}: item 為 \"pierce\" | \"melee\" | \"seek\"(魂件圖示, 同 drawSoulSlots 那套), to 為 \"soldier\" | \"crossbow\"(目標單位的小圖示), done 布林; 有值時 keys 一律傳 [], 清單畫在原本按鍵列的位置: 3 項一排, 第 k 項(從 0 起算)中心 (bodyX + (k − 1) × 96, bodyY + 16), 每項 88×26: [魂件 20×20] → [單位 20×20], done 時右側打勾(14×14)並整項變亮, 未完成的較淡。**版位**: 泡泡本體 300×72, 中心 (bodyX, bodyY)(RD 已依 spec「新手教學 / 位置規則」算好並夾在畫面內), 文字中心在本體中心上方 14px, 按鍵列 / 清單中心在本體中心下方 16px; keys 與 checklist 都為空時文字置中。**「新手任務」標籤**(本輪新增, 使用者要的是「出現新手任務: …」): 本體左上角一塊 72×18 的小標籤, 中心 (bodyX − 110, bodyY − 36)(一半露在本體上緣外, 標籤上緣 = 本體上緣 − 9; RD 已確保本體上緣 ≥ 60, 標籤不壓 HUD), 寫「新手任務」(這幾個字固定, 新手教學分工照美術 / RD 任務), 顏色和本體同一套、要醒目。箭頭: 從本體朝尖端 (tipX, tipY) 的三角形, 長 20, 底邊寬 20。side 表示本體在尖端的哪一邊: \"up\" 本體在尖端上方(箭頭從本體下緣往下指, 箭頭底邊中點 x = 尖端 x; 本體被水平夾住時箭頭偏離本體中心, 但仍在本體寬度內)、\"down\" 本體在尖端下方(從本體上緣往上指)、\"left\" 本體在尖端左邊(箭頭從本體右緣往右指, 底邊中點 y = 尖端 y = 本體中心 y)、\"right\" 本體在尖端右邊(從本體左緣往左指)。指著商店格時 side 是 \"up\"(尖端在商店上緣 y = 321、正對那一格), left / right 只用在貼著單位選單 / 替換彈窗時; 這兩種情況 RD 在彈窗之後才呼叫本函式。doneDuration = 0.6: 完成特效, 0 ≤ doneAge < 0.6 時本體內打勾、整個泡泡(本體 + 箭頭 + 標籤, 以本體中心為軸)先放大到 1.15 倍再淡出, 放大後 345×83(標籤一起放大)屬允許的框外例外; 沒在播時 doneAge = 0.6。完成特效播完後 RD 才換下一個階段; 完成當下彈窗關掉了也照樣在原位置播完。泡泡要和組合名稱、彈窗、引導卡一眼分得開(像是「教練的提示」; 和 drawGuide 的卡片同一套配色可以, 但泡泡有箭頭與標籤)"
+    },
+    {
+      "name": "drawGuide",
+      "state": ["phase", "phaseAge", "phaseDuration", "text", "sub", "index", "total", "last", "spots", "arrows", "cardX", "cardY", "cardAge", "cardDuration", "readAge", "readDuration", "ready"],
+      "size": { "dim": [1280, 720], "card": [440, 140] },
+      "notes": "新函式。暫停式引導卡(新手教學「卡」階段: 1~3、8~10、15、17~18、28), 遊戲整個暫停時蓋在最上層(drawSlowMo、彈窗之上)。參考 E:\\Project\\Game\\WebGame_DungeonZoo 的 drawGuide(聚光燈挖空 + 醒目描邊 + 粗箭頭 + 紙底深字卡片)。**壓暗層**: 全畫面黑色, 不透明度 0.6, 但在每個聚光燈的圓內挖空。phase: \"intro\"(開場, phaseDuration = 0.3: 壓暗從 0 淡入到 0.6, 還不畫卡片、聚光燈與箭頭)、\"card\"(顯示卡片; phaseAge 與 phaseDuration 一律傳 0)、\"outro\"(結束, phaseDuration = 0.3: 卡片往上飛 80px 並淡出、聚光燈描邊與箭頭淡出、壓暗淡出到 0)。phaseAge: 該 phase 開始後的真實秒數。**聚光燈** spots: 陣列, 長度 1~2, 每項 {x, y, r}: 圓心與半徑, r 指挖空的外緣; 挖空邊緣柔和約 12px(往內柔化, 不超出 r); 外緣外 2.5px 畫一圈醒目的描邊(寬 3, 暖黃色系)並緩慢脈動(只改亮度, 不改大小)。r 範圍 20~154; 圓可能有一部分在畫面外, 照畫。**箭頭** arrows: 陣列, 長度 = spots 長度, 每項 {tipX, tipY, rootX, rootY}: 從卡片邊緣 (rootX, rootY) 指到聚光燈邊緣 (tipX, tipY) 的粗箭頭(桿寬 8、箭頭三角 寬 20 長 16, 尖端正好在 tip; 長度約 36~40), 和聚光燈描邊同一色。spots 與 arrows 的位置 RD 已依 spec「新手教學 / 引導卡版位」算好; 換卡時 RD 在 0.3 秒內內插位置(本函式照傳入的畫)。**卡片** 440×140, 中心 (cardX, cardY), 紙底深字(和 drawTutorial 泡泡同一套教學配色, 但更大、像一張提示卡)。text: 主句(至多 2 行, RD 已用 \\n 斷好行), 有 sub 時主句中心在卡片中心上方 16px、sub(小字一行)中心在卡片中心下方 26px; sub 為空字串時主句置中(上方 6px)。字串裡的 [Z] 畫成 22×22 鍵帽。cardDuration = 0.3: 每張卡出現時從 0.6 倍彈到 1.05 倍再回 1.0(整張連字一起縮放, 放大時 462×147 屬允許的框外例外), 閒置 cardAge = 0.3。**閱讀進度**: 卡片右下 [Z] 鍵帽 26×26, 中心 (cardX + 180, cardY + 44), 外圈一圈進度環(半徑 20 指外緣, 環寬 3, 從正上方順時針填滿 readAge / readDuration); readDuration = 1.5, readAge 從卡片出現起算(真實秒數, 上限 1.5); ready 為 true(readAge ≥ 1.5)時鍵帽亮起, 左邊寫「下一張」(last 為 true 時寫「繼續」), 字的右緣 x = cardX + 158; ready 為 false 時鍵帽與字都暗。index / total: 這段引導的第幾張(從 0 起算)/ 共幾張; total ≥ 2 時卡片底部中央畫 total 個小圓點(直徑 8、間距 14, 中心 y = cardY + 54), 第 index 個實心; total = 1 不畫。last: 這段的最後一張。引導卡的文字(text、sub)由 RD 傳, 「下一張」「繼續」分工照美術 / RD 任務(新手教學)"
     },
     {
       "name": "drawHud",
-      "state": ["level", "levelName", "gold", "castleHp", "castleMaxHp", "wave", "totalWaves", "nextWaveIn", "clockPaused", "muted"],
+      "state": ["level", "levelName", "gold", "muted"],
       "size": [1280, 50],
-      "notes": "固定在畫面頂端 (0,0)~(1280,50)。固定版位(皆為該項目的左緣 x, 垂直置中 y = 25): 關卡「第 level 關 levelName」x = 16(level 1~5); 金幣 x = 230; 主堡生命 castleHp / castleMaxHp(20)x = 350; 波次 wave / totalWaves x = 500(第一波開始前 wave = 0); 倒數 x = 640: nextWaveIn 為距下一波秒數(無條件進位), 已無下一波時為 −1(不顯示); clockPaused 為 true(第 1 關教學階段 5 完成前)時不顯示秒數, 改顯示「準備中」。喇叭圖示中心 (860,25), 28×28, muted 時打叉。右側操作提示右緣對齊 x = 1264, 左緣不小於 x = 900:「[Z] 互動  [M] 靜音」(**本輪刪除 [空白鍵] 商店**: 使用者說會讓人誤會隨時都能開店, 改由 drawShopHint 在帶購買的單位旁提示; 靜音由 X 改 M), 按鍵畫成鍵帽(22×22, conventions.keycap), 鍵帽和後面的字隔 4px、兩組之間隔 14px。所有文字由美術畫"
+      "notes": "固定在畫面頂端 (0,0)~(1280,50)。**本輪拿掉主堡生命與波次 / 倒數**(使用者: 主堡血量改畫在主堡身上, 波次與倒數改到左上角; 分別見 drawCastle 的血量牌與 drawWavePanel)。固定版位(皆為該項目的左緣 x, 垂直置中 y = 25): 關卡「第 level 關 levelName」x = 16(level 1~5; levelName 至多 7 個字, 例「新手教學・初陣」, 整串最寬約 300); 金幣 x = 340(本輪由 230 右移); 喇叭圖示中心 (860,25), 28×28, muted 時打叉。右側操作提示右緣對齊 x = 1264, 左緣不小於 x = 900:「[Z] 互動  [C] 圖鑑  [Esc] 暫停  [M] 靜音」(本輪新增 [C] 圖鑑、[Esc] 暫停), 按鍵畫成鍵帽(22×22, Esc 32×22, conventions.keycap), 鍵帽和後面的字隔 4px、兩組之間隔 14px(估算總寬約 268, 左緣約 996)。所有文字由美術畫"
+    },
+    {
+      "name": "drawWavePanel",
+      "state": ["x", "y", "wave", "totalWaves", "status", "nextWaveIn", "progress", "bumpAge", "bumpDuration"],
+      "size": [220, 58],
+      "notes": "新函式。左上角的波次面板(使用者: 當前波次與下一波次倒數不放在上 Bar, 改到左上角用比較明顯的方式顯示), 關卡中一直畫(結算時不畫)。RD 傳固定 (x, y) = (118,83): 範圍 x 8~228、y 54~112, 在 HUD 下方的遊戲區左上角(已驗算不壓各關出怪點預警: 最近的 (40,146) 預警上緣 114)。半透明深色底板, 要比 HUD 的字更醒目。內容: 第一行大字(約 22px)中心 (x, y − 12):「第 wave / totalWaves 波」; wave = 0(第 1 波還沒開始)時改畫「開戰前」。第二行小字(約 14px)中心 (x, y + 10), 依 status: \"countdown\"(有下一波、正在倒數)→「下一波 nextWaveIn 秒」(nextWaveIn 是無條件進位後的整數秒), 並在下方畫一條倒數進度條: 中心 (x, y + 23), 200×4, progress 0~1 從左往右填滿(1 = 下一波馬上開始); nextWaveIn ≤ 6(預警中)時第二行與進度條變成警示色並脈動; \"tutorial\"(新手教學擋著: 第 1 關等教學推進, 或第 2 關教學任務期間波次時鐘停住)→「完成新手任務後開始」(不畫進度條, 可以畫一個小沙漏 / 鎖的圖示); \"last\"(最後一波已開始)→「最後一波!」(警示色, 不畫進度條)。nextWaveIn、progress 只在 countdown 時有意義, 其他 status 傳 −1 與 0。bumpDuration = 0.4: 波次推進橫幅(drawWaveBanner)飛進面板的那一刻 RD 把 wave +1 並從 0 開始計 bumpAge: 面板整塊閃亮一下、第一行的數字放大到 1.3 倍再回來(只有數字放大, 至多超出面板上緣 4px, 屬允許的例外); 閒置 bumpAge = 0.4。文字由美術畫"
+    },
+    {
+      "name": "drawWaveBanner",
+      "state": ["wave", "totalWaves", "last", "age", "duration"],
+      "size": [560, 96],
+      "notes": "新函式。波次推進動畫(使用者: 開始新波次時跟著號角音效要演一段波次推進動畫, 讓玩家明確知道波次 +1 了)。第 wave 波開始出怪的那一刻開始(和 wave_start 的戰鼓號角同時), RD 只在 0 ≤ age < duration 時呼叫, duration = 1.6(遊戲時間, 遊戲不暫停; 慢動作時跟著變慢)。橫幅 560×96, 半透明深底 + 金色邊, 內容: 大字(約 48px)「第 wave 波」, 右下小字「共 totalWaves 波」; last 為 true(wave = totalWaves)時改成「最後一波!」(紅色警示, 不畫小字)。動畫(位置是橫幅中心): 0~0.3 秒從畫面左外 (−280,200) 滑入到 (640,200), 同時大字裡的數字從 wave−1 往上翻到 wave(像翻牌計數器; last 時不翻); 0.3~1.1 秒停在 (640,200), 可以有一道光從左到右掃過; 1.1~1.6 秒整塊縮小到 0.39 倍(約 220×38)並把中心沿直線移到波次面板 (118,83), 透明度降到 0.6, 1.6 秒消失(這一刻 RD 讓 drawWavePanel 的數字 +1 並播 bump)。整塊縮放(字一起縮)。橫幅在 (640,200) 時範圍 x 360~920、y 152~248, 會短暫蓋到遊戲區上方, 半透明讓底下單位仍看得見。文字由美術畫"
     },
     {
       "name": "drawSlowMo",
@@ -255,32 +291,50 @@
       "name": "drawSoulPopup",
       "state": ["mode", "x", "y", "title", "cells", "index", "hand", "actionLabel", "desc", "shakeAge", "shakeDuration"],
       "size": [320, 180],
-      "notes": "單位選單 / 替換彈窗(同一種面板, 固定 320×180)。mode: \"menu\"(手空, 對單位開的選單)或 \"replace\"(手上有魂件、目標裝滿, 選一格互換); replace 時標題下方或面板邊框用不同色調暗示「換掉」, 兩種一眼分得開。RD 算好中心 (x, y) 傳入: 放在目標上方(面板下緣 = 目標最上方附屬物頂端 − 8), 上緣 < 50 時改到目標下方; 中心 x 夾在 160~1120、y 夾在 140~630。版位(相對面板中心): 標題中心 (0, −70), title 是目標名稱字串(「弩塔」「魂柱」「主堡」「步兵」「石魔像」「中立石魔像」; 本輪起不再有「…的屍體」)。格子一排, 每格 40×40、格距 48, 第 i 格中心 (−120 + 48i, −30), 格子靠左排。cells: 陣列, 長度 1~4, 每項是下列之一: {type: \"slot\", item}(item 為 conventions.itemKinds 的魂件字串或 null 空格)、{type: \"demolish\", refund}(拆除格, 畫一個拆除圖示, 例: 鎚子; refund 為當下退款整數 0~9, 本輪起會因出廠魂件不在身上而變 0)、{type: \"rally\"}(重設集結點格, 畫旗幟圖示, 和 drawRallyFlag 同一面旗)。選項格(demolish / rally)最多 1 格, 一定在最後; 要和魂件格一眼分得開(例: 不同底色)。選項格下方中心 (格 x, −2) 一行小字: demolish 寫「+refund 金」(0 也照寫「+0 金」), rally 寫「移防」; 魂件格下方不寫字。replace 時 cells 只有 slot。面板右側的「手上」格, 中心 (116, −30), 40×40, 上方小字「手上」(中心 (116, −58)), 和格子之間在 x = 70 畫一條分隔線。index: 游標格(cells 的索引), 要非常明顯。hand: 手上物品字串或 null(menu 時一律 null, 手上格畫成空)。說明區: 面板內 x −148~148、y 10~62 的淺色底板; desc 為 null 時(游標在空格)底板留空; 否則 desc = {name, text, materials, alt}: 第一行(y = 24)左邊 name(左緣 x = −140, 至多 5 個字)、右邊材料(右緣 x = 140): materials 是長度 0 或 2 的基本魂件字串陣列, 2 時畫成「[圖示] + [圖示]」(每個 16×16, 中間一個「+」), 0 時不畫; alt(本輪新增)為基本魂件字串或 null, 只有不動如山會給(\"charge\"), 這時接在後面畫「/ [圖示]」, 表示第二件材料也可以換成它(整串「[進攻主堡] + [自動索敵] / [衝鋒]」寬約 80, 落在 x 60~140, 不和左邊的 name 重疊); 第二行(y = 48, 左緣 x = −140)text 一句效果(15 字內, 文字見 spec「魂件說明」表)。底部一行 y = 78: 左邊 actionLabel(左緣 x = −148; RD 依游標決定: menu 時游標在魂件格「拿起」、在拆除格「拆除」、在重設集結點格「移防」、在空格為空字串; replace 時「互換」), 右邊「[Z] 確定  [X] 關閉」(右緣 x = 148, 鍵帽 22×22)。shakeDuration = 0.25, 無效操作時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+      "notes": "單位選單 / 替換彈窗(同一種面板, 固定 320×180)。mode: \"menu\"(手空, 對單位開的選單)或 \"replace\"(手上有魂件、目標裝滿, 選一格互換); replace 時標題下方或面板邊框用不同色調暗示「換掉」, 兩種一眼分得開。RD 算好中心 (x, y) 傳入: 放在目標上方(面板下緣 = 目標最上方附屬物頂端 − 8), 上緣 < 50 時改到目標下方; 中心 x 夾在 160~1120、y 夾在 140~630。版位(相對面板中心): 標題中心 (0, −70), title 是目標名稱字串(「弩塔」「魂柱」「主堡」「步兵」「石魔像」「中立石魔像」; 本輪起不再有「…的屍體」)。格子一排, 每格 40×40、格距 48, 第 i 格中心 (−120 + 48i, −30), 格子靠左排。cells: 陣列, 長度 1~4, 每項是下列之一(本輪起每項多一個 locked 布林): {type: \"slot\", item, locked}(item 為 conventions.itemKinds 的魂件字串或 null 空格)、{type: \"demolish\", refund, locked}(拆除格, 畫一個拆除圖示, 例: 鎚子; refund 為當下退款整數 0~9, 本輪起會因出廠魂件不在身上而變 0)、{type: \"rally\", locked}(重設集結點格, 畫旗幟圖示, 和 drawRallyFlag 同一面旗)。選項格(demolish / rally)最多 1 格, 一定在最後; 要和魂件格一眼分得開(例: 不同底色)。選項格下方中心 (格 x, −2) 一行小字: demolish 寫「+refund 金」(0 也照寫「+0 金」), rally 寫「移防」; 魂件格下方不寫字。replace 時 cells 只有 slot。面板右側的「手上」格, 中心 (116, −30), 40×40, 上方小字「手上」(中心 (116, −58)), 和格子之間在 x = 70 畫一條分隔線。locked(本輪新增): 新手教學期間這一格不能動時為 true(spec「新手教學 / 教學鎖」), 格子變暗並在格子右下角畫一個小鎖頭 16×16(畫在 40×40 格內), 魂件圖示照畫; 其他時候 false。index: 游標格(cells 的索引), 要非常明顯(可以停在 locked 的格子上)。hand: 手上物品字串或 null(menu 時一律 null, 手上格畫成空)。說明區: 面板內 x −148~148、y 10~62 的淺色底板; desc 為 null 時(游標在空格)底板留空; 否則 desc = {name, text, materials, alt}: 第一行(y = 24)左邊 name(左緣 x = −140, 至多 5 個字)、右邊材料(右緣 x = 140): materials 是長度 0 或 2 的基本魂件字串陣列, 2 時畫成「[圖示] + [圖示]」(每個 16×16, 中間一個「+」), 0 時不畫; alt(本輪新增)為基本魂件字串或 null, 只有不動如山會給(\"charge\"), 這時接在後面畫「/ [圖示]」, 表示第二件材料也可以換成它(整串「[進攻主堡] + [自動索敵] / [衝鋒]」寬約 80, 落在 x 60~140, 不和左邊的 name 重疊); 第二行(y = 48, 左緣 x = −140)text 一句效果(15 字內, 文字見 spec「魂件說明」表)。底部一行 y = 78: 左邊 actionLabel(左緣 x = −148; RD 依游標決定: menu 時游標在魂件格「拿起」、在拆除格「拆除」、在重設集結點格「移防」、在空格為空字串; replace 時「互換」; 游標格 locked 時一律「教學中不能動」(本輪新增, 畫成灰色)), 右邊「[Z] 確定  [X] 關閉」(右緣 x = 148, 鍵帽 22×22)。shakeDuration = 0.25, 無效操作時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+    },
+    {
+      "name": "drawComboReveal",
+      "state": ["a", "b", "result", "name", "text", "aName", "bName", "age", "ready", "closing", "closeAge", "closeDuration"],
+      "size": { "dim": [1280, 720], "panel": [600, 200] },
+      "notes": "新函式。第一次合成演出(spec 規則 52; 使用者: 第一次解鎖組合要演一段組合動畫, 讓玩家清楚看著是 A + B = C, 合成後停在要按確認鍵才關閉的畫面, 寫魂件名稱和效果, 旁邊有小 icon 寫是哪兩個組件組合而成)。遊戲整個暫停, 蓋在最上層。a、b: 兩件材料(基本魂件字串, conventions.itemKinds), result: 組合魂件字串; 圖示和 drawSoulSlots 是同一套(組合魂件用融合外觀)。name: 組合名稱、text: 一句效果(15 字內)、aName / bName: 材料名稱(都由 RD 傳, 文字見 spec「魂件說明」表; 美術畫)。age: 演出開始後的真實秒數(從 0 往上數, 1.5 之後停在 1.5)。固定版位與時間軸: 0~0.3 秒全畫面黑色壓暗從 0 淡入到 0.7; 0.3~0.9 秒材料 A 圖示(64×64)從 (340,250) 滑到 (580,250)、材料 B 從 (940,250) 滑到 (700,250), 中間 (640,250) 浮出一個「+」; 0.9~1.2 秒兩件往 (640,250) 撞在一起, 一圈閃光從中心擴散(外緣最大半徑 90), 變成組合圖示 96×96 並彈一下(1.0 → 1.25 → 1.0 倍, 放大時 120×120); 1.2~1.5 秒說明面板 600×200 從中心 (640,520) 往上滑到 (640,470) 並淡入。面板內(相對面板中心): 上方「新組合!」中心 (0, −76), 金色醒目; 左邊組合圖示 56×56 中心 (−230, −6); 名稱(約 26px 粗體, 至多 5 個字)左緣 x = −190, 中心 y = −24; 效果(約 18px)左緣 x = −190, 中心 y = 12; 右邊材料小圖示: [A] 24×24 中心 (140, −10)、「+」(188, −10)、[B] 24×24 中心 (236, −10), 兩件名稱小字(約 12px, 至多 4 個字)在各自圖示下方中心 y = 18; ready 為 true 時面板底部中心 (0, 76) 畫閃爍的「[Z] 確定」(鍵帽 22×22)。動畫期間(age < 1.5)面板還沒完全出現時不畫「[Z] 確定」。ready: age ≥ 1.5。closing: 玩家按 Z 後為 true, closeDuration = 0.3, closeAge 0 → 0.3 期間整個畫面(壓暗、圖示、面板)淡出; 沒在關閉時 closing = false、closeAge = 0.3。「新組合!」「[Z] 確定」由美術畫(固定字串)"
+    },
+    {
+      "name": "drawCodex",
+      "state": ["entries", "foundCount"],
+      "size": { "dim": [1280, 720], "panel": [1040, 620], "row": [480, 76] },
+      "notes": "新函式。組合圖鑑(spec 規則 51; 使用者: 按 C 暫停並開啟組合圖鑑, 用清楚的 icon 顯示什麼加什麼會等於什麼, 所有材料類僅顯示名稱, 僅最終合成物顯示名稱 + 效果)。遊戲暫停時蓋在最上層: 全畫面黑色壓暗 0.7 + 中央面板 1040×620, 中心 (640,370)(x 120~1160、y 60~680)。面板內固定版位(畫面座標): 標題「組合圖鑑」中心 (640,100); 右上「已發現 foundCount / 10」右緣 x = 1140、中心 y = 100(foundCount 0~10); 底部提示「[C] 關閉」中心 (640,650)(鍵帽 22×22; 本行只寫 C, X 與 Esc 也能關但不寫)。entries: 固定 11 項陣列(從 0 起算), 順序 = spec 規則 14 合成表(穿透箭、冰箭、旋風斬、冰霜重擊、雷霆斬、雷電球、瞬閃、治癒光線、神聖之路、不動如山(進攻主堡 + 自動索敵)、不動如山(進攻主堡 + 衝鋒)); 每項 {a, b, result, aName, bName, name, text, opened}: a、b 材料魂件字串、result 組合魂件字串(圖示同 drawSoulSlots 那套)、aName / bName / name / text 由 RD 傳(文字見 spec「魂件說明」表)、opened 布林(這次開網頁真的合成過這條配方)。排版: 兩欄, 第 0~5 項在左欄(列中心 x = 380), 第 6~10 項在右欄(列中心 x = 900); 每欄第 i 列(i 從 0 起算)中心 y = 165 + 84i(165, 249, …, 585), 每列 480×76, 列與列之間有淡淡的分隔。每列內(相對列中心): 材料 A 圖示 32×32 中心 (−200, −10)、A 名稱小字(約 12px)中心 (−200, 20); 「+」中心 (−158, −10); 材料 B 圖示 (−116, −10)、B 名稱 (−116, 20); 「=」中心 (−74, −10); 組合圖示 40×40 中心 (−34, −10); 組合名稱(約 18px 粗體, 至多 5 個字)左緣 x = −4、中心 y = −16; 效果(約 13px, 至多 15 字, 最寬約 200)左緣 x = −4、中心 y = 14。材料只畫名稱、組合才畫名稱 + 效果(使用者指定)。opened 為 true 時列的右上角畫一個「已組過」小章(中心 (204, −24), 56×18, 在列內), false 時不畫; 沒組過的列照樣完整畫出(不變暗、不藏)。圖鑑沒有游標。所有固定字由美術畫"
+    },
+    {
+      "name": "drawPause",
+      "state": [],
+      "size": { "dim": [1280, 720], "panel": [360, 160] },
+      "notes": "新函式。Esc 暫停(spec 規則 50; 使用者: 按 Esc 時可以暫停, 和 M 靜音鍵一樣是通用按鍵)。遊戲暫停時蓋在最上層: 全畫面黑色壓暗 0.5 + 中央面板 360×160, 中心 (640,360)。面板內: 大字「暫停」中心 (640,335)、下方「[Esc] 繼續」中心 (640,395)(鍵帽 32×22)。文字由美術畫。不畫其他選項。和 drawSlowMo 的慢動作效果要一眼分得開(慢動作是時間變慢、還能看見遊戲在動; 這是完全停住)"
     },
     {
       "name": "drawShopPopup",
       "state": ["items", "cursorIndex", "message", "shakeAge", "shakeDuration"],
       "size": [480, 150],
-      "notes": "商店彈窗, 固定中心 (640,400), 480×150。標題「商店」中心 (0, −58)(相對面板中心)。**本輪只列已解鎖的品項**(使用者: 商店不需要出現尚未解鎖的項目): items 長度 3 或 4, 順序 0 魂柱、1 弩塔、2 步兵, 招募過石魔像後才有第 3 項石魔像。每項一格 80×72(圖示 + 品名 + 價格), 整排置中: 第 i 格中心 x = (i − (n−1)/2) × 88(n = items 長度; n = 3 → −88, 0, 88; n = 4 → −132, −44, 44, 132), y = −4。每項 {item, name, price, state, count, cap}: item 是 \"pillarKit\" | \"crossbowKit\" | \"soldierKit\" | \"golemKit\"(畫該單位的小圖; 弩塔的小圖可帶一支箭暗示附帶遠攻); state: \"ok\" | \"poor\"(金幣不足, 變暗)| \"max\"(只有魂柱: 已達上限, 變暗並把 count / cap 標紅); 本輪刪除 \"locked\"。count / cap: 只有魂柱有值(整數, cap 1~3, count 0~cap), 其他項傳 null; 魂柱格右上角(格內, 中心 (格 x + 24, −32))畫小字「count/cap」, 例「1/2」——這是畫面上唯一顯示魂柱上限的地方。cursorIndex: 游標格要非常明顯。底部一行 y = 58: 左邊 message(\"\" | \"金幣不足\" | \"已達上限\" | \"手上要空著\" | \"先放下手上的東西\", 左緣 x = −228), 右邊「[←][→] 選  [Z] 購買  [X] 關閉」(右緣 x = 228, 鍵帽 22×22)。shakeDuration = 0.25, 購買失敗時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
+      "notes": "商店彈窗, 固定中心 (640,400), 480×150。標題「商店」中心 (0, −58)(相對面板中心)。items 長度 3 或 4, 順序 0 魂柱、1 弩塔、2 步兵, 招募過石魔像後才有第 3 項石魔像(石魔像招募前不列出; 新手教學鎖住的品項照樣列出, 見 state \"locked\")。每項一格 80×72(圖示 + 品名 + 價格), 整排置中: 第 i 格中心 x = (i − (n−1)/2) × 88(n = items 長度; n = 3 → −88, 0, 88; n = 4 → −132, −44, 44, 132), y = −4。每項 {item, name, price, state, count, cap}: item 是 \"pillarKit\" | \"crossbowKit\" | \"soldierKit\" | \"golemKit\"(畫該單位的小圖; 弩塔的小圖可帶一支箭暗示附帶遠攻); state: \"ok\" | \"poor\"(金幣不足, 變暗)| \"max\"(只有魂柱: 已達上限, 變暗並把 count / cap 標紅)| \"locked\"(本輪加回, 意思是「新手教學期間鎖住」: 變得比 poor 更暗, 格子中央偏上畫一個鎖頭 20×20, 品名與價格照畫; 和 poor 一眼分得開)。count / cap: 只有魂柱有值(整數, cap 1~3, count 0~cap), 其他項傳 null; 魂柱格右上角(格內, 中心 (格 x + 24, −32))畫小字「count/cap」, 例「1/2」——這是畫面上唯一顯示魂柱上限的地方。cursorIndex: 游標格要非常明顯(游標可以停在 locked 的格子上)。新手任務泡泡會指著某一格: 尖端在面板上緣上方 (格中心 x, 321), 泡泡本體在面板上方 y 229~301, 不和面板重疊。底部一行 y = 58: 左邊 message(\"\" | \"教學期間不能買\"(本輪新增) | \"金幣不足\" | \"已達上限\" | \"手上要空著\" | \"先放下手上的東西\", 左緣 x = −228), 右邊「[←][→] 選  [Z] 購買  [X] 關閉」(右緣 x = 228, 鍵帽 22×22)。shakeDuration = 0.25, 購買失敗時抖一下(整塊左右位移至多 6px, 屬允許的框外例外), 閒置 shakeAge = 0.25"
     },
     {
       "name": "drawResult",
       "state": ["win", "allClear", "level", "levelName", "wave", "totalWaves", "castleHp", "castleMaxHp", "stars", "starAge", "starDuration", "comboCount", "options", "cursorIndex"],
       "size": [1280, 720],
-      "notes": "結算畫面, 蓋在整個畫面上(半透明底 + 中央面板)。固定版位: 面板中心 (640,370), 680×440; 標題中心 (640,200): win 為 false 畫「主堡被攻陷」, win 為 true 畫「勝利」, allClear 為 true(第 5 關勝利)畫「全部通關!」; 關名「第 level 關 levelName」中心 (640,245); 3 顆星中心 (560,310)、(640,310)、(720,310), 每顆 56×56; 數據兩行中心 (640,380)「第 wave / totalWaves 波  主堡 castleHp / castleMaxHp」、(640,415)「發現組合 comboCount / 10」(**本輪組合由 5 種變 10 種**, comboCount 0~10); 按鈕一排中心 y = 510, 每顆 170×50, 間距 20, 置中排列(3 顆時中心 x = 450, 640, 830; 2 顆時 545, 735)。stars: 0~3(失敗為 0), 亮的星依序跳出: starDuration = 1.2, starAge 是結算出現後的真實秒數(閒置 / 播完 = 1.2), 第 k 顆(k < stars)在 starAge ≥ 0.4k 時出現並彈一下(單顆星整顆放大至多 1.3 倍, 屬允許的框外例外), 未亮的星一直畫成暗的空星。options: 按鈕文字陣列, 長度 2~3(「下一關」「重玩」「重來」「標題」的組合, 見 spec 勝負與結束)。cursorIndex: 選中的按鈕要非常明顯。按鈕下方中心 (640,560)「[←][→] 選  [Z] 確定」(鍵帽 22×22)。所有文字由美術畫"
+      "notes": "結算畫面, 蓋在整個畫面上(半透明底 + 中央面板)。固定版位: 面板中心 (640,370), 680×440; 標題中心 (640,200): win 為 false 畫「主堡被攻陷」, win 為 true 畫「勝利」, allClear 為 true(第 5 關勝利)畫「全部通關!」; 關名「第 level 關 levelName」中心 (640,245); 3 顆星中心 (560,310)、(640,310)、(720,310), 每顆 56×56; 數據兩行中心 (640,380)「第 wave / totalWaves 波  主堡 castleHp / castleMaxHp」、(640,415)「發現組合 comboCount / 10」(**本輪組合由 5 種變 10 種**, comboCount 0~10); 按鈕一排中心 y = 510, 每顆 170×50, 間距 20, 置中排列(3 顆時中心 x = 450, 640, 830; 2 顆時 545, 735)。stars: 0~3(失敗為 0), 亮的星依序跳出: starDuration = 1.2, starAge 是結算出現後的真實秒數(閒置 / 播完 = 1.2), 第 k 顆(k < stars)在 starAge ≥ 0.4k 時出現並彈一下(單顆星整顆放大至多 1.3 倍, 屬允許的框外例外), 未亮的星一直畫成暗的空星。options: 按鈕文字陣列, 本輪起長度一律 2: 勝利 [「繼續」, 「重玩」]、失敗 [「重來」, 「關卡預覽」](本輪刪除「下一關」「標題」; 見 spec 勝負與結束), 按鈕中心 x = 545, 735。cursorIndex: 選中的按鈕要非常明顯。按鈕下方中心 (640,560)「[←][→] 選  [Z] 確定」(鍵帽 22×22)。所有文字由美術畫"
     }
   ],
   "sounds": [
-    "ui_move", "ui_confirm", "ui_invalid", "popup_open", "popup_close",
-    "take_part", "install_part", "swap_part", "drop_part", "fuse", "ground_expire",
-    "purchase", "place_unit", "flag_plant", "demolish", "home_refund", "coin_pickup",
-    "steal_start", "steal_done", "steal_cancel",
-    "combo", "combo_new",
-    "arrow_shot", "pierce_shot", "melee_hit", "whirl", "charge_hit",
-    "shock_zap", "thunder_slash", "thunder_orb", "blink", "heal_ray",
-    "enemy_shot", "enemy_die", "unit_down", "unit_return", "recruit",
-    "wave_warning", "wave_start", "castle_hit",
-    "tutorial_done", "level_win", "level_lose", "star"
+    "ui_move", "ui_confirm", "ui_invalid", "popup_open", "popup_close", "take_part",
+    "install_part", "swap_part", "drop_part", "fuse", "ground_expire", "purchase",
+    "place_unit", "flag_plant", "demolish", "home_refund", "coin_pickup", "steal_start",
+    "steal_done", "steal_cancel", "combo", "combo_new", "combo_reveal", "arrow_shot",
+    "pierce_shot", "melee_hit", "whirl", "charge_hit", "shock_zap", "thunder_slash",
+    "thunder_orb", "blink", "heal_ray", "enemy_shot", "enemy_die", "unit_down",
+    "unit_return", "recruit", "wave_warning", "wave_start", "castle_hit", "tutorial_done",
+    "quest_new", "guide_pause", "guide_card", "tutorial_clear", "pause_on", "pause_off",
+    "codex_open", "codex_close", "level_advance", "level_unlock", "level_win", "level_lose",
+    "star"
   ],
   "music": ["title", "battle"]
 }

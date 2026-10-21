@@ -1,5 +1,5 @@
 'use strict';
-// 魂匠守衛者(打磨版第 3 輪) — 玩法驗證 Demo。邏輯與繪製分離: update 改狀態, render 只呼叫 Art.drawXxx。
+// 魂匠守衛者(打磨版第 4 輪) — 玩法驗證 Demo。邏輯與繪製分離: update 改狀態, render 只呼叫 Art.drawXxx。
 
 const Placeholder = {}; // interface.json 涵蓋所有圖形, 無佔位
 
@@ -24,6 +24,9 @@ const RECIPES = [
   [['shock', 'melee']], [['shock', 'ranged']], [['shock', 'seek']], [['heal', 'ranged']], [['heal', 'charge']],
   [['march', 'seek'], ['march', 'charge']]
 ];
+// 圖鑑 / 第一次合成演出用的 11 條配方: [材料 A, 材料 B, 組合序號](順序 = 合成表, 不動如山兩條排最後)
+const RECIPE_FLAT = [];
+RECIPES.forEach((alts, ci) => alts.forEach(r => RECIPE_FLAT.push([r[0], r[1], ci])));
 const KITS = { crossbowKit: 1, pillarKit: 1 };
 const KIT_NAME = { crossbowKit: 'crossbow', pillarKit: 'pillar', soldierKit: 'soldier', golemKit: 'golem' };
 const CASTLE_POS = { x: 1180, y: 434, half: 56 };
@@ -56,25 +59,24 @@ function zeroSingles() { return { ranged: 0, melee: 0, frost: 0, shock: 0, heal:
 function zeros(n) { const a = []; for (let i = 0; i < n; i++) a.push(0); return a; }
 
 // ───────── 關卡資料 ─────────
-function gp(sp, pairs) { return { sp, list: pairs }; } // 一組出怪: 出怪點序號 + [[種類, 隻數], ...]
+function gp(sp, pairs, gap) { return { sp, list: pairs, gap: gap || 1.2 }; } // 一組出怪: 出怪點序號 + [[種類, 隻數], ...] + 每隻間隔(swift = 輕快小鬼)
 const LEVELS = [
   {
-    name: '初陣', gold: 30, cap: 1, mul: 1.0, t1: 15, gap: 24,
+    name: '新手教學・初陣', gold: 30, cap: 1, mul: 1.0, t1: 15, gap: 24,
     paths: [[[0, 290], [600, 290], [600, 434], [1180, 434]]],
     spawns: [{ name: 'A', x: 40, y: 290, ang: 0 }],
-    towers: [[408, 362, ['ranged']], [504, 362, ['ranged']]], soldiers: [], neutrals: [],
+    towers: [], soldiers: [], neutrals: [],
     waves: [
-      [gp(0, [['imp', 4]])],
-      [gp(0, [['imp', 6]])],
-      [gp(0, [['imp', 4], ['archer', 3]])],
-      [gp(0, [['imp', 6], ['archer', 2], ['ice', 2]])]
+      [gp(0, [['imp', 1], ['archer', 1]])],
+      [gp(0, [['swift', 12]], 0.5)],
+      [gp(0, [['imp', 4], ['archer', 2]])]
     ]
   },
   {
-    name: '雙路', gold: 40, cap: 2, mul: 1.0, t1: 15, gap: 26,
+    name: '新手教學・雙路', gold: 70, cap: 2, mul: 1.0, t1: 15, gap: 26,
     paths: [[[0, 194], [720, 194], [720, 434], [1180, 434]], [[0, 626], [720, 626], [720, 434], [1180, 434]]],
     spawns: [{ name: '北', x: 40, y: 194, ang: 0 }, { name: '南', x: 40, y: 626, ang: 0 }],
-    towers: [[456, 266, ['ranged']], [456, 554, ['ranged']]], soldiers: [], neutrals: [],
+    towers: [], soldiers: [], neutrals: [[456, 410]],
     waves: [
       [gp(0, [['imp', 5]])],
       [gp(1, [['imp', 3], ['archer', 3]])],
@@ -84,10 +86,10 @@ const LEVELS = [
     ]
   },
   {
-    name: '長蛇', gold: 40, cap: 2, mul: 1.2, t1: 15, gap: 28,
+    name: '長蛇', gold: 70, cap: 2, mul: 1.2, t1: 15, gap: 28,
     paths: [[[0, 146], [1000, 146], [1000, 290], [300, 290], [300, 578], [860, 578], [860, 434], [1180, 434]]],
     spawns: [{ name: 'A', x: 40, y: 146, ang: 0 }],
-    towers: [[504, 218, ['ranged']], [600, 506, ['ranged']]], soldiers: [], neutrals: [[600, 434]],
+    towers: [], soldiers: [], neutrals: [[600, 434]],
     waves: [
       [gp(0, [['imp', 6]])],
       [gp(0, [['imp', 4], ['archer', 3]])],
@@ -97,10 +99,10 @@ const LEVELS = [
     ]
   },
   {
-    name: '夾擊', gold: 45, cap: 3, mul: 1.4, t1: 15, gap: 26,
+    name: '夾擊', gold: 85, cap: 3, mul: 1.4, t1: 15, gap: 26,
     paths: [[[360, 50], [360, 434], [1180, 434]], [[360, 720], [360, 434], [1180, 434]]],
     spawns: [{ name: '上', x: 360, y: 90, ang: Math.PI / 2 }, { name: '下', x: 360, y: 690, ang: -Math.PI / 2 }],
-    towers: [[456, 314, ['ranged']], [456, 554, ['ranged']]], soldiers: [[640, 490]], neutrals: [],
+    towers: [], soldiers: [], neutrals: [],
     waves: [
       [gp(0, [['imp', 5]])],
       [gp(1, [['drummer', 3], ['imp', 3]])],
@@ -111,10 +113,10 @@ const LEVELS = [
     ]
   },
   {
-    name: '三叉', gold: 50, cap: 3, mul: 1.6, t1: 15, gap: 24,
+    name: '三叉', gold: 80, cap: 3, mul: 1.6, t1: 15, gap: 24,
     paths: [[[0, 146], [720, 146], [720, 434], [1180, 434]], [[0, 434], [1180, 434]], [[0, 674], [720, 674], [720, 434], [1180, 434]]],
     spawns: [{ name: '北', x: 40, y: 146, ang: 0 }, { name: '中', x: 40, y: 434, ang: 0 }, { name: '南', x: 40, y: 674, ang: 0 }],
-    towers: [[456, 218, ['ranged']], [456, 602, ['ranged']]], soldiers: [], neutrals: [[960, 290], [960, 578]],
+    towers: [], soldiers: [], neutrals: [[960, 290], [960, 578]],
     waves: [
       [gp(0, [['imp', 4]]), gp(2, [['imp', 4]])],
       [gp(1, [['archer', 3], ['ice', 2]]), gp(0, [['imp', 4]])],
@@ -171,10 +173,15 @@ let hideAt = null;
 // 這次開網頁期間的狀態(重新整理才重置)
 const S = {
   unlocked: [true, false, false, false, false], best: [0, 0, 0, 0, 0], attempts: [0, 0, 0, 0, 0], fails: [0, 0, 0, 0, 0],
-  combos: zeros(NCOMBO).map(() => false), golemUnlocked: false, muted: false,
-  tut: { done: [], shownSt: [], doneSt: [], cur: 0, fx: null, view: null, pend: {}, pressed: {}, late: {} }
+  combos: zeros(NCOMBO).map(() => false), recipes: zeros(11).map(() => false), golemUnlocked: false, pillarUnlocked: false, muted: false,
+  won: [false, false, false, false, false], pendingUnlock: -1, tutClearShown: false, tutClearSt: null,
+  tut: { done: [], shownSt: [], doneSt: [], pressed: {}, fx: null, cur: 0, view: null, lastView: null }
 };
-const G = { screen: 'title', cursor: 0, titleT: 0, sq: [], music: null, inited: false, level: 1, popup: null, steal: null, hand: null, flag: null, fuseSnd: 0, comboSnd: 0 };
+const G = {
+  screen: 'title', cursor: 0, titleT: 0, tt: { clear: null, adv: null }, sq: [], music: null, inited: false, level: 1, popup: null, steal: null, hand: null, flag: null,
+  fuseSnd: 0, comboSnd: 0, paused: false, codex: false, guide: null, reveal: null, revealQ: [], banner: null, panelWave: 0, bumpAge: 0.4,
+  tapp: {}, run: {}, warn: null, resp: {}, waveAt: [], queue: [], firstKill: null, firstEnemyT: null, sawArcher: false, shopOpens: 0, qCur: 0, qBase: 0, q22seen: false, gateWas: false
+};
 
 function emptyEv() {
   return {
@@ -237,7 +244,8 @@ function newStat() {
     goldEarned: 0, goldRefund: 0, goldSpent: 0, purchases: {}, pillarsMax: 0,
     steals: { started: 0, done: 0, diedDone: 0, canceled: 0 }, installs: { direct: 0, replace: 0 }, fuses: {}, drops: 0, groundExpired: 0,
     demolishes: 0, homeRefunds: {}, bundledBack: 0, flags: { purchase: 0, rally: 0 }, unitDowns: 0, maxRespawnQueue: 0, marchLoops: 0,
-    blinks: 0, healed: 0, enemyHealed: 0, recruits: 0, combosNew: []
+    blinks: 0, healed: 0, enemyHealed: 0, recruits: 0, combosNew: [],
+    pauseSec: 0, pauses: 0, codexSec: 0, codexOpens: 0, guideSec: 0, revealSec: 0, reveals: 0, gateSec: 0, tutorialBlocks: {}, tutorialSpawns: 0
   };
 }
 
@@ -291,10 +299,9 @@ function startLevel(n) {
   G.level = n; prepLevel(n);
   S.attempts[n - 1]++;
   G.screen = 'play';
+  const T = S.tut;
   G.time = 0; G.clock = 0; G.gold = LV.gold; G.castleHp = 20; G.wave = 0; G.waveStarted = 0;
-  G.towers = LV.towers.map(t => { const u = mkTower(t[0], t[1]); t[2].forEach((k, i) => { u.slots[i] = k; }); return u; });
-  G.pillars = [];
-  G.soldiers = LV.soldiers.map(s => mkSoldier(s[0], s[1]));
+  G.towers = []; G.pillars = []; G.soldiers = []; // 開局全空
   G.golems = LV.neutrals.map(g => mkGolem(g[0], g[1], 'neutral'));
   G.enemies = []; G.corpses = []; G.parts = []; G.coins = []; G.flags = [];
   G.projs = []; G.beams = []; G.areas = []; G.sparks = []; G.names = []; G.breaks = [];
@@ -307,49 +314,65 @@ function startLevel(n) {
   G.hand = null; G.flag = null; G.popup = null; G.steal = null; G.target = null;
   G.rq = []; G.rqT = 0; G.fuseSnd = 0; G.comboSnd = 0;
   G.queue = [];
-  LV.waves.forEach((groups, k) => {
-    const st = LV.t1 + k * LV.gap;
-    groups.forEach(g => {
-      let i = 0;
-      g.list.forEach(([type, cnt]) => { for (let c = 0; c < cnt; c++) { G.queue.push({ t: st + i * 1.2, sp: g.sp, type, wave: k }); i++; } });
-    });
-  });
-  G.queue.sort((a, b) => a.t - b.t);
-  G.warned = {};
+  G.waveAt = LV.waves.map((w, k) => LV.t1 + k * LV.gap);
+  G.tutLevel = (n === 1 && !T.done[16]) || (n === 2 && !T.done[28]);
+  G.tutDriven = n === 1 && !T.done[16]; // 第 1 關教學中: 波次由教學推進
+  if (G.tutDriven) { G.waveAt = LV.waves.map(() => null); if (T.done[8]) G.waveAt[0] = 9; } // 階段 8 已完成: 進關 3 秒時開始預警
+  G.cdFrom = 0; G.warned = {};
+  G.banner = null; G.panelWave = 0; G.bumpAge = 0.4;
+  G.paused = false; G.codex = false; G.guide = null; G.reveal = null; G.revealQ = [];
+  G.tapp = {}; G.run = { placedTower: false, placedPillar: false }; G.warn = null; G.resp = {};
+  G.firstKill = null; G.firstEnemyT = null; G.sawArcher = false; G.shopOpens = 0; G.qCur = 0; G.qBase = 0; G.q22seen = false; G.gateWas = false;
   G.win = false; G.resultT = 0; G.stat = newStat();
   G.stat.leaksByWave = LV.waves.map(() => 0);
   G.log = { t0: RT, events: [] };
-  G.clockOn = !(n === 1 && !S.tut.done[5]);
-  const T = S.tut; T.cur = 0; T.fx = null; T.view = null; T.pend = {}; T.pressed = {};
+  T.fx = null; T.view = null; T.lastView = null; T.cur = 0; T.pressed = {};
   ev('level_start', { level: n, attempt: S.attempts[n - 1] });
-  if (G.clockOn) ev('clock_start', { reason: 'immediate' });
   zNeedRelease = true;
   setMusic('battle');
 }
-function toTitle() {
+function startAdvance() {
+  const to = S.pendingUnlock;
+  if (to >= 1 && !S.unlocked[to]) { G.tt.adv = { from: to - 1, to, age: 0, unlocked: false }; snd('level_advance'); }
+  else S.pendingUnlock = -1;
+}
+function toTitle(failIdx) {
   G.screen = 'title'; G.titleT = 0; G.popup = null; G.steal = null;
   let c = 0; for (let i = 0; i < 5; i++) if (S.unlocked[i]) c = i;
+  if (failIdx !== undefined && failIdx !== null) c = failIdx;
   G.cursor = c;
+  G.tt = { clear: null, adv: null };
+  if (S.won[0] && S.won[1] && !S.tutClearShown) {
+    S.tutClearShown = true; S.tutClearSt = r1(RT);
+    G.tt.clear = { age: 0, closing: false, closeAge: 0.3 };
+    snd('tutorial_clear');
+  } else startAdvance();
   muffle(false);
   setMusic('title');
+  flushSnd();
 }
 function endLevel(win) {
   const hp = Math.max(0, G.castleHp);
   const stars = win ? 1 + (hp >= 10 ? 1 : 0) + (hp === 20 ? 1 : 0) : 0;
   G.screen = 'result'; G.win = win; G.resultT = 0; G.stars = stars; G.starsPlayed = 0; G.resultCursor = 0;
-  G.options = win ? (G.level < 5 ? ['下一關', '重玩', '標題'] : ['重玩', '標題']) : ['重來', '標題'];
-  G.popup = null; G.steal = null; muffle(false);
+  G.options = win ? ['繼續', '重玩'] : ['重來', '關卡預覽'];
+  G.popup = null; G.steal = null; G.guide = null; G.reveal = null; G.revealQ = []; G.paused = false; G.codex = false; muffle(false);
   G.sq = G.sq.filter(n => n !== 'castle_hit');
-  if (win) { S.unlocked[Math.min(4, G.level)] = true; S.best[G.level - 1] = Math.max(S.best[G.level - 1], stars); }
-  else S.fails[G.level - 1]++;
-  const T = S.tut; T.cur = 0; T.fx = null; T.view = null;
+  if (win) {
+    S.won[G.level - 1] = true;
+    S.best[G.level - 1] = Math.max(S.best[G.level - 1], stars);
+    if (G.level < 5 && !S.unlocked[G.level]) S.pendingUnlock = G.level; // 解鎖與推進動畫延到回關卡預覽頁才播
+  } else S.fails[G.level - 1]++;
+  const T = S.tut; T.fx = null; T.view = null; T.lastView = null;
   ev('level_end', { result: win ? 'win' : 'lose', wave: G.wave, castleHp: hp, stars });
   const st = G.stat;
   const tut = {};
-  for (let k = 1; k <= 13; k++) tut[String(k)] = { shownSt: T.shownSt[k] === undefined ? null : T.shownSt[k], doneSt: T.doneSt[k] === undefined ? null : T.doneSt[k] };
+  for (let k = 1; k <= 28; k++) tut[String(k)] = { shownSt: T.shownSt[k] === undefined ? null : T.shownSt[k], doneSt: T.doneSt[k] === undefined ? null : T.doneSt[k], kind: CARD[k] ? 'card' : 'quest' };
   const summary = {
     level: G.level, levelName: LV.name, attempt: S.attempts[G.level - 1], failsBefore: win ? S.fails[G.level - 1] : S.fails[G.level - 1] - 1,
     result: win ? 'win' : 'lose', durationSec: r1(RT - G.log.t0), gameSec: r1(st.gameSec), slowMoSec: r1(st.slowMoSec), hiddenSec: r1(st.hiddenSec),
+    pauseSec: r1(st.pauseSec), pauses: st.pauses, codexSec: r1(st.codexSec), codexOpens: st.codexOpens, guideSec: r1(st.guideSec), revealSec: r1(st.revealSec), reveals: st.reveals,
+    gateSec: r1(st.gateSec), tutorialBlocks: st.tutorialBlocks, tutorialSpawns: st.tutorialSpawns,
     waveReached: G.wave, totalWaves: LV.waves.length, castleHp: hp, stars, leaks: st.leaks, leaksByWave: st.leaksByWave, leaksBySpawn: st.leaksBySpawn,
     kills: st.kills, playerKills: st.playerKills, playerHits: st.playerHits,
     goldEarned: st.goldEarned, goldRefund: st.goldRefund, goldSpent: st.goldSpent, goldEnd: G.gold, purchases: st.purchases,
@@ -357,9 +380,10 @@ function endLevel(win) {
     drops: st.drops, groundExpired: st.groundExpired, demolishes: st.demolishes, homeRefunds: st.homeRefunds, bundledBack: st.bundledBack, flags: st.flags,
     unitDowns: st.unitDowns, maxRespawnQueue: st.maxRespawnQueue, marchLoops: st.marchLoops, blinks: st.blinks,
     healed: Math.round(st.healed), enemyHealed: Math.round(st.enemyHealed), recruits: st.recruits,
-    combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length
+    combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length, recipesOpenedTotal: S.recipes.filter(Boolean).length,
+    tutorialLevel: !!G.tutLevel, tutorialClearSt: S.tutClearSt
   };
-  downloadLog({ game: 'SoulSmithDefense', version: 'polish-3', summary, tutorial: tut, events: G.log.events });
+  downloadLog({ game: 'SoulSmithDefense', version: 'polish-4', summary, tutorial: tut, events: G.log.events });
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
@@ -408,13 +432,21 @@ function wouldFuseAfterSwap(u, idx, item) {
   const s = u.slots.slice(); s[idx] = item;
   return !!findFuse(s);
 }
-function popName(u, ci) {
+// plain: 這次是配方第一次真的合成(由演出慶祝), 頭上照一般跳名稱、不加「新組合!」也不另播音效
+function popName(u, ci, plain) {
   const isNew = !S.combos[ci];
   if (!isNew && G.time - u.comboLast[ci] < 4) return 0;
   u.comboLast[ci] = G.time;
   if (isNew) { S.combos[ci] = true; G.stat.combosNew.push(COMBO_NAME[ci]); ev('combo_new', { name: COMBO_NAME[ci], unit: u.cat === 'player' ? 'player' : unitKind(u) }); }
-  G.names.push({ unit: u, name: COMBO_NAME[ci], isNew, age: 0 });
-  return isNew ? 2 : 1;
+  G.names.push({ unit: u, name: COMBO_NAME[ci], isNew: isNew && !plain, age: 0 });
+  return plain ? 0 : (isNew ? 2 : 1);
+}
+function recipeIndexOf(f) { // 這次合成用的是 RECIPE_FLAT 的哪一條
+  for (let i = 0; i < RECIPE_FLAT.length; i++) {
+    const r = RECIPE_FLAT[i];
+    if (r[2] === f.ci && ((r[0] === f.mats[0] && r[1] === f.mats[1]) || (r[0] === f.mats[1] && r[1] === f.mats[0]))) return i;
+  }
+  return -1;
 }
 // 槽位改變後: 魂柱波紋、檢查合成
 function afterSlotsChange(t) {
@@ -424,9 +456,16 @@ function afterSlotsChange(t) {
     const nm = COMBO_NAME[f.ci];
     G.stat.fuses[nm] = (G.stat.fuses[nm] || 0) + 1;
     ev('fuse', { item: COMBO_KIND[f.ci], unit: unitKind(t), materials: f.mats });
-    const r = popName(t, f.ci);
-    G.fuseSnd = Math.max(G.fuseSnd, r === 2 ? 2 : 1);
-    tutEv(9);
+    const ri = recipeIndexOf(f);
+    if (ri >= 0 && !S.recipes[ri]) { // 某條配方這次開網頁第一次真的合成: 排進演出, 不播 fuse / combo_new / combo
+      S.recipes[ri] = true;
+      const rc = RECIPE_FLAT[ri], d = DESC[COMBO_KIND[f.ci]];
+      G.revealQ.push({ a: rc[0], b: rc[1], result: COMBO_KIND[f.ci], name: d[0], text: d[1], aName: DESC[rc[0]][0], bName: DESC[rc[1]][0] });
+      popName(t, f.ci, true);
+    } else {
+      const r = popName(t, f.ci);
+      G.fuseSnd = Math.max(G.fuseSnd, r === 2 ? 2 : 1);
+    }
   }
   return fs.length;
 }
@@ -548,11 +587,12 @@ function hurt(t, amt, o) {
   if (t.cat !== 'enemy' && t.ev && t.ev.rooted) amt = Math.max(1, Math.round(amt * 0.5)); // 不動如山: 受傷減半
   t.hp -= amt; t.hitAge = 0;
   G.sparks.push({ x: t.x, y: t.y, frost: !!(o && o.frost), age: 0 });
-  if (t.cat === 'enemy' && src === 'player') { G.stat.playerHits++; tutEv(8); }
+  if (t.cat === 'enemy' && src === 'player') G.stat.playerHits++;
   if (t.hp <= 0) {
     t.hp = 0;
     if (t.cat === 'enemy') {
       t.dead = true; G.stat.kills++; snd('enemy_die');
+      if (!G.firstKill && tutLvl1() && !S.tut.done[9]) G.firstKill = { x: t.x, y: t.y, t: G.time }; // 階段 9「掉金幣」引導卡的觸發點
       if (src === 'player') { G.stat.playerKills++; ev('player_kill', { enemy: t.type }); }
       if (G.steal && G.steal.enemy === t) completeSteal('died'); // 讀條中敵人倒下: 搶奪當場完成
     } else unitDown(t);
@@ -874,10 +914,16 @@ function enemyBehavior(e, dt, standing) {
 
 // ───────── 敵人 / 倒下消散 / 金幣 ─────────
 function spawnEnemy(q) {
-  const d = ENEMY_DEF[q.type];
+  const swift = q.type === 'swift'; // 輕快小鬼: 小鬼的變體(生命 12、速度 70), 只在第 1 關第 2 波
+  const type = swift ? 'imp' : q.type;
+  const d = ENEMY_DEF[type];
   const e = mkUnit('enemy', 0, 0, d.half, d.items.slice());
-  e.type = q.type; e.lane = q.sp; e.s = 0; e.speed = d.speed; e.wave = q.wave;
-  e.hp = e.maxHp = Math.round(d.hp * LV.mul);
+  e.type = type; e.swift = swift; e.lane = q.sp; e.s = 0; e.speed = swift ? 70 : d.speed; e.wave = q.wave;
+  e.hp = e.maxHp = swift ? 12 : Math.round(d.hp * LV.mul);
+  if (type === 'archer' && tutLvl1()) e.hp = e.maxHp = e.maxHp * 2; // 第 1 關教學中的弓鬼生命 ×2, 讓玩家來得及走過去搶
+  e.spawnT = G.time;
+  if (G.firstEnemyT === null) G.firstEnemyT = G.time;
+  if (type === 'archer') G.sawArcher = true;
   e.stunAge = 1.0; e.stunDur = 1.0; e.kb = null;
   const p = pathPoint(LV.lanes[q.sp], 0);
   e.x = p.x; e.y = p.y; e.dead = false; e.gone = false;
@@ -892,7 +938,8 @@ function cleanupEnemies() {
       G.corpses.push({ kind: e.type, x: e.x, y: e.y, life: 0.6 }); // 只是倒下消散特效, 不可互動
       for (let i = 0; i < d.coins; i++) {
         const a = Math.random() * Math.PI * 2, r = Math.random() * 40;
-        G.coins.push({ x: clamp(e.x + Math.cos(a) * r, 8, W - 8), y: clamp(e.y + Math.sin(a) * r, 58, H - 8) });
+        const tx = clamp(e.x + Math.cos(a) * r, 8, W - 8), ty = clamp(e.y + Math.sin(a) * r, 58, H - 8);
+        G.coins.push({ x: e.x, y: e.y, x0: e.x, y0: e.y, tx, ty, spawnAge: 0 }); // 彈出 0.4 秒後落定
       }
       return false;
     }
@@ -916,9 +963,17 @@ function placeInfo(kit) {
       if (Math.hypot(s.x - cx, s.y - cy) < 40) { valid = false; break; }
     }
   }
-  return { x: cx, y: cy, valid, kind: kit === 'crossbowKit' ? 'crossbow' : 'pillar' };
+  let tutBlocked = false; // 教學鎖: 位置合規則但不合教學
+  if (valid) {
+    if (kit === 'crossbowKit' && tutLvl1()) { const d = routeDist(cx, cy); tutBlocked = !(d >= 52 && d <= 100); }
+    else if (kit === 'pillarKit' && tutLvl2() && period(25)) tutBlocked = !hasFriendNear(cx, cy, 150);
+  }
+  return { x: cx, y: cy, valid, tutBlocked, kind: kit === 'crossbowKit' ? 'crossbow' : 'pillar' };
 }
-function flagInfo() { return { x: G.player.x, y: G.player.y, valid: dist(G.player, CASTLE_POS) >= 90 }; }
+function flagInfo() {
+  const P = G.player;
+  return { x: P.x, y: P.y, valid: dist(P, CASTLE_POS) >= 90, tutBlocked: tutLvl1() && !(routeDist(P.x, P.y) <= 28) };
+}
 function interactables() { // 可被安裝 / 拿取的單位
   const L = [];
   G.towers.forEach(o => { if (!o.removed) L.push(o); });
@@ -957,16 +1012,17 @@ function findTarget() {
 }
 function actionLabel() {
   if (G.steal) return '取消搶奪';
-  if (G.flag) return flagInfo().valid ? '插旗' : '不能插';
-  if (KITS[G.hand]) return placeInfo(G.hand).valid ? '蓋下' : '不能蓋';
+  if (G.flag) { const fi = flagInfo(); return (fi.valid && !fi.tutBlocked) ? '插旗' : '不能插'; }
+  if (KITS[G.hand]) { const pi = placeInfo(G.hand); return (pi.valid && !pi.tutBlocked) ? '蓋下' : '不能蓋'; }
   const t = findTarget();
   if (G.hand) {
     if (!t) return '丟下';
     if (t.cat === 'part') return '互換';
+    if (installBlocked(t, G.hand)) return '不能裝';
     return t.slots.some(s => !s) ? '裝上' : '替換';
   }
   if (!t) return '';
-  if (t.cat === 'enemy') return '搶奪';
+  if (t.cat === 'enemy') return stealBlocked() ? '不能搶' : '搶奪';
   if (t.cat === 'part') return '拿起';
   return '選單';
 }
@@ -1003,7 +1059,6 @@ function castleHit(e) {
 }
 function openPopup(p) { G.popup = p; snd('popup_open'); muffle(true); }
 function closePopup() { if (!G.popup) return; G.popup = null; snd('popup_close'); muffle(false); }
-function startClock(reason) { if (G.clockOn) return; G.clockOn = true; ev('clock_start', { reason }); }
 function unitMobileTick(u, gdt) {
   // 我方移動單位: 排隊中 / 消失中 / 歸隊中 / 正常
   if (u.state === 'gone' || u.removed) return;
@@ -1116,8 +1171,27 @@ function orbTick(gdt) {
   });
 }
 
+function updateTitle(dt) {
+  const tt = G.tt;
+  G.titleT += dt;
+  if (tt.clear) {
+    const c = tt.clear;
+    if (!c.closing) c.age += dt;
+    else {
+      c.closeAge = Math.min(0.3, c.closeAge + dt);
+      if (c.closeAge >= 0.3) { tt.clear = null; startAdvance(); }
+    }
+  } else if (tt.adv) {
+    const a = tt.adv;
+    a.age += dt;
+    if (a.age >= 0.8 && !a.unlocked) { a.unlocked = true; S.unlocked[a.to] = true; snd('level_unlock'); }
+    if (a.age >= 1.4) { tt.adv = null; S.pendingUnlock = -1; G.cursor = a.to; }
+  }
+  flushSnd();
+}
+
 function update(dt) {
-  if (G.screen === 'title') { G.titleT += dt; return; }
+  if (G.screen === 'title') { updateTitle(dt); return; }
   if (G.screen === 'result') {
     G.resultT += dt;
     while (G.starsPlayed < G.stars && G.resultT >= 0.4 * G.starsPlayed) { snd('star'); G.starsPlayed++; }
@@ -1125,6 +1199,120 @@ function update(dt) {
     return;
   }
   if (G.screen !== 'play') return;
+  const st = G.stat;
+  // 暫停類狀態(同時只會有一個): 遊戲時間 0, 只推進各自的真實時間
+  if (G.guide) { st.guideSec += dt; updateGuide(dt); flushSnd(); return; }
+  if (G.reveal) { st.revealSec += dt; updateReveal(dt); flushSnd(); return; }
+  if (G.codex) { st.codexSec += dt; flushSnd(); return; }
+  if (G.paused) { st.pauseSec += dt; flushSnd(); return; }
+  if (G.revealQ.length) { startReveal(); st.revealSec += dt; flushSnd(); return; }
+  normalUpdate(dt);
+}
+
+// ───────── 波次 ─────────
+function period(k) { const T = S.tut; return !T.done[k] && (!!G.tapp[k] || !!T.done[k - 1]); } // 階段 k 期間: 已出現(含隱藏)且還沒完成
+function gateOn() { // 第 2 關教學中, 階段 19、20、26、27 期間波次時鐘停住
+  if (G.level !== 2 || S.tut.done[28]) return false;
+  return period(19) || period(20) || period(26) || period(27);
+}
+function gateStage() { for (const k of [19, 20, 26, 27]) if (period(k)) return k; return null; }
+function waveWaiting() {
+  if (G.waveStarted >= LV.waves.length) return false;
+  if (G.waveAt[G.waveStarted] === null) return true;
+  return gateOn();
+}
+function tutSchedule() { // 第 1 關教學中: 波次由教學推進
+  if (!G.tutDriven) return;
+  const T = S.tut, fx = s => !!(T.fx && T.fx.stage === s);
+  const sched = k => { G.waveAt[k] = G.clock + 6; G.cdFrom = G.clock; };
+  if (G.waveAt[0] === null && T.done[8]) sched(0);
+  if (G.waveAt[1] === null && G.waveAt[0] !== null && T.done[14] && !fx(14) && G.waveStarted >= 1 && !G.queue.some(q => q.wave === 0)) sched(1);
+  if (G.waveAt[2] === null && G.waveAt[1] !== null && T.done[16] && !fx(16)) sched(2);
+}
+function startWave(k) {
+  G.waveStarted = k + 1; G.wave = G.waveStarted;
+  const base = G.waveAt[k];
+  G.cdFrom = base;
+  LV.waves[k].forEach(g => {
+    let i = 0;
+    g.list.forEach(([type, cnt]) => {
+      for (let c = 0; c < cnt; c++) {
+        G.queue.push({ t: base + i * g.gap, sp: g.sp, type, wave: k, hold9: G.level === 1 && k === 0 && type === 'archer' && tutLvl1() && !S.tut.done[9] });
+        i++;
+      }
+    });
+  });
+  G.queue.sort((a, b) => a.t - b.t);
+  snd('wave_start'); ev('wave_start', { wave: k + 1 });
+  G.banner = { wave: k + 1, last: k + 1 === LV.waves.length, age: 0 };
+}
+function releaseHold9() {
+  for (const q of G.queue) if (q.hold9) { q.hold9 = false; q.t = Math.max(q.t, G.clock + 1.2); }
+  G.queue.sort((a, b) => a.t - b.t);
+}
+function waveUpdate(gdt) {
+  const st = G.stat;
+  const gate = gateOn();
+  if (G.level === 2 && gate !== G.gateWas) { ev('gate', { action: gate ? 'stop' : 'resume', stage: gate ? gateStage() : null }); G.gateWas = gate; }
+  tutSchedule();
+  if (waveWaiting()) st.gateSec += gdt;
+  if (!gate) G.clock += gdt;
+  while (G.waveStarted < LV.waves.length && G.waveAt[G.waveStarted] !== null && G.clock >= G.waveAt[G.waveStarted]) startWave(G.waveStarted);
+  while (G.queue.length && G.queue[0].t <= G.clock) {
+    if (G.queue[0].hold9) break;
+    spawnEnemy(G.queue.shift());
+  }
+  const k = G.waveStarted;
+  if (k < LV.waves.length && G.waveAt[k] !== null) {
+    const rem = G.waveAt[k] - G.clock;
+    if (rem <= 6 && rem > 0 && !G.warned[k]) { G.warned[k] = true; snd('wave_warning'); ev('wave_warning', { wave: k + 1, reason: G.tutDriven ? 'tutorial' : 'timer' }); }
+  }
+  if (G.banner) {
+    G.banner.age += gdt;
+    if (G.banner.age >= 1.6) { G.panelWave = G.banner.wave; G.bumpAge = 0; G.banner = null; }
+  }
+  if (G.bumpAge < 0.4) G.bumpAge = Math.min(0.4, G.bumpAge + gdt);
+}
+function respLane() { const w = LV.waves[Math.max(0, G.waveStarted - 1)]; return w && w[0] ? w[0].sp : 0; }
+function spawnTutEnemy(type, lane) {
+  const stage = S.tut.view ? S.tut.view.stage : (S.tut.cur || null);
+  G.stat.tutorialSpawns++;
+  ev('tutorial_spawn', { enemy: type, spawn: LV.spawns[lane].name, stage });
+  spawnEnemy({ type, sp: lane, wave: Math.max(0, G.waveStarted - 1) });
+}
+// 教學重出: 任務沒完成就重出同樣的怪, 條件成立後 1.2 秒出 1 隻
+function tutRespawnTick(gdt) {
+  const T = S.tut, R = G.resp, want = {};
+  const live = liveEnemies();
+  const eHas = it => live.some(e => e.slots.indexOf(it) >= 0);
+  const partHas = it => G.parts.some(p => !p.removed && p.item === it);
+  if (tutLvl1()) {
+    if (!T.done[9] && !G.firstKill && G.waveStarted >= 1 && !G.queue.some(q => q.type === 'imp' && q.wave === 0) && live.length === 0) want.imp = ['imp', respLane()];
+    const arch = T.done[10] ? !T.done[12] : (T.done[9] && G.sawArcher && !G.queue.some(q => q.type === 'archer')); // 後者: 階段 10 前弓鬼就沒了的保險
+    if (arch && !eHas('ranged') && G.hand !== 'ranged' && !partHas('ranged') && !G.towers.some(t => t.slots.indexOf('pierce') >= 0)) want.archer = ['archer', respLane()];
+  }
+  if (tutLvl2()) {
+    if (T.done[18] && !T.done[20]) {
+      const gm = G.golems.some(g => g.team === 'neutral' && g.slots.indexOf('march') >= 0);
+      if (!eHas('march') && G.hand !== 'march' && !partHas('march') && !gm && G.stat.recruits === 0) want.march = ['imp', 0];
+    }
+    if (T.done[25] && !T.done[27]) {
+      if (!eHas('shock') && G.hand !== 'shock' && !partHas('shock') && !G.pillars.some(p => p.slots.indexOf('shock') >= 0)) want.shock = ['thunder', respLane()];
+    }
+  }
+  for (const key of Object.keys(want)) {
+    if (!R[key]) R[key] = { t: 1.2 };
+    else {
+      R[key].t -= gdt;
+      if (R[key].t <= 0) { delete R[key]; spawnTutEnemy(want[key][0], want[key][1]); }
+    }
+  }
+  for (const key of Object.keys(R)) if (!want[key]) delete R[key];
+}
+function partsFrozen() { return tutLvl1() || (tutLvl2() && (period(19) || period(20) || period(26) || period(27))); }
+
+// ───────── 一般幀(沒有暫停類狀態) ─────────
+function normalUpdate(dt) {
   if (G.popup) { G.popup.shake = Math.min(0.25, G.popup.shake + dt); G.stat.slowMoSec += dt; }
   const gdt = dt * (G.popup ? 0.2 : 1);
   G.time += gdt; G.stat.gameSec += gdt;
@@ -1143,6 +1331,7 @@ function update(dt) {
   }
   tickAge(P, 'attackAge', 0.15, gdt);
   decCd(P, gdt);
+  if (G.warn) { G.warn.age += gdt; if (G.warn.age >= 1.2) G.warn = null; }
 
   // 搶奪
   if (G.steal) {
@@ -1157,21 +1346,7 @@ function update(dt) {
   }
 
   computeEvals();
-
-  // 波次(倒數從 clockOn 起算)
-  if (!G.clockOn && G.time >= 90) startClock('timeout');
-  if (G.clockOn) {
-    G.clock += gdt;
-    while (G.waveStarted < LV.waves.length && G.clock >= LV.t1 + G.waveStarted * LV.gap) {
-      G.waveStarted++; G.wave = G.waveStarted;
-      snd('wave_start'); ev('wave_start', { wave: G.wave });
-    }
-    while (G.queue.length && G.queue[0].t <= G.clock) spawnEnemy(G.queue.shift());
-    if (G.waveStarted < LV.waves.length) {
-      const rem = LV.t1 + G.waveStarted * LV.gap - G.clock;
-      if (rem <= 6 && rem > 0 && !G.warned[G.waveStarted]) { G.warned[G.waveStarted] = true; snd('wave_warning'); }
-    }
-  }
+  waveUpdate(gdt);
   G.enemies.forEach(evalEnemy);
   const liveE = liveEnemies();
   updateAuras(gdt);
@@ -1284,9 +1459,10 @@ function update(dt) {
   G.chains = G.chains.filter(o => o.age < 0.2);
   G.hbeams = G.hbeams.filter(o => o.age < 0.3);
   G.blinks = G.blinks.filter(o => o.age < 0.3);
+  const frozen = partsFrozen();
   for (const p of G.parts) {
     if (p.spawnAge < 0.6) p.spawnAge = Math.min(0.6, p.spawnAge + gdt);
-    if (!p.permanent) {
+    if (!p.permanent && !frozen) {
       p.life -= gdt;
       if (p.life <= 0) {
         p.removed = true; G.stat.groundExpired++;
@@ -1294,7 +1470,15 @@ function update(dt) {
       }
     }
   }
+  const coinLock = tutLvl1() && !S.tut.done[9]; // 第 1 關教學中, 階段 9 完成前金幣不會被吸
   G.coins = G.coins.filter(c => {
+    if (c.spawnAge < 0.4) { // 落地過程: 落定前不會被吸
+      c.spawnAge = Math.min(0.4, c.spawnAge + gdt);
+      const f = c.spawnAge / 0.4;
+      c.x = c.x0 + (c.tx - c.x0) * f; c.y = c.y0 + (c.ty - c.y0) * f;
+      return true;
+    }
+    if (coinLock) return true;
     const d = Math.hypot(P.x - c.x, P.y - c.y);
     let got = false;
     if (d <= 20) got = true;
@@ -1303,7 +1487,7 @@ function update(dt) {
       c.x += (P.x - c.x) / d * st; c.y += (P.y - c.y) / d * st;
       if (Math.hypot(P.x - c.x, P.y - c.y) <= 20) got = true;
     }
-    if (got) { G.gold += 2; G.stat.goldEarned += 2; snd('coin_pickup'); tutEv(6); return false; }
+    if (got) { G.gold += 2; G.stat.goldEarned += 2; snd('coin_pickup'); return false; }
     return true;
   });
   G.corpses.forEach(c => { c.life -= gdt; });
@@ -1311,6 +1495,7 @@ function update(dt) {
 
   cleanupEnemies();
   G.parts = G.parts.filter(p => !p.removed);
+  tutRespawnTick(gdt);
 
   // 共鳴配組的組合名稱(同一幀多個只播一次: 有首次就只播 combo_new)
   for (const u of activeTowers().concat(allyAlive(), [G.castle], [P])) {
@@ -1337,85 +1522,239 @@ function update(dt) {
 
   // 結束判定(批次尾端只判一次)
   if (G.castleHp <= 0) endLevel(false);
-  else if (G.waveStarted >= LV.waves.length && G.queue.length === 0 && liveEnemies().length === 0) endLevel(true);
+  else if (G.waveStarted >= LV.waves.length && G.queue.length === 0 && liveEnemies().length === 0 && Object.keys(G.resp).length === 0) endLevel(true);
   flushSnd();
 }
 
-// ───────── 新手教學(13 階段) ─────────
-const LATE_PRE = { 6: () => pre(5), 9: () => pre(5), 11: () => G.level >= 3, 13: () => pre(12) };
-function tutEv(k) {
-  const T = S.tut;
-  if (T.cur === k) T.pend[k] = true;
-  else if (!T.done[k] && LATE_PRE[k] && LATE_PRE[k]()) T.late[k] = true; // 別的階段期間先做掉, 事後補記完成
+// ───────── 第一次合成演出 / 圖鑑 / 暫停 ─────────
+function startReveal() {
+  const r = G.revealQ.shift();
+  G.reveal = Object.assign({ age: 0, closing: false, closeAge: 0.3, t0: RT }, r);
+  G.stat.reveals++;
+  snd('combo_reveal');
+  ev('combo_reveal', { name: r.name, materials: [r.a, r.b], action: 'show' });
 }
-function pre(k) { const T = S.tut; return !!T.done[k] || (k === 1 && G.level > 1); }
-function enemyWithItem() { return liveEnemies().filter(hasItem); }
-function chargeTargets() { return liveEnemies().filter(e => e.type === 'drummer' && e.slots.indexOf('charge') >= 0); }
-function handEmpty() { return G.hand === null && !G.flag; }
-function fuseCandidates() { // 手上基本魂件 + 某單位身上有能和它湊成組合的基本魂件
-  const h = G.hand;
-  if (!h || !BASIC[h]) return [];
-  return ownUnits().filter(u => {
-    if (u.removed || !canFuseUnit(u)) return false;
-    if ((u.cat === 'soldier' || u.cat === 'golem') && u.state !== 'normal' && u.state !== 'returning') return false;
-    if (u.state === 'away') return false;
-    const n = u.slots.length;
-    return u.slots.some(x => {
-      if (!x || !BASIC[x] || !pairFuses(h, x)) return false;
-      return u.slots.some(s => !s) || n >= 2;
-    });
-  });
-}
-function tutCond(k) {
-  const n = G.level;
-  switch (k) {
-    case 1: return n === 1;
-    case 2: return pre(1) && !!shopHolder();
-    case 3: return pre(2) && (!!KITS[G.hand] || !!G.flag);
-    case 4: return pre(3) && handEmpty();
-    case 5: return pre(4) && isSoul(G.hand) && G.pillars.length > 0;
-    case 6: return pre(5) && G.coins.length > 0;
-    case 7: return pre(6) && enemyWithItem().length > 0 && handEmpty();
-    case 8: return pre(7) && G.pillars.some(p => p.state === 'normal' && p.slots[0] && ATTACK[p.slots[0]]) && liveEnemies().length > 0;
-    case 9: return pre(5) && !!G.hand && !!BASIC[G.hand] && fuseCandidates().length > 0;
-    case 10: return !!G.popup && G.popup.type === 'soul' && G.popup.mode === 'replace';
-    case 11: return n >= 3 && G.golems.some(g => g.team === 'neutral' && !g.removed);
-    case 12: return n >= 4 && chargeTargets().length > 0 && handEmpty();
-    case 13: return pre(12) && G.hand === 'charge' && allyMobile().some(u => !u.removed && (u.state === 'normal' || u.state === 'returning'));
+function updateReveal(dt) {
+  const r = G.reveal;
+  if (!r.closing) r.age = Math.min(1.5, r.age + dt);
+  else {
+    r.closeAge = Math.min(0.3, r.closeAge + dt);
+    if (r.closeAge >= 0.3) {
+      ev('combo_reveal', { name: r.name, materials: [r.a, r.b], action: 'close', readSec: r1(RT - r.t0) });
+      G.reveal = null;
+      if (G.revealQ.length) startReveal();
+    }
   }
-  return false;
 }
-function tutChoose() {
-  const T = S.tut, p = G.popup;
-  if (p) {
-    if (p.type === 'shop') return (!T.done[2] && tutCond(2)) ? 2 : 0;
-    if (p.mode === 'replace') return !T.done[10] ? 10 : 0;
-    if (!T.done[4] && tutCond(4)) return 4;
-    return 0;
-  }
-  for (let k = 1; k <= 13; k++) if (!T.done[k] && tutCond(k)) return k;
-  return 0;
+function revealZ() {
+  const r = G.reveal;
+  if (!r || r.closing || r.age < 1.5) return;
+  r.closing = true; r.closeAge = 0; snd('ui_confirm');
 }
-function tutState(k) { // 狀態型完成條件
-  switch (k) {
-    case 4: return isSoul(G.hand);
-    case 5: return G.pillars.some(hasItem);
-    case 12: return G.hand === 'charge' || allyMobile().some(u => u.slots.indexOf('charge') >= 0);
-    case 13: return ownUnits().some(u => !u.removed && u.slots.indexOf('charge') >= 0);
-  }
-  return false;
+function openCodex() { G.codex = true; G.stat.codexOpens++; G.codexT0 = RT; snd('codex_open'); ev('codex', { open: true }); }
+function closeCodex() { G.codex = false; snd('codex_close'); ev('codex', { open: false, sec: r1(RT - G.codexT0) }); }
+function togglePause() {
+  if (!G.paused) { G.paused = true; G.stat.pauses++; snd('pause_on'); ev('pause', { on: true }); }
+  else { G.paused = false; snd('pause_off'); ev('pause', { on: false }); }
 }
-const TUT_TEXT = {
-  1: ['方向鍵移動', ['left', 'up', 'right', 'down']],
-  2: ['到主堡旁按空白鍵', ['space']], '2p': ['選魂柱, 按 Z 買', ['left', 'right', 'z']],
-  3: ['到路旁空地按 Z 蓋下', ['z']], '3f': ['到空地按 Z 插旗', ['z']],
-  4: ['空手靠近弩塔按 Z', ['z']], '4p': ['選魂件, 按 Z 拿', ['left', 'right', 'z']],
-  5: ['靠近魂柱按 Z 裝上', ['z']], 6: ['走近金幣就會撿起', []],
-  7: ['空手靠近活鬼按 Z 搶', ['z']],
-  8: ['站進魂柱圈, 你也會攻擊', []], 9: ['裝在一起, 合成新招', ['z']],
-  10: ['← → 選要換的格, Z', ['left', 'right', 'z']],
-  11: ['把鬼的進攻主堡裝給它', ['z']], 12: ['搶下衝鬼的衝鋒', ['z']], 13: ['裝給步兵, 沿路衝鋒', ['z']]
+
+// ───────── 新手教學(28 階段: 暫停式引導卡 + 新手任務泡泡) ─────────
+const CARD = { 1: 1, 2: 1, 3: 1, 8: 1, 9: 1, 10: 1, 15: 1, 17: 1, 18: 1, 28: 1 };
+const SEG = { 1: [1, 2, 3], 17: [17, 18] };
+const SEQ = {
+  1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+  2: [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
 };
+function tutSeq() { return SEQ[G.level] || []; }
+function tutCur() { const T = S.tut; for (const k of tutSeq()) if (!T.done[k]) return k; return 0; }
+function tutLvl1() { return G.level === 1 && !S.tut.done[16]; }
+function tutLvl2() { return G.level === 2 && !S.tut.done[28]; }
+function handEmpty() { return G.hand === null && !G.flag; }
+function enemiesWith(it) { return liveEnemies().filter(e => e.slots.indexOf(it) >= 0); }
+function partsWith(it) { return G.parts.filter(p => !p.removed && p.item === it); }
+function nearestTo(list) { return nearest(G.player, list); }
+function shopOpen() { return !!(G.popup && G.popup.type === 'shop'); }
+function golemHasMarch() { return G.golems.some(g => g.team === 'neutral' && g.slots.indexOf('march') >= 0); }
+function visSoldiers() { return G.soldiers.filter(visibleMobile); }
+
+// ── 教學鎖 ──
+function shopLocked(kit) {
+  const T = S.tut;
+  if (tutLvl1()) {
+    if (kit === 'pillarKit') return true;
+    const lifted = !!(T.done[13] || G.tapp[13]);
+    if (kit === 'soldierKit' || kit === 'golemKit') return !lifted;
+    if (kit === 'crossbowKit') return (G.stat.purchases.crossbow || 0) >= 1 && !lifted;
+  }
+  if (tutLvl2() && kit === 'pillarKit' && !S.pillarUnlocked) return true;
+  return false;
+}
+function installBlocked(t, h) { // 裝上 / 替換被教學擋下
+  const T = S.tut;
+  if (tutLvl1()) {
+    let ok = false;
+    if (!T.done[12] && (T.done[11] || G.tapp[12]) && h === 'ranged' && t.cat === 'tower') ok = true;
+    if (period(16) && (h === 'pierce' || h === 'melee' || h === 'seek') && (t.cat === 'tower' || t.cat === 'soldier')) ok = true;
+    return !ok;
+  }
+  if (tutLvl2()) {
+    const neutralGolem = t.cat === 'golem' && t.team === 'neutral';
+    if (h === 'march' && T.done[19] && !T.done[20] && !neutralGolem) return true;
+    if (t.cat === 'pillar' && T.done[25] && !T.done[27] && h !== 'shock') return true;
+    if (h === 'shock' && T.done[26] && !T.done[27] && t.cat !== 'pillar') return true;
+  }
+  return false;
+}
+function stealBlocked() { return tutLvl1() && !S.tut.done[10]; }
+function stealPref() {
+  const T = S.tut;
+  if (G.level === 1 && T.done[10] && !T.done[11]) return 'ranged';
+  if (G.level === 2 && T.done[18] && !T.done[20]) return 'march';
+  if (G.level === 2 && T.done[25] && !T.done[27]) return 'shock';
+  return null;
+}
+function hasFriendNear(x, y, r) {
+  if (Math.hypot(x - CASTLE_POS.x, y - CASTLE_POS.y) <= r) return true;
+  for (const t of activeTowers()) if (Math.hypot(x - t.x, y - t.y) <= r) return true;
+  for (const u of allyAlive()) if (Math.hypot(x - u.x, y - u.y) <= r) return true;
+  return false;
+}
+function tutBlock(action, item, text) {
+  snd('ui_invalid');
+  if (text !== null) G.warn = { text: text || '教學期間不可這樣操作', age: 0 };
+  const b = G.stat.tutorialBlocks; b[action] = (b[action] || 0) + 1;
+  ev('tutorial_block', { action, stage: S.tut.view ? S.tut.view.stage : null, item: item || null });
+}
+
+// ── 引導卡 ──
+function circ(x, y, r) { return { x, y, r }; }
+function layoutCard(spots) {
+  let top = 1e9, bottom = -1e9, sx = 0;
+  spots.forEach(s => { top = Math.min(top, s.y - s.r); bottom = Math.max(bottom, s.y + s.r); sx += s.x; });
+  const cardX = clamp(sx / spots.length, 240, 1040);
+  const above = top >= 190;
+  const cardY = above ? top - 40 - 70 : bottom + 40 + 70;
+  const arrows = spots.map(s => {
+    const tipX = s.x, tipY = above ? s.y - s.r - 4 : s.y + s.r + 4;
+    return { tipX, tipY, rootX: clamp(tipX, cardX - 200, cardX + 200), rootY: above ? cardY + 70 : cardY - 70 };
+  });
+  return { cardX, cardY, arrows };
+}
+function buildCard(k) {
+  const P = G.player;
+  let text = '', sub = '', spots = [];
+  switch (k) {
+    case 1: text = '這是你'; spots = [circ(P.x, P.y, 40)]; break;
+    case 2: text = '這是主堡'; sub = '保護它, 別讓它被攻破'; spots = [circ(1180, 424, 92)]; break;
+    case 3: text = '怪物要來了'; sub = '該做些準備了'; spots = [circ(40, 290, 56)]; break;
+    case 8: {
+      const t = G.towers[0];
+      text = '這是代表遠攻的「魂件」'; sub = '建築、敵人、步兵都有不同的魂件';
+      spots = [t ? circ(t.x - 10, t.y - 44, 20) : circ(640, 360, 20)];
+      break;
+    }
+    case 9: {
+      const f = G.firstKill || { x: 640, y: 360 };
+      text = '打倒怪物會掉金幣'; sub = '靠近就會撿起來'; spots = [circ(f.x, f.y, 56)];
+      break;
+    }
+    case 10: {
+      const e = liveEnemies().find(q => q.type === 'archer') || liveEnemies()[0];
+      text = '靠近它按 [Z]'; sub = '把怪物身上的魂件拔下來';
+      spots = [e ? circ(e.x, e.y, 32) : circ(640, 360, 32)];
+      break;
+    }
+    case 15: {
+      const t = G.towers[0], s = visSoldiers()[0];
+      text = '魂件可以隨意拆裝'; sub = '試試把弩塔和步兵的魂件互換吧!';
+      if (t) spots.push(circ(t.x, t.y - 10, 52));
+      if (s) spots.push(circ(s.x, s.y - 12, 44));
+      if (!spots.length) spots.push(circ(640, 360, 52));
+      break;
+    }
+    case 17: {
+      const g = G.golems.find(q => q.team === 'neutral' && !q.removed);
+      text = '這是中立怪物'; sub = '不會打你, 也不會打敵人';
+      spots = [g ? circ(g.x, g.y - 4, 64) : circ(640, 360, 64)];
+      break;
+    }
+    case 18: {
+      const e = G.enemies.find(q => !q.dead && !q.gone);
+      text = '試試把怪物的\n「進攻主堡」拆下來'; sub = '裝在中立怪物身上';
+      spots = [e ? circ(e.x, e.y - 6, 32) : circ(640, 360, 32)];
+      break;
+    }
+    case 28: {
+      const p = G.pillars.find(q => q.slots[0] === 'shock') || G.pillars[0];
+      text = '現在魂柱周邊的友軍'; sub = '都有電擊效果了';
+      spots = [p ? circ(p.x, p.y, 154) : circ(640, 360, 154)];
+      break;
+    }
+  }
+  return Object.assign({ stage: k, text, sub, spots }, layoutCard(spots));
+}
+function startGuide(stages) {
+  if (G.popup) closePopup();
+  G.guide = { stages: stages.slice(), cards: stages.map(buildCard), idx: 0, phase: 'intro', phaseAge: 0, cardAge: 0.3, readAge: 0, from: null, trans: 0.3, t0: RT };
+  ev('guide_start', { stages: stages.slice() });
+  snd('guide_pause');
+}
+function showCard(g) {
+  const T = S.tut, k = g.cards[g.idx].stage;
+  g.cardAge = 0; g.readAge = 0;
+  snd('guide_card');
+  G.tapp[k] = true;
+  if (T.shownSt[k] === undefined) { T.shownSt[k] = r1(RT); ev('tutorial_show', { stage: k, kind: 'card' }); }
+}
+function updateGuide(dt) {
+  const g = G.guide;
+  if (g.phase === 'intro') {
+    g.phaseAge += dt;
+    if (g.phaseAge >= 0.3) { g.phase = 'card'; g.phaseAge = 0; showCard(g); }
+  } else if (g.phase === 'card') {
+    g.cardAge = Math.min(0.3, g.cardAge + dt);
+    g.trans = Math.min(0.3, g.trans + dt);
+    g.readAge = Math.min(1.5, g.readAge + dt);
+  } else {
+    g.phaseAge += dt;
+    if (g.phaseAge >= 0.3) {
+      ev('guide_end', { stages: g.stages.slice(), sec: r1(RT - g.t0) });
+      G.guide = null;
+    }
+  }
+}
+function completeCard(k) {
+  const T = S.tut;
+  T.done[k] = true; T.doneSt[k] = r1(RT);
+  ev('tutorial_done', { stage: k, kind: 'card' });
+  if (k === 9) releaseHold9();
+}
+function guideZ() {
+  const g = G.guide;
+  if (!g || g.phase !== 'card' || g.readAge < 1.5) return;
+  const cur = g.cards[g.idx];
+  completeCard(cur.stage);
+  if (g.idx < g.cards.length - 1) {
+    g.from = { spots: cur.spots.map(s => Object.assign({}, s)), arrows: cur.arrows.map(a => Object.assign({}, a)) };
+    g.idx++; g.trans = 0;
+    showCard(g);
+  } else { snd('ui_confirm'); g.phase = 'outro'; g.phaseAge = 0; }
+}
+function cardReady(k) {
+  const T = S.tut;
+  switch (k) {
+    case 1: return G.time >= 1.0;
+    case 8: return true;
+    case 9: return !!G.firstKill && G.time - G.firstKill.t >= 0.4;
+    case 10: return liveEnemies().some(e => e.type === 'archer' && G.time - e.spawnT >= 2.0);
+    case 15: return G.waveStarted >= 2 && !G.queue.some(q => q.wave <= 1) && liveEnemies().length === 0;
+    case 17: return liveEnemies().some(e => G.time - e.spawnT >= 2.0);
+    case 28: return true;
+  }
+  return false;
+}
+
+// ── 新手任務泡泡 ──
 function tipFor(o) {
   switch (o.cat) {
     case 'player': return { x: o.x, up: o.y - 20, down: o.y + 44 };
@@ -1423,88 +1762,195 @@ function tipFor(o) {
     case 'tower': return { x: o.x, up: o.y - 58, down: o.y + 24 + 4 };
     case 'pillar': return { x: o.x, up: o.y - 52, down: o.y + 18 + 4 };
     case 'soldier': return { x: o.x, up: o.y - 50, down: o.y + 16 + 4 };
-    case 'golem': return { x: o.x, up: o.y - 62, down: o.team === 'neutral' ? o.y + 28 + 22 + 4 : o.y + 28 + 4 };
+    case 'golem': return { x: o.x, up: o.y - 62, down: o.team === 'neutral' ? o.y + 54 : o.y + 28 + 4 };
     case 'enemy': return { x: o.x, up: o.y - o.half - 34, down: o.y + o.half + 4 };
-    case 'coin': return { x: o.x, up: o.y - 12, down: o.y + 8 + 4 };
+    case 'part': return { x: o.x, up: o.y - 18, down: o.y + 14 + 4 };
   }
   return null;
 }
-function mkView(k, td, o) {
-  if (!o) return null;
-  const t = tipFor(o);
+function objView(k, text, keysArr, obj, o) {
+  if (!obj) return null;
+  const t = tipFor(obj);
   if (!t || t.x !== t.x || t.up !== t.up) return null;
+  o = o || {};
   let side = 'up', tipY = t.up, by = tipY - 20 - 36;
-  if (by - 36 < 50) { side = 'down'; tipY = t.down; by = tipY + 20 + 36; }
-  const T = S.tut;
-  const pressed = [];
-  if (k === 1) td[1].forEach(nm => { if (T.pressed[nm]) pressed.push(nm); });
-  return { stage: k, text: td[0], keys: td[1].slice(), pressedKeys: pressed, tipX: t.x, tipY, side, bodyX: clamp(t.x, 150, 1130), bodyY: by };
+  if (by - 36 < 60) { side = 'down'; tipY = t.down; by = tipY + 20 + 36; }
+  return { stage: k, text, keys: keysArr.slice(), pressedKeys: o.pressed || [], checklist: o.checklist || [], tipX: t.x, tipY, side, bodyX: clamp(t.x, 150, 1130), bodyY: by, late: false };
 }
-function popupView(k, td) {
-  const p = G.popup;
-  const cx = p.type === 'shop' ? 640 : p.x, cy = p.type === 'shop' ? 400 : p.y, w = p.type === 'shop' ? 480 : 320;
+function shopCellView(k, text, keysArr, kit) {
+  const items = shopItems(), i = items.findIndex(s => s[0] === kit);
+  if (i < 0) return null;
+  const cx = 640 + (i - (items.length - 1) / 2) * 88;
+  return { stage: k, text, keys: keysArr.slice(), pressedKeys: [], checklist: [], tipX: cx, tipY: 321, side: 'up', bodyX: cx, bodyY: 265, late: true };
+}
+function popupView(k, text, keysArr) {
+  const p = G.popup, cx = p.x, cy = p.y;
   let side, tipX, bodyX;
-  if (cx >= 640) { side = 'left'; tipX = cx - w / 2 - 4; bodyX = tipX - 20 - 150; }
-  else { side = 'right'; tipX = cx + w / 2 + 4; bodyX = tipX + 20 + 150; }
-  return { stage: k, text: td[0], keys: td[1].slice(), pressedKeys: [], tipX, tipY: cy, side, bodyX, bodyY: cy };
+  if (cx >= 640) { side = 'left'; tipX = cx - 160 - 4; bodyX = tipX - 170; }
+  else { side = 'right'; tipX = cx + 160 + 4; bodyX = tipX + 170; }
+  return { stage: k, text, keys: keysArr.slice(), pressedKeys: [], checklist: [], tipX, tipY: cy, side, bodyX, bodyY: cy, late: true };
 }
-function tutView(k) {
-  const P = G.player;
-  const near = list => nearest(P, list);
-  const p = G.popup;
+const ITEMS16 = [['pierce', 'soldier', '穿透箭'], ['melee', 'crossbow', '近戰'], ['seek', 'crossbow', '自動索敵']];
+function done16Flags() {
+  return [
+    G.soldiers.some(s => s.slots.indexOf('pierce') >= 0),
+    G.towers.some(t => t.slots.indexOf('melee') >= 0),
+    G.towers.some(t => t.slots.indexOf('seek') >= 0)
+  ];
+}
+function view16(ign) {
+  const p = ign ? null : G.popup;
   if (p) {
-    if (k === 2) return popupView(k, TUT_TEXT['2p']);
-    if (k === 4) return popupView(k, TUT_TEXT['4p']);
-    if (k === 10) return popupView(k, TUT_TEXT[10]);
-    return null;
+    if (p.type !== 'soul') return null;
+    return popupView(16, p.mode === 'menu' ? '選魂件, 按 Z 拿' : '選要換的格, 按 Z', ['left', 'right', 'z']);
   }
-  switch (k) {
-    case 1: return mkView(k, TUT_TEXT[1], P);
-    case 2: return mkView(k, TUT_TEXT[2], shopHolder());
-    case 3: return mkView(k, G.flag ? TUT_TEXT['3f'] : TUT_TEXT[3], P);
-    case 4: {
-      let o = near(G.towers.filter(t => hasItem(t) && !t.removed));
-      if (!o) {
-        const L = ownUnits().filter(u => hasItem(u) && !u.removed && u.cat !== 'castle' && u.state !== 'gone' && u.state !== 'away');
-        o = near(L);
-      }
-      return mkView(k, TUT_TEXT[4], o);
+  const dd = done16Flags();
+  const cl = ITEMS16.map((it, i) => ({ item: it[0], to: it[1], done: dd[i] }));
+  const P = G.player, h = G.hand;
+  const mk = (text, obj) => objView(16, text, [], obj, { checklist: cl });
+  let v = null;
+  if (h === 'pierce' && !dd[0]) v = mk('裝到步兵身上', nearestTo(visSoldiers()));
+  else if ((h === 'melee' && !dd[1]) || (h === 'seek' && !dd[2])) v = mk('裝到弩塔上', nearestTo(G.towers));
+  if (v) return v;
+  if (handEmpty()) {
+    const i = dd.findIndex(d => !d);
+    if (i >= 0) {
+      const it = ITEMS16[i][0], nm = ITEMS16[i][2];
+      const gp0 = partsWith(it);
+      if (gp0.length) return mk('撿起地上的' + nm, nearestTo(gp0));
+      const holders = G.towers.concat(visSoldiers()).filter(u => u.slots.indexOf(it) >= 0);
+      if (holders.length) return mk('拿下' + nm, nearestTo(holders));
     }
-    case 5: return mkView(k, TUT_TEXT[5], near(G.pillars));
-    case 6: return mkView(k, TUT_TEXT[6], near(G.coins.map(c => ({ cat: 'coin', x: c.x, y: c.y, half: 8 }))));
-    case 7: return mkView(k, TUT_TEXT[7], near(enemyWithItem()));
-    case 8: return mkView(k, TUT_TEXT[8], near(G.pillars.filter(q => q.state === 'normal' && q.slots[0] && ATTACK[q.slots[0]])));
-    case 9: return mkView(k, TUT_TEXT[9], near(fuseCandidates()));
-    case 11: return mkView(k, TUT_TEXT[11], near(G.golems.filter(g => g.team === 'neutral' && !g.removed)));
-    case 12: return mkView(k, TUT_TEXT[12], near(chargeTargets()));
-    case 13: return mkView(k, TUT_TEXT[13], near(allyMobile().filter(u => !u.removed && (u.state === 'normal' || u.state === 'returning'))));
+  }
+  return mk('走到空地按 Z 丟下', P);
+}
+function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位(完成特效在原位置播用)
+  const P = G.player, p = ign ? null : G.popup;
+  const open = !!p, shop = open && p.type === 'shop';
+  const T = S.tut;
+  const pressed = ['left', 'up', 'right', 'down'].filter(n => T.pressed[n]);
+  switch (k) {
+    case 4: return open ? null : objView(k, '方向鍵移動', ['left', 'up', 'right', 'down'], P, { pressed });
+    case 5: return open ? null : objView(k, '到主堡按空白鍵', ['space'], shopHolder());
+    case 6:
+      if (shop) return shopCellView(k, '選弩塔, 按 Z 買', ['left', 'right', 'z'], 'crossbowKit');
+      return open ? null : objView(k, '到主堡按空白鍵', ['space'], shopHolder());
+    case 7: return open ? null : objView(k, '蓋在路旁的空地', ['z'], P);
+    case 11: return open ? null : objView(k, '靠近弓鬼按 Z 拔下來', ['z'], nearestTo(enemiesWith('ranged')));
+    case 12: {
+      if (open) return null;
+      if (G.hand === 'ranged') return objView(k, '裝到弩塔上', ['z'], nearestTo(G.towers));
+      if (handEmpty() && partsWith('ranged').length) return objView(k, '撿起地上的遠攻', ['z'], nearestTo(partsWith('ranged')));
+      return objView(k, '再拔一個遠攻', ['z'], nearestTo(enemiesWith('ranged')));
+    }
+    case 13:
+      if (shop) return shopCellView(k, '選步兵, 按 Z 買', ['left', 'right', 'z'], 'soldierKit');
+      return open ? null : objView(k, '接著, 召喚一隻步兵吧', ['space'], shopHolder());
+    case 14: return open ? null : objView(k, '把旗子插在路上', ['z'], P);
+    case 16: return view16(ign);
+    case 19:
+      if (open) return null;
+      if (handEmpty()) return objView(k, '拔下怪物的進攻主堡', ['z'], nearestTo(enemiesWith('march')));
+      return objView(k, '走到空地按 Z 丟下', ['z'], P);
+    case 20: {
+      if (open) return null;
+      if (G.hand === 'march') return objView(k, '裝在中立石魔像身上', ['z'], nearestTo(G.golems.filter(g => g.team === 'neutral' && !g.removed)));
+      if (handEmpty() && partsWith('march').length) return objView(k, '撿起地上的進攻主堡', ['z'], nearestTo(partsWith('march')));
+      return objView(k, '再拔一個進攻主堡', ['z'], nearestTo(enemiesWith('march')));
+    }
+    case 21: return open ? null : objView(k, '去主堡看看', ['space'], shopHolder());
+    case 22: return shop ? shopCellView(k, '之後就可以召喚石魔像了!', [], 'golemKit') : null;
+    case 23: return open ? null : objView(k, '主堡有新東西了, 去看看', ['space'], shopHolder());
+    case 24:
+      if (shop) return shopCellView(k, '選魂柱, 按 Z 買', ['left', 'right', 'z'], 'pillarKit');
+      return open ? null : objView(k, '到主堡按空白鍵', ['space'], shopHolder());
+    case 25: return open ? null : objView(k, '蓋在友軍旁邊', ['z'], P);
+    case 26:
+      if (open) return null;
+      if (handEmpty()) return objView(k, '拔下雷鬼的電擊', ['z'], nearestTo(enemiesWith('shock')));
+      return objView(k, '走到空地按 Z 丟下', ['z'], P);
+    case 27: {
+      if (open) return null;
+      if (G.hand === 'shock') return objView(k, '裝在魂柱上', ['z'], nearestTo(G.pillars));
+      if (handEmpty() && partsWith('shock').length) return objView(k, '撿起地上的電擊', ['z'], nearestTo(partsWith('shock')));
+      return objView(k, '再拔一個電擊', ['z'], nearestTo(enemiesWith('shock')));
+    }
   }
   return null;
 }
-function completeStage(k) {
+function qCond(k) {
+  switch (k) {
+    case 7: return G.hand === 'crossbowKit' || G.run.placedTower;
+    case 11: return enemiesWith('ranged').length > 0 || qDone(11);
+    case 14: return !!(G.flag && G.flag.reason === 'purchase') || qDone(14);
+    case 21: return S.golemUnlocked || G.stat.recruits > 0;
+    case 22: return shopOpen();
+    case 23: return G.gold >= 12;
+    case 25: return G.hand === 'pillarKit' || qDone(25);
+    case 26: return enemiesWith('shock').length > 0 || qDone(26);
+  }
+  return true;
+}
+function qDone(k) {
+  const T = S.tut, st = G.stat;
+  const pil = it => G.pillars.some(p => p.slots.indexOf(it) >= 0);
+  switch (k) {
+    case 4: return !!(T.pressed.left && T.pressed.right && T.pressed.up && T.pressed.down);
+    case 5: case 21: case 23: return shopOpen() || G.shopOpens > G.qBase;
+    case 6: return (st.purchases.crossbow || 0) > 0;
+    case 7: return G.run.placedTower;
+    case 11: return G.hand === 'ranged' || G.towers.some(t => t.slots.indexOf('pierce') >= 0);
+    case 12: return G.towers.some(t => t.slots.indexOf('pierce') >= 0);
+    case 13: return (st.purchases.soldier || 0) > 0;
+    case 14: return st.flags.purchase > 0;
+    case 16: { const dd = done16Flags(); return dd[0] && G.towers.some(t => t.slots.indexOf('melee') >= 0 && t.slots.indexOf('seek') >= 0); }
+    case 19: return G.hand === 'march' || golemHasMarch() || st.recruits > 0;
+    case 20: return golemHasMarch() || st.recruits > 0;
+    case 22: return G.q22seen && !shopOpen();
+    case 24: return (st.purchases.pillar || 0) > 0 || G.pillars.length > 0;
+    case 25: return G.run.placedPillar || G.pillars.length > 0;
+    case 26: return G.hand === 'shock' || pil('shock');
+    case 27: return pil('shock');
+  }
+  return false;
+}
+function completeQuest(k, view) {
   const T = S.tut;
   T.done[k] = true; T.doneSt[k] = r1(RT);
-  ev('tutorial_done', { stage: k });
+  if (T.shownSt[k] === undefined) { T.shownSt[k] = T.doneSt[k]; ev('tutorial_show', { stage: k, kind: 'quest' }); }
+  ev('tutorial_done', { stage: k, kind: 'quest' });
   snd('tutorial_done');
-  T.fx = { view: T.view, t: 0 };
-  T.cur = 0; T.pend = {};
-  if (k === 5) startClock('tutorial');
+  const v = (T.lastView && T.lastView.stage === k) ? T.lastView : (view || qView(k, true));
+  T.fx = v ? { stage: k, view: v, t: 0 } : null;
+  T.lastView = null; T.view = null;
 }
 function updateTutorial(dt) {
   const T = S.tut;
-  if (T.fx) { T.fx.t += dt; if (T.fx.t >= 0.6) T.fx = null; return; }
-  for (const k of [6, 9, 11, 13]) {
-    if (T.late[k]) {
-      T.late[k] = false;
-      if (!T.done[k]) { T.done[k] = true; T.doneSt[k] = r1(RT); if (T.shownSt[k] === undefined) T.shownSt[k] = r1(RT); ev('tutorial_done', { stage: k }); snd('tutorial_done'); }
-    }
+  T.view = null;
+  if (T.fx) {
+    T.fx.t += dt;
+    if (T.fx.t >= 0.6) T.fx = null; else return;
   }
-  if (T.cur && (T.pend[T.cur] || tutState(T.cur))) { completeStage(T.cur); return; }
-  const c = tutChoose();
-  T.cur = c;
-  T.view = c ? tutView(c) : null;
-  if (c && T.view && T.shownSt[c] === undefined) { T.shownSt[c] = r1(RT); ev('tutorial_show', { stage: c }); }
-  if (c && tutState(c)) completeStage(c); // 條件早已成立: 出現的同一幀完成
+  const k = tutCur();
+  T.cur = k;
+  if (!k) return;
+  if (CARD[k]) {
+    if (cardReady(k)) startGuide(SEG[k] || [k]);
+    return;
+  }
+  if (G.qCur !== k) { G.qCur = k; G.qBase = G.shopOpens; G.q22seen = false; }
+  if (!qCond(k) && !(k === 22 && qDone(k))) return; // 階段 22 的完成條件是商店關閉(出現條件是商店開著), 要另外放行
+  if (k === 23) S.pillarUnlocked = true; // 階段 23 出現的這一刻魂柱解鎖
+  const view = qView(k, false);
+  if (qDone(k)) { completeQuest(k, view); return; }
+  if (view) {
+    T.view = view; T.lastView = view;
+    if (!G.tapp[k]) {
+      G.tapp[k] = true; snd('quest_new');
+      if (T.shownSt[k] === undefined) { T.shownSt[k] = r1(RT); ev('tutorial_show', { stage: k, kind: 'quest' }); }
+    }
+    if (k === 22) G.q22seen = true;
+  }
 }
 
 // ───────── 輸入動作 ─────────
@@ -1521,20 +1967,17 @@ function completeSteal(via) {
   G.stat.steals.done++; if (via === 'died') G.stat.steals.diedDone++;
   snd('steal_done');
   ev('steal_done', { enemy: e.type, item, via: via === 'died' ? 'died' : 'bar' });
-  tutEv(7);
 }
 function doInstall(t, mode, item, swappedOut) {
   ev('install', { item, to: unitKind(t), mode, swappedOut: swappedOut || null });
   G.stat.installs[mode]++;
-  if (item === 'march' && t.cat === 'golem' && t.team === 'neutral') tutEv(11);
-  if (item === 'charge') tutEv(13); // 替換彈窗(階段 10)期間裝上衝鋒, 事後補記階段 13 完成
-  if (mode === 'replace') tutEv(10);
   afterSlotsChange(t);
 }
 function menuCells(t) {
-  const cells = t.slots.map(k => ({ type: 'slot', item: k || null }));
-  if (t.cat === 'tower' || t.cat === 'pillar') cells.push({ type: 'demolish', refund: settleRefund(t, Math.floor(t.price * 0.6), false).refund });
-  else if (isMobileAlly(t)) cells.push({ type: 'rally' });
+  const lockSlot = tutLvl1() && !S.tut.done[15]; // 第 1 關教學中, 階段 15 完成前魂件格上鎖
+  const cells = t.slots.map(k => ({ type: 'slot', item: k || null, locked: lockSlot }));
+  if (t.cat === 'tower' || t.cat === 'pillar') cells.push({ type: 'demolish', refund: settleRefund(t, Math.floor(t.price * 0.6), false).refund, locked: tutLvl1() });
+  else if (isMobileAlly(t)) cells.push({ type: 'rally', locked: false });
   return cells;
 }
 function demolish(t) {
@@ -1555,24 +1998,26 @@ function popupZ() {
     const items = shopItems();
     const it = items[p.index], kit = it[0], price = it[2];
     const isUnit = kit === 'soldierKit' || kit === 'golemKit';
+    const nm = KIT_NAME[kit];
     const fail = msg => { p.msg = msg; p.shake = 0; snd('ui_invalid'); };
+    if (shopLocked(kit)) { p.msg = '教學期間不能買'; p.shake = 0; tutBlock('shop', nm, null); return; }
     if (kit === 'pillarKit' && G.pillars.length + (G.hand === 'pillarKit' ? 1 : 0) >= LV.cap) { fail('已達上限'); return; }
     if (G.gold < price) { fail('金幣不足'); return; }
     if (!isUnit && (G.hand || G.flag)) { fail('手上要空著'); return; }
     if (isUnit && (G.flag || KITS[G.hand])) { fail('先放下手上的東西'); return; }
     G.gold -= price; G.stat.goldSpent += price;
-    const nm = KIT_NAME[kit];
     G.stat.purchases[nm] = (G.stat.purchases[nm] || 0) + 1;
     if (isUnit) G.flag = { reason: 'purchase', kind: nm, unit: null }; else G.hand = kit;
     ev('purchase', { item: nm, price, goldAfter: G.gold });
-    snd('purchase'); tutEv(2);
+    snd('purchase');
     closePopup();
     return;
   }
   const t = p.target, i = p.index, c = p.cells[i];
   if (p.mode === 'menu') {
+    if (c.type === 'slot' && !c.item) { p.shake = 0; snd('ui_invalid'); return; }
+    if (c.locked) { p.shake = 0; tutBlock('take', c.item || null); return; }
     if (c.type === 'slot') {
-      if (!c.item) { p.shake = 0; snd('ui_invalid'); return; }
       const cell = t.slots[i];
       G.hand = cell; t.slots[i] = null;
       if (t.cat === 'pillar') t.changeAge = 0;
@@ -1589,25 +2034,27 @@ function popupZ() {
     const cell = t.slots[i], h = G.hand;
     t.slots[i] = h; G.hand = cell;
     snd('swap_part');
-    doInstall(t, 'replace', h, cell);
     closePopup();
+    doInstall(t, 'replace', h, cell);
   }
 }
 function tryPlace() {
   const info = placeInfo(G.hand);
   if (!info.valid) { snd('ui_invalid'); return; }
+  if (info.tutBlocked) { tutBlock(G.hand === 'crossbowKit' ? 'build' : 'pillar', G.hand === 'crossbowKit' ? 'crossbow' : 'pillar', '教學期間不能放這裡'); return; }
   const k = G.hand;
   let bundled = [];
-  if (k === 'crossbowKit') { const u = mkTower(info.x, info.y); u.slots[0] = 'ranged'; bundled = ['ranged']; G.towers.push(u); }
-  else { G.pillars.push(mkPillar(info.x, info.y)); G.stat.pillarsMax = Math.max(G.stat.pillarsMax, G.pillars.length); }
+  if (k === 'crossbowKit') { const u = mkTower(info.x, info.y); u.slots[0] = 'ranged'; bundled = ['ranged']; G.towers.push(u); G.run.placedTower = true; }
+  else { G.pillars.push(mkPillar(info.x, info.y)); G.stat.pillarsMax = Math.max(G.stat.pillarsMax, G.pillars.length); G.run.placedPillar = true; }
   ev('place', { kind: info.kind, x: Math.round(info.x), y: Math.round(info.y), bundled });
   G.hand = null;
-  snd('place_unit'); tutEv(3);
+  snd('place_unit');
 }
 function plantFlag() {
   const P = G.player, fi = flagInfo();
   if (G.flag.unit && G.flag.unit.removed) { G.flag = null; return; } // 那隻兵已走回主堡退款: 旗幟直接消失
   if (!fi.valid) { snd('ui_invalid'); return; }
+  if (fi.tutBlocked) { tutBlock('flag', G.flag.kind, '教學期間不能放這裡'); return; }
   const f = G.flag; G.flag = null;
   const fo = { x: P.x, y: P.y + 16, plantAge: 0 };
   let u = f.unit;
@@ -1626,7 +2073,7 @@ function plantFlag() {
   G.flags.push(fo);
   G.stat.flags[f.reason === 'purchase' ? 'purchase' : 'rally']++;
   ev('flag_plant', { reason: f.reason, unit: u.cat, x: Math.round(fo.x), y: Math.round(fo.y) });
-  snd('flag_plant'); tutEv(3);
+  snd('flag_plant');
 }
 function zPress() {
   const P = G.player;
@@ -1646,6 +2093,7 @@ function zPress() {
       ev('ground_swap', { item: h, got: G.hand }); snd('swap_part');
       return;
     }
+    if (installBlocked(t, G.hand)) { tutBlock('install', G.hand); return; }
     const ei = t.slots.findIndex(s => !s);
     if (ei >= 0) {
       const h = G.hand;
@@ -1653,7 +2101,7 @@ function zPress() {
       snd('install_part'); doInstall(t, 'direct', h, null);
       return;
     }
-    const cells = t.slots.map(k => ({ type: 'slot', item: k || null }));
+    const cells = t.slots.map(k => ({ type: 'slot', item: k || null, locked: false }));
     let idx = 0;
     for (let j = 0; j < t.slots.length; j++) if (canFuseUnit(t) && wouldFuseAfterSwap(t, j, G.hand)) { idx = j; break; }
     openPopup({ type: 'soul', mode: 'replace', target: t, cells, index: idx, shake: 0.25, msg: '', x: 0, y: 0 });
@@ -1668,8 +2116,11 @@ function zPress() {
     return;
   }
   if (t.cat === 'enemy') {
+    if (stealBlocked()) { tutBlock('steal', null); return; }
     const idxs = []; t.slots.forEach((s, i) => { if (s) idxs.push(i); });
-    const index = idxs[Math.floor(Math.random() * idxs.length)];
+    const pref = stealPref();
+    const pi = pref ? idxs.filter(i => t.slots[i] === pref) : [];
+    const index = pi.length ? pi[0] : idxs[Math.floor(Math.random() * idxs.length)];
     G.steal = { enemy: t, index, t: 0 };
     G.stat.steals.started++; snd('steal_start');
     ev('steal_start', { enemy: t.type, item: t.slots[index] });
@@ -1718,6 +2169,13 @@ function popupDesc(p) {
 function onKey(k) {
   if (k === 'M') { toggleMute(); return; } // 任何畫面都能切換靜音
   if (G.screen === 'title') {
+    const tt = G.tt;
+    if (tt.clear) { // 新手教學完成大提示: 出現滿 1.0 秒才接受 Z
+      const c = tt.clear;
+      if (k === 'Z' && !c.closing && c.age >= 1.0) { c.closing = true; c.closeAge = 0; snd('ui_confirm'); }
+      return;
+    }
+    if (tt.adv) return; // 推進動畫播放期間只接受 M
     if (k === 'L' || k === 'R') {
       let c = G.cursor + (k === 'R' ? 1 : -1);
       if (c >= 0 && c <= 4 && S.unlocked[c]) { G.cursor = c; snd('ui_move'); }
@@ -1730,19 +2188,22 @@ function onKey(k) {
     else if (k === 'Z' && G.resultT >= 0.5) {
       const o = G.options[G.resultCursor];
       snd('ui_confirm');
-      if (o === '下一關') startLevel(G.level + 1);
-      else if (o === '重玩' || o === '重來') startLevel(G.level);
+      if (o === '重玩' || o === '重來') startLevel(G.level);
+      else if (o === '關卡預覽') toTitle(G.level - 1);
       else toTitle();
     }
     return;
   }
-  // 遊戲中
+  // 遊戲中: 引導卡、合成演出只接受 Z 與 M; 圖鑑接受 C / X / Esc; 暫停只接受 Esc
+  if (G.guide) { if (k === 'Z') guideZ(); return; }
+  if (G.reveal) { if (k === 'Z') revealZ(); return; }
+  if (G.codex) { if (k === 'C' || k === 'X' || k === 'ESC') closeCodex(); return; }
+  if (G.paused) { if (k === 'ESC') togglePause(); return; }
+  if (k === 'ESC') { togglePause(); return; }
+  if (k === 'C') { openCodex(); return; }
   const T = S.tut;
   if (k === 'L' || k === 'R' || k === 'U' || k === 'D') {
-    if (T.cur === 1) {
-      T.pressed[{ L: 'left', R: 'right', U: 'up', D: 'down' }[k]] = true;
-      if (T.pressed.left && T.pressed.right && T.pressed.up && T.pressed.down) T.pend[1] = true;
-    }
+    if (tutCur() === 4) T.pressed[{ L: 'left', R: 'right', U: 'up', D: 'down' }[k]] = true;
   }
   if (k === 'Z') { if (zNeedRelease) return; zPress(); }
   else if (k === 'X') {
@@ -1750,7 +2211,12 @@ function onKey(k) {
   } else if (k === 'S') {
     if (G.steal || G.popup) return;
     const h = shopHolder();
-    if (h && dist(G.player, h) <= 110) openPopup({ type: 'shop', target: null, index: 0, shake: 0.25, msg: '' });
+    if (h && dist(G.player, h) <= 110) {
+      let idx = shopItems().findIndex(s => !shopLocked(s[0])); // 游標在第一個沒鎖住的品項
+      if (idx < 0) idx = 0;
+      openPopup({ type: 'shop', target: null, index: idx, shake: 0.25, msg: '' });
+      G.shopOpens++;
+    }
   } else if (k === 'L' || k === 'R') {
     const p = G.popup;
     if (!p) return;
@@ -1760,7 +2226,7 @@ function onKey(k) {
     snd('ui_move');
   }
 }
-const KEYMAP = { ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D', KeyZ: 'Z', KeyX: 'X', Space: 'S', KeyM: 'M' };
+const KEYMAP = { ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D', KeyZ: 'Z', KeyX: 'X', Space: 'S', KeyM: 'M', KeyC: 'C', Escape: 'ESC' };
 window.addEventListener('keydown', e => {
   const k = KEYMAP[e.code];
   if (!k) return;
@@ -1792,13 +2258,23 @@ if (document.addEventListener) {
 // ───────── 繪製 ─────────
 function slotCenterX(L, i, x) { return x - L * 10 + 10 + 20 * i; }
 function resonantKinds(u) { const k = u.slots[0]; return (k && RESONANT[k]) ? [k] : []; }
+function titleState() {
+  const adv = G.tt.adv;
+  let maxU = 0; for (let i = 0; i < 5; i++) if (S.unlocked[i]) maxU = i;
+  const unlocking = !!(adv && adv.unlocked);
+  return {
+    levels: LEVELS.map((l, i) => ({ name: l.name, unlocked: S.unlocked[i], bestStars: S.unlocked[i] ? S.best[i] : 0, tutorial: i < 2 })),
+    cursorIndex: adv ? adv.from : G.cursor, muted: S.muted, blinkTime: G.titleT,
+    tokenIndex: adv ? adv.to : maxU, tokenFrom: adv ? adv.from : maxU, tokenAge: adv ? Math.min(0.8, adv.age) : 0.8, tokenDuration: 0.8,
+    unlockIndex: unlocking ? adv.to : -1, unlockAge: unlocking ? Math.min(0.6, adv.age - 0.8) : 0.6, unlockDuration: 0.6
+  };
+}
 function render() {
   ctx.clearRect(0, 0, W, H);
   if (G.screen === 'title') {
-    Art.drawTitle(ctx, {
-      levels: LEVELS.map((l, i) => ({ name: l.name, unlocked: S.unlocked[i], bestStars: S.unlocked[i] ? S.best[i] : 0 })),
-      cursorIndex: G.cursor, muted: S.muted, blinkTime: G.titleT
-    });
+    Art.drawTitle(ctx, titleState());
+    const c = G.tt.clear;
+    if (c) Art.drawTutorialClear(ctx, { age: c.age, ready: !c.closing && c.age >= 1.0, closing: c.closing, closeAge: c.closeAge, closeDuration: 0.3 });
     return;
   }
   drawScene();
@@ -1807,7 +2283,7 @@ function visibleMobile(u) { return (u.state === 'normal' || u.state === 'returni
 function entityDrawList() {
   const L = [];
   const T = G.target;
-  L.push({ y: G.castle.y, f: () => Art.drawCastle(ctx, { x: 1180, y: 434, hitAge: G.castle.hitAge, hitDuration: 0.3, attackAge: G.castle.attackAge, attackDuration: 0.15, targeted: T === G.castle }) });
+  L.push({ y: G.castle.y, f: () => Art.drawCastle(ctx, { x: 1180, y: 434, hp: Math.max(0, G.castleHp), maxHp: 20, hitAge: G.castle.hitAge, hitDuration: 0.3, attackAge: G.castle.attackAge, attackDuration: 0.15, targeted: T === G.castle }) });
   G.towers.forEach(u => {
     if (u.state !== 'normal') return;
     const ro = u.ev.rooted;
@@ -1842,7 +2318,7 @@ function entityDrawList() {
     y: e.y, f: () => Art.drawEnemy(ctx, {
       type: e.type, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, hitAge: e.hitAge, hitDuration: 0.2, attackAge: e.attackAge, attackDuration: 0.15,
       moving: e.ev.singles.march > 0 || e.moving, slowed: e.slowT > 0 || e.auraSlow || stolenBy(e), stunAge: e.stunAge, stunDuration: e.stunDur,
-      healing: !!e.healing && e.hp < e.maxHp, targeted: T === e
+      healing: !!e.healing && e.hp < e.maxHp, swift: !!e.swift, targeted: T === e
     })
   }));
   const P = G.player;
@@ -1856,16 +2332,55 @@ function entityDrawList() {
   return L;
 }
 function virtOf(u) { return u.ev.virt.map(v => ({ kind: v.kind, used: v.used })); }
-function drawTut(afterPopup) {
+function drawTut(late) {
   const T = S.tut;
-  if (G.screen !== 'play') return;
+  if (G.screen !== 'play' || G.guide || G.reveal) return;
   let v = null, doneAge = 0.6;
   if (T.fx) { v = T.fx.view; doneAge = T.fx.t; }
-  else { if (!T.cur || !T.view) return; v = T.view; }
-  if (!v) return;
-  const sideV = v.side === 'left' || v.side === 'right';
-  if (sideV !== afterPopup) return;
-  Art.drawTutorial(ctx, { stage: v.stage, text: v.text, keys: v.keys, pressedKeys: v.pressedKeys, tipX: v.tipX, tipY: v.tipY, side: v.side, bodyX: v.bodyX, bodyY: v.bodyY, doneAge, doneDuration: 0.6 });
+  else if (T.view) v = T.view;
+  if (!v || !!v.late !== late) return;
+  Art.drawTutorial(ctx, {
+    stage: v.stage, text: v.text, keys: v.keys, pressedKeys: v.pressedKeys, checklist: v.checklist.map(c => Object.assign({}, c)),
+    tipX: v.tipX, tipY: v.tipY, side: v.side, bodyX: v.bodyX, bodyY: v.bodyY, doneAge, doneDuration: 0.6
+  });
+}
+function panelState() {
+  const total = LV.waves.length, k = G.waveStarted;
+  let status = 'last', nextIn = -1, prog = 0;
+  if (k < total) {
+    if (waveWaiting()) status = 'tutorial';
+    else {
+      status = 'countdown';
+      const rem = Math.max(0, G.waveAt[k] - G.clock);
+      nextIn = Math.ceil(rem - 1e-9);
+      prog = clamp(1 - rem / Math.max(0.001, G.waveAt[k] - G.cdFrom), 0, 1);
+    }
+  }
+  return { x: 118, y: 83, wave: G.panelWave, totalWaves: total, status, nextWaveIn: nextIn, progress: prog, bumpAge: G.bumpAge, bumpDuration: 0.4 };
+}
+function easeOut(f) { return 1 - (1 - f) * (1 - f); }
+function guideState() {
+  const g = G.guide, c = g.cards[g.idx];
+  let spots = c.spots.map(s => Object.assign({}, s)), arrows = c.arrows.map(a => Object.assign({}, a));
+  if (g.from && g.trans < 0.3) { // 聚光燈與箭頭 0.3 秒從舊目標滑到新目標
+    const f = easeOut(g.trans / 0.3);
+    const L = (a, b) => a + (b - a) * f;
+    spots = c.spots.map((s, i) => { const o = g.from.spots[Math.min(i, g.from.spots.length - 1)]; return { x: L(o.x, s.x), y: L(o.y, s.y), r: L(o.r, s.r) }; });
+    arrows = c.arrows.map((a, i) => { const o = g.from.arrows[Math.min(i, g.from.arrows.length - 1)]; return { tipX: L(o.tipX, a.tipX), tipY: L(o.tipY, a.tipY), rootX: L(o.rootX, a.rootX), rootY: L(o.rootY, a.rootY) }; });
+  }
+  const card = g.phase === 'card';
+  return {
+    phase: g.phase, phaseAge: card ? 0 : g.phaseAge, phaseDuration: card ? 0 : 0.3, text: c.text, sub: c.sub, index: g.idx, total: g.cards.length,
+    last: g.idx === g.cards.length - 1, spots, arrows, cardX: c.cardX, cardY: c.cardY, cardAge: g.cardAge, cardDuration: 0.3,
+    readAge: g.readAge, readDuration: 1.5, ready: card && g.readAge >= 1.5
+  };
+}
+function codexState() {
+  const ents = RECIPE_FLAT.map((r, i) => ({
+    a: r[0], b: r[1], result: COMBO_KIND[r[2]], aName: DESC[r[0]][0], bName: DESC[r[1]][0],
+    name: DESC[COMBO_KIND[r[2]]][0], text: DESC[COMBO_KIND[r[2]]][1], opened: !!S.recipes[i]
+  }));
+  return { entries: ents, foundCount: S.combos.filter(Boolean).length };
 }
 function drawScene() {
   const P = G.player, T = G.target;
@@ -1888,11 +2403,12 @@ function drawScene() {
   (G.healAlly || []).forEach(u => Art.drawHealAura(ctx, { x: u.x, y: u.y, radius: 100, owner: 'ally' }));
   (G.healEnemy || []).forEach(u => Art.drawHealAura(ctx, { x: u.x, y: u.y, radius: 100, owner: 'enemy' }));
   G.flags.forEach(f => Art.drawRallyFlag(ctx, { x: f.x, y: f.y, plantAge: f.plantAge, plantDuration: 0.3 }));
-  G.coins.forEach(c => Art.drawCoin(ctx, { x: c.x, y: c.y }));
+  G.coins.forEach(c => Art.drawCoin(ctx, { x: c.x, y: c.y, spawnAge: c.spawnAge, spawnDuration: 0.4 }));
   G.corpses.forEach(c => Art.drawCorpse(ctx, { kind: c.kind, x: c.x, y: c.y, life: c.life, maxLife: 0.6 }));
-  G.parts.forEach(p => Art.drawGroundPart(ctx, { item: p.item, x: p.x, y: p.y, spawnAge: p.spawnAge, spawnDuration: 0.6, life: p.permanent ? 10 : p.life, maxLife: 10, permanent: p.permanent, targeted: T === p }));
-  if (G.flag) { const i = flagInfo(); Art.drawPlacePreview(ctx, { kind: 'flag', x: i.x, y: i.y, valid: i.valid }); }
-  else if (KITS[G.hand]) { const i = placeInfo(G.hand); Art.drawPlacePreview(ctx, { kind: i.kind, x: i.x, y: i.y, valid: i.valid }); }
+  const frozen = playing && partsFrozen();
+  G.parts.forEach(p => Art.drawGroundPart(ctx, { item: p.item, x: p.x, y: p.y, spawnAge: p.spawnAge, spawnDuration: 0.6, life: p.permanent ? 10 : p.life, maxLife: 10, permanent: p.permanent, frozen: !p.permanent && frozen, targeted: T === p }));
+  if (G.flag) { const i = flagInfo(); Art.drawPlacePreview(ctx, { kind: 'flag', x: i.x, y: i.y, valid: i.valid && !i.tutBlocked }); }
+  else if (KITS[G.hand]) { const i = placeInfo(G.hand); Art.drawPlacePreview(ctx, { kind: i.kind, x: i.x, y: i.y, valid: i.valid && !i.tutBlocked }); }
   entityDrawList().forEach(o => o.f());
   // 魂件槽列(玩家沒有)
   const sl = (u, x, y) => Art.drawSoulSlots(ctx, { x, y, slots: u.slots.slice(), virtual: u.state === 'normal' ? virtOf(u) : [] });
@@ -1920,31 +2436,45 @@ function drawScene() {
   }
   G.names.forEach(n => { if (n.unit.state !== 'gone' && n.unit.state !== 'away' && !n.unit.removed) Art.drawComboName(ctx, { x: n.unit.x, y: n.unit.y - n.unit.half - 44, name: n.name, isNew: n.isNew, age: n.age, duration: 1.5 }); });
   // 預警
-  if (G.clockOn && G.waveStarted < LV.waves.length) {
-    const rem = LV.t1 + G.waveStarted * LV.gap - G.clock;
+  const nk = G.waveStarted;
+  if (playing && nk < LV.waves.length && G.waveAt[nk] !== null) {
+    const rem = G.waveAt[nk] - G.clock;
     if (rem > 0 && rem <= 6) {
       const used = {};
-      LV.waves[G.waveStarted].forEach(g => { used[g.sp] = true; });
+      LV.waves[nk].forEach(g => { used[g.sp] = true; });
       LV.spawns.forEach((s, i) => { if (used[i]) Art.drawSpawnWarning(ctx, { x: s.x, y: s.y, angle: s.ang, remaining: rem, total: 6 }); });
     }
   }
+  // 第 1 關教學中的出怪點「!」標示: 階段 3 的卡片出現起, 到第 1 波預警開始
+  if (playing && G.tutDriven && (G.tapp[3] || S.tut.done[3]) && !G.warned[0]) Art.drawSpawnMark(ctx, { x: 40, y: 290, t: G.time });
   if (playing && !G.popup) {
     const lb = actionLabel();
     if (lb) Art.drawActionHint(ctx, { x: P.x, y: P.y + 30, label: lb });
   }
+  if (playing && G.warn) Art.drawTutorialWarn(ctx, { x: clamp(P.x, 120, 1160), y: Math.min(P.y + 60, 702), text: G.warn.text, age: G.warn.age, duration: 1.2 });
   drawTut(false);
-  const hpShow = Math.max(0, G.castleHp);
-  Art.drawHud(ctx, {
-    level: G.level, levelName: LV.name, gold: G.gold, castleHp: hpShow, castleMaxHp: 20, wave: G.wave, totalWaves: LV.waves.length,
-    nextWaveIn: G.waveStarted < LV.waves.length ? Math.max(0, Math.ceil(LV.t1 + G.waveStarted * LV.gap - G.clock)) : -1,
-    clockPaused: !G.clockOn, muted: S.muted
-  });
+  Art.drawHud(ctx, { level: G.level, levelName: LV.name, gold: G.gold, muted: S.muted });
+  if (playing) {
+    Art.drawWavePanel(ctx, panelState());
+    if (G.banner && G.banner.age < 1.6) Art.drawWaveBanner(ctx, { wave: G.banner.wave, totalWaves: LV.waves.length, last: G.banner.last, age: G.banner.age, duration: 1.6 });
+  }
   if (G.popup) {
     Art.drawSlowMo(ctx);
     drawPopup();
   }
   drawTut(true);
+  if (G.guide) Art.drawGuide(ctx, guideState());
+  if (G.reveal) {
+    const r = G.reveal;
+    Art.drawComboReveal(ctx, {
+      a: r.a, b: r.b, result: r.result, name: r.name, text: r.text, aName: r.aName, bName: r.bName, age: r.age,
+      ready: r.age >= 1.5, closing: r.closing, closeAge: r.closeAge, closeDuration: 0.3
+    });
+  }
+  if (G.codex) Art.drawCodex(ctx, codexState());
+  else if (G.paused) Art.drawPause(ctx, {});
   if (G.screen === 'result') {
+    const hpShow = Math.max(0, G.castleHp);
     Art.drawResult(ctx, {
       win: G.win, allClear: G.win && G.level === 5, level: G.level, levelName: LV.name, wave: G.wave, totalWaves: LV.waves.length,
       castleHp: hpShow, castleMaxHp: 20, stars: G.stars, starAge: Math.min(1.2, G.resultT), starDuration: 1.2,
@@ -1960,6 +2490,7 @@ function drawPopup() {
       const count = G.pillars.length + (G.hand === 'pillarKit' ? 1 : 0);
       let state = G.gold < s[2] ? 'poor' : 'ok';
       if (isP && count >= LV.cap) state = 'max';
+      if (shopLocked(s[0])) state = 'locked';
       return { item: s[0], name: s[1], price: s[2], state, count: isP ? count : null, cap: isP ? LV.cap : null };
     });
     Art.drawShopPopup(ctx, { items, cursorIndex: p.index, message: p.msg, shakeAge: p.shake, shakeDuration: 0.25 });
@@ -1971,9 +2502,10 @@ function drawPopup() {
   else {
     const c = p.cells[p.index];
     label = c.type === 'slot' ? (c.item ? '拿起' : '') : (c.type === 'demolish' ? '拆除' : '移防');
+    if (c.locked && label) label = '教學中不能動';
   }
   Art.drawSoulPopup(ctx, {
-    mode: p.mode, x: p.x, y: p.y, title: popupTitle(t), cells: p.cells.map(c => Object.assign({}, c)), index: p.index,
+    mode: p.mode, x: p.x, y: p.y, title: popupTitle(t), cells: p.cells.map(c => Object.assign({ locked: false }, c)), index: p.index,
     hand: p.mode === 'replace' ? G.hand : null, actionLabel: label, desc: popupDesc(p), shakeAge: p.shake, shakeDuration: 0.25
   });
 }

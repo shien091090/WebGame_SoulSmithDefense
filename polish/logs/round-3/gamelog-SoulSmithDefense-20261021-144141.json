@@ -1,0 +1,305 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-3",
+ "summary": {
+  "level": 1,
+  "levelName": "初陣",
+  "attempt": 1,
+  "failsBefore": 0,
+  "result": "win",
+  "durationSec": 1398.8,
+  "gameSec": 201.5,
+  "slowMoSec": 6.2,
+  "hiddenSec": 1192.8,
+  "waveReached": 4,
+  "totalWaves": 4,
+  "castleHp": 20,
+  "stars": 3,
+  "leaks": 0,
+  "leaksByWave": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "leaksBySpawn": {},
+  "kills": 27,
+  "playerKills": 0,
+  "playerHits": 0,
+  "goldEarned": 42,
+  "goldRefund": 0,
+  "goldSpent": 27,
+  "goldEnd": 45,
+  "purchases": {
+   "soldier": 1,
+   "crossbow": 1
+  },
+  "pillarCap": 1,
+  "pillarsMax": 0,
+  "steals": {
+   "started": 0,
+   "done": 0,
+   "diedDone": 0,
+   "canceled": 0
+  },
+  "installs": {
+   "direct": 1,
+   "replace": 0
+  },
+  "fuses": {
+   "穿透箭": 1
+  },
+  "drops": 0,
+  "groundExpired": 0,
+  "demolishes": 0,
+  "homeRefunds": {},
+  "bundledBack": 0,
+  "flags": {
+   "purchase": 1,
+   "rally": 0
+  },
+  "unitDowns": 0,
+  "maxRespawnQueue": 0,
+  "marchLoops": 0,
+  "blinks": 0,
+  "healed": 0,
+  "enemyHealed": 0,
+  "recruits": 0,
+  "combosFoundThisLevel": [
+   "穿透箭"
+  ],
+  "combosFoundTotal": 1
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 1.3,
+   "doneSt": 2.4
+  },
+  "2": {
+   "shownSt": 3,
+   "doneSt": 8.7
+  },
+  "3": {
+   "shownSt": 9.3,
+   "doneSt": 10
+  },
+  "4": {
+   "shownSt": 10.6,
+   "doneSt": 21.8
+  },
+  "5": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "6": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "7": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "8": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "9": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "10": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "11": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "12": {
+   "shownSt": null,
+   "doneSt": null
+  },
+  "13": {
+   "shownSt": null,
+   "doneSt": null
+  }
+ },
+ "events": [
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 1.3,
+   "level": 1,
+   "attempt": 1
+  },
+  {
+   "type": "tutorial_show",
+   "t": 0,
+   "st": 1.3,
+   "stage": 1
+  },
+  {
+   "type": "tutorial_done",
+   "t": 1.2,
+   "st": 2.4,
+   "stage": 1
+  },
+  {
+   "type": "tutorial_show",
+   "t": 1.8,
+   "st": 3,
+   "stage": 2
+  },
+  {
+   "type": "purchase",
+   "t": 7.4,
+   "st": 8.7,
+   "item": "soldier",
+   "price": 12,
+   "goldAfter": 18
+  },
+  {
+   "type": "tutorial_done",
+   "t": 7.4,
+   "st": 8.7,
+   "stage": 2
+  },
+  {
+   "type": "tutorial_show",
+   "t": 8,
+   "st": 9.3,
+   "stage": 3
+  },
+  {
+   "type": "flag_plant",
+   "t": 8.7,
+   "st": 10,
+   "reason": "purchase",
+   "unit": "soldier",
+   "x": 942,
+   "y": 436
+  },
+  {
+   "type": "tutorial_done",
+   "t": 8.7,
+   "st": 10,
+   "stage": 3
+  },
+  {
+   "type": "tutorial_show",
+   "t": 9.4,
+   "st": 10.6,
+   "stage": 4
+  },
+  {
+   "type": "purchase",
+   "t": 14.5,
+   "st": 15.8,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 3
+  },
+  {
+   "type": "place",
+   "t": 17.5,
+   "st": 18.8,
+   "kind": "crossbow",
+   "x": 456,
+   "y": 362,
+   "bundled": [
+    "ranged"
+   ]
+  },
+  {
+   "type": "take",
+   "t": 20.5,
+   "st": 21.8,
+   "item": "ranged",
+   "from": "crossbow"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 20.5,
+   "st": 21.8,
+   "stage": 4
+  },
+  {
+   "type": "install",
+   "t": 21.4,
+   "st": 22.7,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 21.4,
+   "st": 22.7,
+   "item": "pierce",
+   "unit": "crossbow",
+   "materials": [
+    "ranged",
+    "ranged"
+   ]
+  },
+  {
+   "type": "combo_new",
+   "t": 21.4,
+   "st": 22.7,
+   "name": "穿透箭",
+   "unit": "crossbow"
+  },
+  {
+   "type": "mute",
+   "t": 293.7,
+   "st": 294.9,
+   "muted": true
+  },
+  {
+   "type": "mute",
+   "t": 294.1,
+   "st": 295.3,
+   "muted": false
+  },
+  {
+   "type": "clock_start",
+   "t": 364.9,
+   "st": 366.1,
+   "reason": "timeout"
+  },
+  {
+   "type": "wave_start",
+   "t": 444.7,
+   "st": 446,
+   "wave": 1
+  },
+  {
+   "type": "wave_start",
+   "t": 545.5,
+   "st": 546.8,
+   "wave": 2
+  },
+  {
+   "type": "wave_start",
+   "t": 671.2,
+   "st": 672.5,
+   "wave": 3
+  },
+  {
+   "type": "wave_start",
+   "t": 1346.2,
+   "st": 1347.5,
+   "wave": 4
+  },
+  {
+   "type": "level_end",
+   "t": 1398.8,
+   "st": 1400.1,
+   "result": "win",
+   "wave": 4,
+   "castleHp": 20,
+   "stars": 3
+  }
+ ]
+}

@@ -10,6 +10,7 @@
 | K-IMP | Impact Sounds | https://kenney.nl/assets/impact-sounds | Kenney (kenney.nl) | CC0 |
 | K-RPG | RPG Audio | https://kenney.nl/assets/rpg-audio | Kenney (kenney.nl) | CC0 |
 | K-JIN | Music Jingles | https://kenney.nl/assets/music-jingles | Kenney (kenney.nl) | CC0 |
+| K-CAS | Casino Audio | https://kenney.nl/assets/casino-audio | Kenney (kenney.nl) | CC0 |
 | AD-RPG | RPG Sound Pack | https://opengameart.org/content/rpg-sound-pack | artisticdude | CC0 |
 | AD-BAT | Battle Sound Effects | https://opengameart.org/content/battle-sound-effects | artisticdude | 頁面同列 CC-BY 3.0 / CC-BY-SA 3.0 / GPL / CC0, 選 CC0 |
 | RD-80 | 80 CC0 RPG SFX | https://opengameart.org/content/80-cc0-rpg-sfx | rubberduck | CC0 |
@@ -67,6 +68,17 @@
 | sfx_wave_start.mp3 | wave_start | BSB-TOM / 2338.wav(BWF 原檔 `https://bigsoundbank.com/UPLOAD/bwf-en/2338.wav`)+ EG-HORN / war_horns.mp3 | Joseph Sardin、Eldritch Grim | CC0 | 大鼓同一擊用三次(降速 0.7 / 0.7 / 0.62 倍, 間隔 0.3 秒); 號角取原曲 15.0~16.95 秒一段、+2 dB、延後 0.62 秒、尾端淡出 0.35 秒 |
 | sfx_castle_hit.mp3 | castle_hit | K-RPG / doorClose_1.ogg + K-IMP / impactPunch_heavy_001.ogg | Kenney | CC0 | 兩層疊合(重擊 −3 dB) |
 | sfx_tutorial_done.mp3 | tutorial_done | K-JIN / jingles_PIZZI16.ogg | Kenney | CC0 | 無 |
+| sfx_quest_new.mp3 | quest_new | K-UI / glass_004.ogg | Kenney | CC0 | 截前 0.5 秒、尾端淡出 0.25 秒 |
+| sfx_guide_pause.mp3 | guide_pause | K-IMP / impactSoft_medium_000.ogg + K-JIN / jingles_STEEL14.ogg | Kenney | CC0 | 兩層疊合: 悶擊 −3 dB; 鋼鼓樂句前 0.08 秒原速、之後 0.52 秒內速度由 1 降到 0.3(磁帶減速, 音高跟著往下), 尾端淡出 0.18 秒 |
+| sfx_guide_card.mp3 | guide_card | K-CAS / card-slide-2.ogg | Kenney | CC0 | 跳過開頭 0.055 秒、截 0.28 秒、尾端淡出 0.12 秒 |
+| sfx_combo_reveal.mp3 | combo_reveal | K-IMP / impactBell_heavy_000.ogg + impactPlate_heavy_000.ogg + impactMetal_heavy_000.ogg + impactPunch_heavy_000.ogg + impactGlass_heavy_000.ogg + K-JIN / jingles_STEEL02.ogg + K-UI / glass_001.ogg + RD-80 / spell_02.ogg | Kenney、rubberduck | CC0 | 八層疊合: 鐘(取前 0.9 秒)、金屬盤、法術聲三層反轉成蓄力、尾端對齊 0.9 秒; 0.9 秒放重金屬 + 重拳(−3 dB, 截 0.4 秒)+ 玻璃(−7 dB); 鋼鼓樂句取前 0.66 秒、−2 dB、0.92 秒起; 玻璃閃 −8 dB |
+| sfx_pause_on.mp3 | pause_on | K-UI / close_001.ogg | Kenney | CC0 | 無 |
+| sfx_pause_off.mp3 | pause_off | K-UI / open_001.ogg | Kenney | CC0 | 無 |
+| sfx_codex_open.mp3 | codex_open | K-RPG / bookOpen.ogg + bookPlace1.ogg + bookFlip2.ogg | Kenney | CC0 | 三層疊合: 書落桌聲跳過開頭 0.04 秒、截 0.15 秒、−8 dB; 翻頁聲延後 0.04 秒 |
+| sfx_codex_close.mp3 | codex_close | K-RPG / bookClose.ogg | Kenney | CC0 | 跳過開頭 0.055 秒 |
+| sfx_level_advance.mp3 | level_advance | AD-BAT / swish_2.wav + K-UI / pluck_001.ogg + pluck_002.ogg + K-IMP / footstep_wood_001.ogg | artisticdude、Kenney | CC0 | 四層疊合: 風聲跳過開頭 0.05 秒、升速 1.25 倍、−8 dB; 第一聲撥弦 −2 dB; 第二聲撥弦延後 0.11 秒; 腳步聲延後 0.24 秒、−9 dB、截 0.12 秒 |
+| sfx_level_unlock.mp3 | level_unlock | RD-80 / lock_02.ogg + misc_02.ogg + K-IMP / impactGlass_heavy_002.ogg + impactGlass_medium_001.ogg | rubberduck、Kenney | CC0 | 四層疊合: 鎖聲跳過開頭 0.04 秒、截 0.12 秒; 玻璃碎裂 −2 dB、延後 0.04 秒; 玻璃餘韻 −7 dB、延後 0.07 秒; 鈴聲 −9 dB、延後 0.12 秒 |
+| sfx_tutorial_clear.mp3 | tutorial_clear | FU-WIN / WinSteelDrums.wav + WinPizzicato.wav + WinVibraphone.wav | Fupi | CC0 | 三個分軌自行混音(撥弦 −3 dB、鐵琴 −4 dB), 升四度(加速 1.335 倍), 截前 2 秒、淡出 0.45 秒 |
 | sfx_level_win.mp3 | level_win | FU-WIN / WinSteelDrums.wav + WinBrass.wav + WinPizzicato.wav + WinStrings.wav | Fupi | CC0 | 四個分軌自行混音(撥弦、弦樂 −3 dB), 截前 3 秒、淡出 0.5 秒 |
 | sfx_level_lose.mp3 | level_lose | K-JIN / jingles_PIZZI01.ogg + jingles_SAX03.ogg | Kenney | CC0 | 兩層疊合(薩克斯 −6 dB) |
 | sfx_star.mp3 | star | AD-RPG / inventory/metal-ringing.wav | artisticdude | CC0 | 無(播放時依第幾顆星升高音高) |

@@ -5,11 +5,19 @@
 
 電擊系一律用「電流劈啪 / 嗡鳴」(faxcorp 電流音效包 + 真實雷聲), 治癒用柔和的合成鈴, 兩者都和既有的寶石 / 鋼鼓 / 撥弦家族分開。
 
-## 本輪(打磨第 3 輪)變更
-- 新增事件(名稱照 interface.json): `shock_zap`、`thunder_slash`、`thunder_orb`、`blink`、`heal_ray`
+新手教學與介面(打磨第 4 輪)用同一批素材包的「紙、書、玻璃、撥弦」: 暫停 / 圖鑑是實體的收合與書本, 引導卡是紙牌, 新任務是玻璃「叮」, 畢業是勝利樂句的輕量版。
+
+## 本輪(打磨第 4 輪)變更
+- 新增事件(名稱照 interface.json): `quest_new`、`guide_pause`、`guide_card`、`combo_reveal`、`pause_on`、`pause_off`、`codex_open`、`codex_close`、`level_advance`、`level_unlock`、`tutorial_clear`
+- 呼叫時機擴大(素材不變): `ui_confirm` 也用在引導卡最後一張按 Z、合成演出按 Z 關閉、新手教學完成大提示按 Z; `ui_invalid` 也用在被教學鎖擋下
+- 背景音樂壓低: 除了彈窗, **Esc 暫停、圖鑑、引導卡、合成演出**期間也自動降到一半(由音效事件帶動, RD 不用另外接, 見背景音樂一節)
+- `wave_start` 沿用原音檔(見事件表的時間點, 給動畫對齊用)
+- 其餘事件的素材、音量、opts 都沒變(沿用第 3 輪)
+
+## 上一輪(打磨第 3 輪)變更
+- 新增事件: `shock_zap`、`thunder_slash`、`thunder_orb`、`blink`、`heal_ray`
 - 呼叫時機擴大(素材不變): `charge_hit` 神聖之路撞到敵人也呼叫; `home_refund` 兵走回主堡也呼叫; `steal_done` 讀條中敵人倒下也呼叫
 - 靜音鍵改成 M(見背景音樂一節)
-- 其餘事件的素材、音量、opts 都沒變(沿用第 2 輪)
 
 ## 接法
 - `index.html` 在 `game.js` 之前加 `<script src="audio/sound.js"></script>`。全域物件 `window.Sound`, 不是 ES module
@@ -37,8 +45,8 @@ opts 欄位(全部可省略):
 | 事件名 | 對應音效清單 | 何時呼叫 | opts | 素材 | 音量 |
 |---|---|---|---|---|---|
 | ui_move | ui_move | 開始畫面、結算畫面、彈窗中 ← → 移動游標(游標真的有移動時) | — | sfx_ui_move.mp3(Kenney 滴答) | −22 |
-| ui_confirm | ui_confirm | 開始畫面 Z 進關、結算畫面 Z 執行按鈕 | — | sfx_ui_confirm.mp3 | −16 |
-| ui_invalid | ui_invalid | 任何無效操作: 彈窗抖一下、商店買不了、不能蓋 / 不能插旗的位置按 Z | — | sfx_ui_invalid.mp3 | −18 |
+| ui_confirm | ui_confirm | 開始畫面 Z 進關、結算畫面 Z 執行按鈕、**引導卡最後一張按 Z、合成演出按 Z 關閉、新手教學完成大提示按 Z**。⚠ 引導卡與合成演出的音樂壓低靠這一聲解除, 結束時一定要呼叫 | — | sfx_ui_confirm.mp3 | −16 |
+| ui_invalid | ui_invalid | 任何無效操作: 彈窗抖一下、商店買不了、不能蓋 / 不能插旗的位置按 Z、被教學鎖擋下 | — | sfx_ui_invalid.mp3 | −18 |
 | popup_open | popup_open | 任何彈窗打開(進入慢動作)的那一刻 | — | sfx_popup_open.mp3(音高下滑) | −17 |
 | popup_close | popup_close | 彈窗關閉(恢復正常速度)的那一刻; 不論是按 X 關、還是動作完成自動關 | — | sfx_popup_close.mp3(音高上揚) | −17 |
 | take_part | take_part | 從選單拿起魂件、撿起地上的魂件 | — | sfx_take_part.mp3(寶石聲) | −18 |
@@ -74,9 +82,20 @@ opts 欄位(全部可省略):
 | unit_return | unit_return | 兵從主堡門走出(重生完、買的兵出發、行軍 / 衝鋒繞回) | — | sfx_unit_return.mp3(撥弦兩音上行) | −18 |
 | recruit | recruit | 中立石魔像進入主堡 | — | sfx_recruit.mp3(鋼鼓上行 + 木擊) | −14 |
 | wave_warning | wave_warning | 預警開始(每波一次, 不論幾個出怪點) | — | sfx_wave_warning.mp3(警鐘) | −14 |
-| wave_start | wave_start(本輪重做) | 第 k 波開始出怪 | — | sfx_wave_start.mp3(戰鼓三響 + 號角長鳴, 2.6 秒) | −11 |
+| wave_start | wave_start | 第 k 波開始出怪, **和波次推進橫幅滑入同一幀**(第 1 關教學推進的波次也一樣) | — | sfx_wave_start.mp3(沿用。時間點: 戰鼓 0 / 0.3 / 0.6 秒三響, 號角 0.62 秒起長鳴到約 2.55 秒; 號角起點落在橫幅停住的 0.3~1.1 秒區間內) | −11 |
 | castle_hit | castle_hit | 敵人進入主堡扣血(生命沒歸 0 時) | — | sfx_castle_hit.mp3(重門撞擊) | −11 |
-| tutorial_done | tutorial_done | 教學階段完成特效開始時 | — | sfx_tutorial_done.mp3(撥弦跳音) | −16 |
+| tutorial_done | tutorial_done | 新手任務完成特效(泡泡打勾)開始時 | — | sfx_tutorial_done.mp3(撥弦跳音) | −16 |
+| quest_new | quest_new(新) | 新的新手任務泡泡第一次出現(同一個任務重出 / 重畫不再播) | — | sfx_quest_new.mp3(玻璃「叮」, 穩定 1470 Hz, 0.5 秒) | −21 |
+| guide_pause | guide_pause(新) | 一段引導卡開始、整個遊戲暫停的那一刻(一段只播一次)。**同時把音樂壓到一半**, 直到 `ui_confirm` | — | sfx_guide_pause.mp3(悶擊「停」+ 下行鋼鼓樂句像磁帶一樣減速停下, 音高 437→128 Hz, 0.6 秒) | −15 |
+| guide_card | guide_card(新) | 每張引導卡彈入: 第 1 張在 guide_pause 後 0.3 秒、之後每換一張(按 Z 換卡本身不另播) | — | sfx_guide_card.mp3(紙牌滑出, 0.28 秒) | −19 |
+| combo_reveal | combo_reveal(新) | 某條配方第一次真的合成、演出開始那一幀(該幀不播 fuse / combo_new / combo)。**同時把音樂壓到一半**, 直到按 Z 關閉時的 `ui_confirm` | — | sfx_combo_reveal.mp3(0.9 秒反轉蓄力 → **0.90 秒撞擊**(重金屬 + 重拳 + 玻璃)→ 組合鋼鼓上行, 共 1.6 秒; 動畫的撞擊點對 0.9 秒) | −10 |
+| pause_on | pause_on(新) | 關卡中按 Esc 暫停。**同時把音樂壓到一半** | — | sfx_pause_on.mp3(收合「咻」, 0.15 秒) | −19 |
+| pause_off | pause_off(新) | 按 Esc 繼續(解除暫停)。音樂恢復(若圖鑑等其他壓低原因還在, 維持一半) | — | sfx_pause_off.mp3(展開, 0.15 秒; 與 pause_on 同一組) | −19 |
+| codex_open | codex_open(新) | 按 C 打開組合圖鑑。**同時把音樂壓到一半** | — | sfx_codex_open.mp3(書封打開 + 翻頁, 0.46 秒) | −17 |
+| codex_close | codex_close(新) | 圖鑑關閉(不論按 C 還是其他方式關) | — | sfx_codex_close.mp3(闔書「啪」, 0.18 秒) | −16 |
+| level_advance | level_advance(新) | 關卡預覽頁推進動畫, 玩家記號開始從這關跳往下一關的那一刻 | — | sfx_level_advance.mp3(輕揮風 + 撥弦兩音上行 + 輕落地, 0.36 秒) | −17 |
+| level_unlock | level_unlock(新) | 推進動畫中下一關的鎖碎開那一刻 | — | sfx_level_unlock.mp3(鎖頭「喀」+ 玻璃碎裂 + 明亮餘韻, 0.6 秒) | −17(峰值限制, 實際比目標 −14 輕一點) |
+| tutorial_clear | tutorial_clear(新) | 「恭喜完成新手任務!」大提示出現 | — | sfx_tutorial_clear.mp3(與 level_win 同一段勝利旋律, 只用鋼鼓 + 撥弦 + 鐵琴、升四度加快, 2.0 秒) | −12 |
 | level_win | level_win | 結算勝利出現 | — | sfx_level_win.mp3(鋼鼓 + 銅管 + 弦樂, 3 秒) | −11 |
 | level_lose | level_lose | 結算失敗出現 | — | sfx_level_lose.mp3(撥弦下行 + 薩克斯) | −13 |
 | star | star | 結算時每顆星跳出(第 1、2、3 顆各呼叫一次) | `index`: 0 / 1 / 2 | sfx_star.mp3(金屬鈴, 逐顆升高) | −15 |
@@ -92,13 +111,24 @@ opts 欄位(全部可省略):
 | battle | 進入關卡: `Sound.playMusic('battle')`(重玩、下一關也呼叫; 已在播就不會重頭) | music_battle.mp3(Kevin MacLeod〈Heroic Age〉, 1 分 37 秒整首) | 循環, 首尾交叉淡化 1.2 秒 |
 
 - 結算畫面: 呼叫 `Sound.stopMusic()`。另外 `level_win` / `level_lose` 播放時 Sound 也會自動淡出音樂, 漏呼叫也不會疊在一起
-- 彈窗(慢動作)壓音樂: **RD 不用另外處理**。`play('popup_open')` 時 Sound 自動把音樂降到一半音量、放慢到 0.85 倍(音高跟著變低, 聽起來像時間變慢); `play('popup_close')` 恢復。所以每次開彈窗、關彈窗都要各呼叫一次, 不能漏 close
-- 靜音: **任何時候按 M**(開始畫面、關卡中含彈窗開著、結算畫面)時呼叫 `Sound.setMuted(!Sound.isMuted())`。靜音時音樂照走只是無聲, 取消靜音會從當下位置繼續
+- 壓低音樂: **RD 不用另外處理, 由音效事件自動帶動**。各原因可以同時存在, 全部解除才恢復:
+
+| 原因 | 開始(呼叫這個音效時) | 結束(呼叫這個音效時) | 效果 |
+|---|---|---|---|
+| 彈窗(慢動作) | `popup_open` | `popup_close` | 音量一半 + 放慢 0.85 倍(音高跟著變低, 像時間變慢) |
+| Esc 暫停 | `pause_on` | `pause_off` | 音量一半 |
+| 圖鑑 | `codex_open` | `codex_close` | 音量一半 |
+| 引導卡 | `guide_pause` | `ui_confirm`(最後一張按 Z) | 音量一半 |
+| 合成演出 | `combo_reveal` | `ui_confirm`(按 Z 關閉) | 音量一半 |
+
+  - 開始 / 結束要成對呼叫, 不能漏結束那一聲。靜音中、或同一幀連續呼叫也照樣記得(壓低狀態不受靜音與限頻影響)
+  - 保險: `playMusic` 換曲或 `stopMusic` 時, 會清掉舊的壓低原因(例: 從暫停狀態直接離開關卡、沒播 `pause_off`); 但 150 毫秒內剛設的會保留, 所以同一幀「先 `guide_pause` 再 `playMusic('battle')`」也不會被誤清
+- 靜音: **任何時候按 M**(開始畫面、關卡中含彈窗 / 暫停 / 圖鑑 / 引導卡 / 合成演出開著、結算畫面)時呼叫 `Sound.setMuted(!Sound.isMuted())`。靜音時音樂照走只是無聲, 取消靜音會從當下位置繼續
 
 ## 同時觸發的處理
 Sound 內建的保險(RD 照規格做了也不衝突):
 - 同一個事件 25 毫秒內只播一次(等於同一幀只播一次); `shock_zap` 150 毫秒(規格: 每 0.15 秒最多一次, 玩家、單位、敵人共用)、`arrow_shot` 100 毫秒、`thunder_slash` / `thunder_orb` 60 毫秒、`blink` 50 毫秒、`heal_ray` 80 毫秒、`enemy_shot` / `pierce_shot` / `whirl` 60 毫秒、`melee_hit` / `charge_hit` 50 毫秒、`coin_pickup` / `enemy_die` 40 毫秒、`ground_expire` 80 毫秒內只播一次(arrow_shot 的 100 毫秒是玩家與單位共用)
-- 同一個事件最多同時 4 聲(弓聲、`shock_zap`、`thunder_slash`、`heal_ray` 3 聲; `level_win`、`level_lose`、`wave_start`、`wave_warning` 各 1 聲), 超過時切掉最舊的
+- 同一個事件最多同時 4 聲(弓聲、`shock_zap`、`thunder_slash`、`heal_ray` 3 聲; `level_unlock` 2 聲; `level_win`、`level_lose`、`wave_start`、`wave_warning`、`combo_reveal`、`tutorial_clear`、`guide_pause` 各 1 聲), 超過時切掉最舊的
 - 不同事件之間互不打斷, 全部疊播
 
 要 RD 決定的(照規格):
@@ -120,6 +150,11 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - 教學完成與觸發完成的動作音效(例 `install_part`)同一幀都呼叫
 - 波次預警與戰鬥音效疊播, 不用壓
 - 開彈窗那一下若同時有別的音(例 Z 拿起後開替換彈窗), 照常都呼叫
+- (第 4 輪)第一次合成: 合成那一幀呼叫 `install_part`(或 `swap_part`)與 `combo_reveal`, **不呼叫** `fuse`、`combo_new`、`combo`; 演出按 Z 關閉呼叫 `ui_confirm`; 若這一下也完成新手任務, `tutorial_done` 等演出關掉、泡泡完成特效開始時才呼叫
+- (第 4 輪)引導卡: 暫停那一刻只呼叫 `guide_pause`(同一幀其他音效照常疊著); 0.3 秒後第 1 張卡出現呼叫 `guide_card`; 換卡只呼叫新卡的 `guide_card`; 最後一張按 Z 呼叫 `ui_confirm`。新手任務完成緊接著出引導卡時, `tutorial_done` 與 `guide_pause` 先後呼叫(各自在自己的時間點), 不同一幀
+- (第 4 輪)任務接任務: `tutorial_done` 在完成時, `quest_new` 在 0.6 秒後新泡泡出現時
+- (第 4 輪)新手畢業與推進: 大提示出現呼叫 `tutorial_clear`, 按 Z 呼叫 `ui_confirm`, 之後推進動畫依序呼叫 `level_advance`(記號起跳)、`level_unlock`(鎖碎開)
+- (第 4 輪)Esc 暫停期間不再呼叫新的遊戲音效(正在播的會自己播完); 暫停中的介面操作音(例: 開圖鑑 `codex_open`)照常呼叫
 
 ## 理念或經驗落實
 - 「即時回饋音聽起來延遲」: 按鍵直接回饋的音(ui_*、take/install/swap/drop、steal_*, 本輪新增的 fuse、flag_plant、demolish 也是)都量過出到峰值一成的時間, 全部在 0.025 秒內(新增的三個量得 0.000 秒); 音效以 mp3 base64 內嵌、頁面載入時就離線解碼, init 後用 Web Audio 播, 不受 HTMLAudio 首次載入延遲影響
@@ -135,5 +170,11 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - (第 3 輪)「即時回饋音 0.03 秒內到峰值一成」: 新事件不是按鍵直接回饋, 仍量過 — shock_zap / thunder_slash / blink / heal_ray 都在 0.007 秒內; thunder_orb 刻意先蓄電漸強, 0.023 秒內就有電嗡墊著
 - (第 3 輪)「規格寫頻繁要小聲」: shock_zap 定在 −24(跟 arrow_shot 同級, 全表最輕一級), 再加上 0.15 秒限頻、最多 3 聲; 治癒光線每秒可能好幾道, 定 −20 並用柔和合成鈴, 避免跟金幣 / 寶石的清脆聲混在一起
 - (第 3 輪)「成對事件取同一段素材」的延伸: 電擊系四個事件(shock_zap、thunder_slash、thunder_orb、blink)都取自同一個 faxcorp 電流音效包, 聽起來是同一種電; 放電「啪」那一層在 shock_zap、thunder_slash、thunder_orb 共用, 玩家一聽就知道「這下有電」
+
+- (第 4 輪)「成對事件取同一段素材」: `pause_on` / `pause_off` 用 Kenney 同一組的 close / open; `codex_open` / `codex_close` 都是 Kenney RPG 包的書本聲; `tutorial_clear` 與 `level_win` 取 Fupi 同一段勝利旋律(畢業版只用三種輕樂器、升四度加快、截到 2 秒), 一聽就知道是「小一號的勝利」
+- (第 4 輪)「要像磁帶減速的音, 單音變速聽不出減速」: `guide_pause` 不拿單音變速, 而是拿一段下行的鋼鼓樂句(一個音接著好幾個音)當來源, 前 0.08 秒原速、之後速度沿 k^0.7 曲線降到 0.3, 驗收每 50 毫秒的音高一路往下(437→128 Hz)、後段仍在 −28 dB 以上, 才算聽得出「停下來」; 開頭再墊一記悶擊, 0.001 秒就出聲
+- (第 4 輪)「即時回饋音 0.03 秒內到峰值一成」: 按鍵直接觸發的新音都量過 — pause_on 0.000、pause_off 0.009、codex_open 0.013、codex_close 0.018(跳過書本聲開頭 0.055 秒)、guide_card 0.009(跳過紙牌聲開頭 0.055 秒, 原本 0.034 超標)
+- (第 4 輪)「規格寫比某音大 / 短時量響度來設」: `combo_reveal` 比 `combo_new`(−12)大一級定 −10, 且多了蓄力與撞擊; `tutorial_clear` −12、2 秒, 比 `level_win`(−11、3 秒)小又短; `quest_new` 規格要「輕、不打斷」, 定 −21(全表倒數第三輕)
+- (第 4 輪)「素材找不到才程式產生」: 11 個新事件全部用前幾輪已核對授權的 CC0 包(Kenney 四個包 + 本輪新加的 Kenney Casino Audio、rubberduck、artisticdude、Fupi)加工, 沒有程式產生的音效
 
 聲音的輕重與辨識度都待試玩確認(音效 agent 聽不到聲音, 全部是用量測選的)。
