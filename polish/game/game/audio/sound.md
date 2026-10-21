@@ -7,14 +7,20 @@
 
 新手教學與介面(打磨第 4 輪)用同一批素材包的「紙、書、玻璃、撥弦」: 暫停 / 圖鑑是實體的收合與書本, 引導卡是紙牌, 新任務是玻璃「叮」, 畢業是勝利樂句的輕量版。
 
-## 本輪(打磨第 4 輪)變更
+## 本輪(打磨第 5 輪)變更
+- **不新增事件、不換音檔、音量不變**, sound.js 與 assets/ 沿用第 4 輪
+- `coin_pickup` 多一個呼叫時機: 第 2 關教學補金幣(階段 24、30, 金幣補上的那一刻), 跟同時出現的新任務 `quest_new` 疊播
+- `ui_invalid` 的「被教學鎖擋下」改成「按 Z 放在教學不允許的位置、被擋下」那一刻(放置預覽階段不播, 只有真的按 Z 才播)
+- 第 2 關階段 17 / 25 完成: `tutorial_done` 播在完成時, 0.6 秒後才開始預警並呼叫 `wave_warning`, 兩者不同一幀
+
+## 上一輪(打磨第 4 輪)變更
 - 新增事件(名稱照 interface.json): `quest_new`、`guide_pause`、`guide_card`、`combo_reveal`、`pause_on`、`pause_off`、`codex_open`、`codex_close`、`level_advance`、`level_unlock`、`tutorial_clear`
 - 呼叫時機擴大(素材不變): `ui_confirm` 也用在引導卡最後一張按 Z、合成演出按 Z 關閉、新手教學完成大提示按 Z; `ui_invalid` 也用在被教學鎖擋下
 - 背景音樂壓低: 除了彈窗, **Esc 暫停、圖鑑、引導卡、合成演出**期間也自動降到一半(由音效事件帶動, RD 不用另外接, 見背景音樂一節)
 - `wave_start` 沿用原音檔(見事件表的時間點, 給動畫對齊用)
 - 其餘事件的素材、音量、opts 都沒變(沿用第 3 輪)
 
-## 上一輪(打磨第 3 輪)變更
+## 更早(打磨第 3 輪)變更
 - 新增事件: `shock_zap`、`thunder_slash`、`thunder_orb`、`blink`、`heal_ray`
 - 呼叫時機擴大(素材不變): `charge_hit` 神聖之路撞到敵人也呼叫; `home_refund` 兵走回主堡也呼叫; `steal_done` 讀條中敵人倒下也呼叫
 - 靜音鍵改成 M(見背景音樂一節)
@@ -46,7 +52,7 @@ opts 欄位(全部可省略):
 |---|---|---|---|---|---|
 | ui_move | ui_move | 開始畫面、結算畫面、彈窗中 ← → 移動游標(游標真的有移動時) | — | sfx_ui_move.mp3(Kenney 滴答) | −22 |
 | ui_confirm | ui_confirm | 開始畫面 Z 進關、結算畫面 Z 執行按鈕、**引導卡最後一張按 Z、合成演出按 Z 關閉、新手教學完成大提示按 Z**。⚠ 引導卡與合成演出的音樂壓低靠這一聲解除, 結束時一定要呼叫 | — | sfx_ui_confirm.mp3 | −16 |
-| ui_invalid | ui_invalid | 任何無效操作: 彈窗抖一下、商店買不了、不能蓋 / 不能插旗的位置按 Z、被教學鎖擋下 | — | sfx_ui_invalid.mp3 | −18 |
+| ui_invalid | ui_invalid | 任何無效操作: 彈窗抖一下、商店買不了、不能蓋 / 不能插旗的位置按 Z、按 Z 放在教學不允許的位置被擋下(第 5 輪起放置預覽不再提前擋, 只在按 Z 那一刻播) | — | sfx_ui_invalid.mp3 | −18 |
 | popup_open | popup_open | 任何彈窗打開(進入慢動作)的那一刻 | — | sfx_popup_open.mp3(音高下滑) | −17 |
 | popup_close | popup_close | 彈窗關閉(恢復正常速度)的那一刻; 不論是按 X 關、還是動作完成自動關 | — | sfx_popup_close.mp3(音高上揚) | −17 |
 | take_part | take_part | 從選單拿起魂件、撿起地上的魂件 | — | sfx_take_part.mp3(寶石聲) | −18 |
@@ -60,7 +66,7 @@ opts 欄位(全部可省略):
 | flag_plant | flag_plant(新) | 插下旗幟(買兵後、或「重設集結點」後) | — | sfx_flag_plant.mp3(木樁插土 + 旗布一甩, 0.5 秒) | −15 |
 | demolish | demolish(新) | 單位選單「拆除」執行、建築消失的那一刻 | — | sfx_demolish.mp3(木板碎裂 + 碎石 + 尾端少量錢幣, 0.8 秒) | −13 |
 | home_refund | home_refund | 我方單位(建築或兵)走回主堡、消失並退款的那一刻 | — | sfx_home_refund.mp3(一把錢幣 + 皮袋收口, 0.8 秒) | −19 |
-| coin_pickup | coin_pickup | 撿到金幣(每枚) | — | sfx_coin_pickup.mp3(每次音高隨機微變) | −18 |
+| coin_pickup | coin_pickup | 撿到金幣(每枚); **第 2 關教學補金幣(階段 24、30)補上的那一刻呼叫一次**(第 5 輪新增) | — | sfx_coin_pickup.mp3(每次音高隨機微變) | −18 |
 | steal_start | steal_start | 開始搶奪(讀條開始) | — | sfx_steal_start.mp3(鐵鍊拉扯) | −18 |
 | steal_done | steal_done | 搶奪成功(讀條滿, 或讀條中敵人倒下) | — | sfx_steal_done.mp3(拔劍「唰」+ 寶石) | −14 |
 | steal_cancel | steal_cancel | 搶奪取消(拉太遠、敵人死、再按 Z) | — | sfx_steal_cancel.mp3(低沉布料) | −21 |
@@ -155,6 +161,8 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - (第 4 輪)任務接任務: `tutorial_done` 在完成時, `quest_new` 在 0.6 秒後新泡泡出現時
 - (第 4 輪)新手畢業與推進: 大提示出現呼叫 `tutorial_clear`, 按 Z 呼叫 `ui_confirm`, 之後推進動畫依序呼叫 `level_advance`(記號起跳)、`level_unlock`(鎖碎開)
 - (第 4 輪)Esc 暫停期間不再呼叫新的遊戲音效(正在播的會自己播完); 暫停中的介面操作音(例: 開圖鑑 `codex_open`)照常呼叫
+- (第 5 輪)教學補金幣: 補上那一刻 `coin_pickup` 與新任務的 `quest_new` 同一幀都呼叫(疊播); 補金幣只呼叫一次 `coin_pickup`, 不論補了多少
+- (第 5 輪)第 2 關階段 17 / 25 完成: `tutorial_done` 在完成時, 0.6 秒後特效播完才開始預警, `wave_warning` 接在後面(不同一幀)
 
 ## 理念或經驗落實
 - 「即時回饋音聽起來延遲」: 按鍵直接回饋的音(ui_*、take/install/swap/drop、steal_*, 本輪新增的 fuse、flag_plant、demolish 也是)都量過出到峰值一成的時間, 全部在 0.025 秒內(新增的三個量得 0.000 秒); 音效以 mp3 base64 內嵌、頁面載入時就離線解碼, init 後用 Web Audio 播, 不受 HTMLAudio 首次載入延遲影響
@@ -176,5 +184,7 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - (第 4 輪)「即時回饋音 0.03 秒內到峰值一成」: 按鍵直接觸發的新音都量過 — pause_on 0.000、pause_off 0.009、codex_open 0.013、codex_close 0.018(跳過書本聲開頭 0.055 秒)、guide_card 0.009(跳過紙牌聲開頭 0.055 秒, 原本 0.034 超標)
 - (第 4 輪)「規格寫比某音大 / 短時量響度來設」: `combo_reveal` 比 `combo_new`(−12)大一級定 −10, 且多了蓄力與撞擊; `tutorial_clear` −12、2 秒, 比 `level_win`(−11、3 秒)小又短; `quest_new` 規格要「輕、不打斷」, 定 −21(全表倒數第三輕)
 - (第 4 輪)「素材找不到才程式產生」: 11 個新事件全部用前幾輪已核對授權的 CC0 包(Kenney 四個包 + 本輪新加的 Kenney Casino Audio、rubberduck、artisticdude、Fupi)加工, 沒有程式產生的音效
+
+- (第 5 輪)「沿用任務保留上一版素材與音量」: 規格寫明不新增音檔, 教學補金幣直接沿用 `coin_pickup`(−18, 已是「清脆、想一直撿」的金幣聲), 與 `quest_new`(−21 玻璃叮)疊播時一個是錢幣碰撞、一個是穩定高音, 音色分得開
 
 聲音的輕重與辨識度都待試玩確認(音效 agent 聽不到聲音, 全部是用量測選的)。

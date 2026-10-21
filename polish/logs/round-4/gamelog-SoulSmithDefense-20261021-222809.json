@@ -1,0 +1,950 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-4",
+ "summary": {
+  "level": 3,
+  "levelName": "長蛇",
+  "attempt": 1,
+  "failsBefore": 0,
+  "result": "win",
+  "durationSec": 190.2,
+  "gameSec": 174.8,
+  "slowMoSec": 13.9,
+  "hiddenSec": 0,
+  "pauseSec": 0,
+  "pauses": 0,
+  "codexSec": 0,
+  "codexOpens": 0,
+  "guideSec": 0,
+  "revealSec": 4.3,
+  "reveals": 1,
+  "gateSec": 0,
+  "tutorialBlocks": {},
+  "tutorialSpawns": 0,
+  "waveReached": 5,
+  "totalWaves": 5,
+  "castleHp": 20,
+  "stars": 3,
+  "leaks": 0,
+  "leaksByWave": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "leaksBySpawn": {},
+  "kills": 43,
+  "playerKills": 4,
+  "playerHits": 73,
+  "goldEarned": 144,
+  "goldRefund": 0,
+  "goldSpent": 69,
+  "goldEnd": 145,
+  "purchases": {
+   "crossbow": 3,
+   "soldier": 1,
+   "pillar": 1
+  },
+  "pillarCap": 2,
+  "pillarsMax": 1,
+  "steals": {
+   "started": 13,
+   "done": 13,
+   "diedDone": 2,
+   "canceled": 0
+  },
+  "installs": {
+   "direct": 8,
+   "replace": 3
+  },
+  "fuses": {
+   "穿透箭": 1,
+   "冰箭": 1,
+   "雷電球": 1
+  },
+  "drops": 9,
+  "groundExpired": 10,
+  "demolishes": 0,
+  "homeRefunds": {},
+  "bundledBack": 0,
+  "flags": {
+   "purchase": 1,
+   "rally": 1
+  },
+  "unitDowns": 1,
+  "maxRespawnQueue": 1,
+  "marchLoops": 0,
+  "blinks": 0,
+  "healed": 10,
+  "enemyHealed": 51,
+  "recruits": 1,
+  "combosFoundThisLevel": [],
+  "combosFoundTotal": 8,
+  "recipesOpenedTotal": 5,
+  "tutorialLevel": false,
+  "tutorialClearSt": 1513.5
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 5.7,
+   "doneSt": 7.5,
+   "kind": "card"
+  },
+  "2": {
+   "shownSt": 7.5,
+   "doneSt": 10.5,
+   "kind": "card"
+  },
+  "3": {
+   "shownSt": 10.5,
+   "doneSt": 12.8,
+   "kind": "card"
+  },
+  "4": {
+   "shownSt": 13.1,
+   "doneSt": 14.6,
+   "kind": "quest"
+  },
+  "5": {
+   "shownSt": 15.2,
+   "doneSt": 18.1,
+   "kind": "quest"
+  },
+  "6": {
+   "shownSt": 18.7,
+   "doneSt": 21.9,
+   "kind": "quest"
+  },
+  "7": {
+   "shownSt": 22.5,
+   "doneSt": 147.3,
+   "kind": "quest"
+  },
+  "8": {
+   "shownSt": 148.2,
+   "doneSt": 151,
+   "kind": "card"
+  },
+  "9": {
+   "shownSt": 167.9,
+   "doneSt": 169.7,
+   "kind": "card"
+  },
+  "10": {
+   "shownSt": 173.5,
+   "doneSt": 176.7,
+   "kind": "card"
+  },
+  "11": {
+   "shownSt": 177.1,
+   "doneSt": 192.5,
+   "kind": "quest"
+  },
+  "12": {
+   "shownSt": 193.1,
+   "doneSt": 198,
+   "kind": "quest"
+  },
+  "13": {
+   "shownSt": 198.6,
+   "doneSt": 205.3,
+   "kind": "quest"
+  },
+  "14": {
+   "shownSt": 205.9,
+   "doneSt": 221.9,
+   "kind": "quest"
+  },
+  "15": {
+   "shownSt": 237.1,
+   "doneSt": 322.9,
+   "kind": "card"
+  },
+  "16": {
+   "shownSt": 323.2,
+   "doneSt": 342.3,
+   "kind": "quest"
+  },
+  "17": {
+   "shownSt": 390.5,
+   "doneSt": 397.6,
+   "kind": "card"
+  },
+  "18": {
+   "shownSt": 397.6,
+   "doneSt": 399.6,
+   "kind": "card"
+  },
+  "19": {
+   "shownSt": 399.9,
+   "doneSt": 404.8,
+   "kind": "quest"
+  },
+  "20": {
+   "shownSt": 405.4,
+   "doneSt": 406.5,
+   "kind": "quest"
+  },
+  "21": {
+   "shownSt": 416.6,
+   "doneSt": 419,
+   "kind": "quest"
+  },
+  "22": {
+   "shownSt": 419.6,
+   "doneSt": 421,
+   "kind": "quest"
+  },
+  "23": {
+   "shownSt": 421.6,
+   "doneSt": 425.3,
+   "kind": "quest"
+  },
+  "24": {
+   "shownSt": 425.9,
+   "doneSt": 426.9,
+   "kind": "quest"
+  },
+  "25": {
+   "shownSt": 427.5,
+   "doneSt": 430.2,
+   "kind": "quest"
+  },
+  "26": {
+   "shownSt": 431.4,
+   "doneSt": 436.6,
+   "kind": "quest"
+  },
+  "27": {
+   "shownSt": 437.2,
+   "doneSt": 440,
+   "kind": "quest"
+  },
+  "28": {
+   "shownSt": 440.9,
+   "doneSt": 442.5,
+   "kind": "card"
+  }
+ },
+ "events": [
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 1525.7,
+   "level": 3,
+   "attempt": 1
+  },
+  {
+   "type": "wave_warning",
+   "t": 9,
+   "st": 1534.7,
+   "wave": 1,
+   "reason": "timer"
+  },
+  {
+   "type": "purchase",
+   "t": 10.3,
+   "st": 1536,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 55
+  },
+  {
+   "type": "place",
+   "t": 11.8,
+   "st": 1537.4,
+   "kind": "crossbow",
+   "x": 936,
+   "y": 218,
+   "bundled": [
+    "ranged"
+   ]
+  },
+  {
+   "type": "purchase",
+   "t": 14.1,
+   "st": 1539.8,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 40
+  },
+  {
+   "type": "place",
+   "t": 16,
+   "st": 1541.7,
+   "kind": "crossbow",
+   "x": 888,
+   "y": 218,
+   "bundled": [
+    "ranged"
+   ]
+  },
+  {
+   "type": "wave_start",
+   "t": 16.8,
+   "st": 1542.4,
+   "wave": 1
+  },
+  {
+   "type": "purchase",
+   "t": 20.6,
+   "st": 1546.2,
+   "item": "soldier",
+   "price": 12,
+   "goldAfter": 28
+  },
+  {
+   "type": "flag_plant",
+   "t": 25.2,
+   "st": 1550.8,
+   "reason": "purchase",
+   "unit": "soldier",
+   "x": 890,
+   "y": 194
+  },
+  {
+   "type": "purchase",
+   "t": 28,
+   "st": 1553.7,
+   "item": "pillar",
+   "price": 12,
+   "goldAfter": 16
+  },
+  {
+   "type": "place",
+   "t": 29.8,
+   "st": 1555.5,
+   "kind": "pillar",
+   "x": 840,
+   "y": 218,
+   "bundled": []
+  },
+  {
+   "type": "steal_start",
+   "t": 32.3,
+   "st": 1557.9,
+   "enemy": "imp",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 33.8,
+   "st": 1559.5,
+   "enemy": "imp",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "install",
+   "t": 35.1,
+   "st": 1560.7,
+   "item": "march",
+   "to": "neutral",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "steal_start",
+   "t": 36.5,
+   "st": 1562.2,
+   "enemy": "imp",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 38,
+   "st": 1563.7,
+   "enemy": "imp",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "unit_down",
+   "t": 39.3,
+   "st": 1564.9,
+   "unit": "soldier",
+   "x": 785,
+   "y": 162,
+   "queueLen": 1
+  },
+  {
+   "type": "drop",
+   "t": 39.3,
+   "st": 1565,
+   "item": "march"
+  },
+  {
+   "type": "wave_warning",
+   "t": 41.1,
+   "st": 1566.8,
+   "wave": 2,
+   "reason": "timer"
+  },
+  {
+   "type": "take",
+   "t": 41.9,
+   "st": 1567.6,
+   "item": "ranged",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 42.3,
+   "st": 1568,
+   "item": "ranged",
+   "to": "pillar",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "unit_respawn",
+   "t": 44.7,
+   "st": 1570.3,
+   "unit": "soldier",
+   "waitSec": 5
+  },
+  {
+   "type": "recruit",
+   "t": 44.9,
+   "st": 1570.5
+  },
+  {
+   "type": "wave_start",
+   "t": 47.5,
+   "st": 1573.2,
+   "wave": 2
+  },
+  {
+   "type": "purchase",
+   "t": 49.3,
+   "st": 1574.9,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 5
+  },
+  {
+   "type": "ground_expire",
+   "t": 50.5,
+   "st": 1576.2,
+   "item": "march"
+  },
+  {
+   "type": "place",
+   "t": 51.1,
+   "st": 1576.8,
+   "kind": "crossbow",
+   "x": 792,
+   "y": 218,
+   "bundled": [
+    "ranged"
+   ]
+  },
+  {
+   "type": "player_kill",
+   "t": 52.9,
+   "st": 1578.6,
+   "enemy": "imp"
+  },
+  {
+   "type": "ground_expire",
+   "t": 55.7,
+   "st": 1581.4,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 58.2,
+   "st": 1583.9,
+   "enemy": "archer",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 59.7,
+   "st": 1585.4,
+   "enemy": "archer",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "drop",
+   "t": 60.6,
+   "st": 1586.3,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 61.3,
+   "st": 1586.9,
+   "enemy": "archer",
+   "item": "ranged"
+  },
+  {
+   "type": "steal_done",
+   "t": 62.8,
+   "st": 1588.4,
+   "enemy": "archer",
+   "item": "ranged",
+   "via": "bar"
+  },
+  {
+   "type": "install",
+   "t": 65.2,
+   "st": 1590.9,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 65.2,
+   "st": 1590.9,
+   "item": "pierce",
+   "unit": "crossbow",
+   "materials": [
+    "ranged",
+    "ranged"
+   ]
+  },
+  {
+   "type": "player_kill",
+   "t": 66,
+   "st": 1591.7,
+   "enemy": "imp"
+  },
+  {
+   "type": "player_kill",
+   "t": 68.8,
+   "st": 1594.5,
+   "enemy": "archer"
+  },
+  {
+   "type": "wave_warning",
+   "t": 70.4,
+   "st": 1596,
+   "wave": 3,
+   "reason": "timer"
+  },
+  {
+   "type": "ground_expire",
+   "t": 70.6,
+   "st": 1596.3,
+   "item": "march"
+  },
+  {
+   "type": "take",
+   "t": 76.6,
+   "st": 1602.2,
+   "item": "pierce",
+   "from": "crossbow"
+  },
+  {
+   "type": "wave_start",
+   "t": 76.7,
+   "st": 1602.4,
+   "wave": 3
+  },
+  {
+   "type": "install",
+   "t": 77.7,
+   "st": 1603.3,
+   "item": "pierce",
+   "to": "pillar",
+   "mode": "replace",
+   "swappedOut": "ranged"
+  },
+  {
+   "type": "install",
+   "t": 81.7,
+   "st": 1607.3,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "steal_start",
+   "t": 83.8,
+   "st": 1609.5,
+   "enemy": "ice",
+   "item": "frost"
+  },
+  {
+   "type": "steal_done",
+   "t": 85.3,
+   "st": 1611,
+   "enemy": "ice",
+   "item": "frost",
+   "via": "bar"
+  },
+  {
+   "type": "install",
+   "t": 87.6,
+   "st": 1613.2,
+   "item": "frost",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 87.6,
+   "st": 1613.2,
+   "item": "iceArrow",
+   "unit": "crossbow",
+   "materials": [
+    "ranged",
+    "frost"
+   ]
+  },
+  {
+   "type": "steal_start",
+   "t": 89,
+   "st": 1614.7,
+   "enemy": "ice",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 90.5,
+   "st": 1616.2,
+   "enemy": "ice",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "drop",
+   "t": 91.5,
+   "st": 1617.1,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 92,
+   "st": 1617.7,
+   "enemy": "ice",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 93.5,
+   "st": 1619.2,
+   "enemy": "ice",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "drop",
+   "t": 94.2,
+   "st": 1619.8,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 94.9,
+   "st": 1620.6,
+   "enemy": "thunder",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 96.4,
+   "st": 1622.1,
+   "enemy": "thunder",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "drop",
+   "t": 97,
+   "st": 1622.7,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 97.4,
+   "st": 1623.1,
+   "enemy": "thunder",
+   "item": "shock"
+  },
+  {
+   "type": "steal_done",
+   "t": 98.9,
+   "st": 1624.6,
+   "enemy": "thunder",
+   "item": "shock",
+   "via": "bar"
+  },
+  {
+   "type": "wave_warning",
+   "t": 99.3,
+   "st": 1625,
+   "wave": 4,
+   "reason": "timer"
+  },
+  {
+   "type": "ground_expire",
+   "t": 101.5,
+   "st": 1627.1,
+   "item": "march"
+  },
+  {
+   "type": "install",
+   "t": 101.7,
+   "st": 1627.4,
+   "item": "shock",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 101.7,
+   "st": 1627.4,
+   "item": "thunderOrb",
+   "unit": "crossbow",
+   "materials": [
+    "ranged",
+    "shock"
+   ]
+  },
+  {
+   "type": "combo_reveal",
+   "t": 101.7,
+   "st": 1627.4,
+   "name": "雷電球",
+   "materials": [
+    "shock",
+    "ranged"
+   ],
+   "action": "show"
+  },
+  {
+   "type": "combo_reveal",
+   "t": 106,
+   "st": 1631.6,
+   "name": "雷電球",
+   "materials": [
+    "shock",
+    "ranged"
+   ],
+   "action": "close",
+   "readSec": 4.3
+  },
+  {
+   "type": "take",
+   "t": 107.7,
+   "st": 1633.4,
+   "item": "thunderOrb",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 109.1,
+   "st": 1634.8,
+   "item": "thunderOrb",
+   "to": "pillar",
+   "mode": "replace",
+   "swappedOut": "pierce"
+  },
+  {
+   "type": "ground_expire",
+   "t": 109.6,
+   "st": 1635.3,
+   "item": "march"
+  },
+  {
+   "type": "install",
+   "t": 110.4,
+   "st": 1636.1,
+   "item": "pierce",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 110.8,
+   "st": 1636.4,
+   "wave": 4
+  },
+  {
+   "type": "ground_expire",
+   "t": 112.4,
+   "st": 1638.1,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 132.6,
+   "st": 1658.3,
+   "enemy": "healer",
+   "item": "heal"
+  },
+  {
+   "type": "wave_warning",
+   "t": 132.8,
+   "st": 1658.4,
+   "wave": 5,
+   "reason": "timer"
+  },
+  {
+   "type": "steal_done",
+   "t": 134.1,
+   "st": 1659.8,
+   "enemy": "healer",
+   "item": "heal",
+   "via": "bar"
+  },
+  {
+   "type": "install",
+   "t": 136.3,
+   "st": 1662,
+   "item": "heal",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 138.8,
+   "st": 1664.4,
+   "wave": 5
+  },
+  {
+   "type": "take",
+   "t": 148.6,
+   "st": 1674.3,
+   "item": "pierce",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 151.6,
+   "st": 1677.3,
+   "item": "pierce",
+   "to": "soldier",
+   "mode": "replace",
+   "swappedOut": "melee"
+  },
+  {
+   "type": "drop",
+   "t": 153.4,
+   "st": 1679.1,
+   "item": "melee"
+  },
+  {
+   "type": "steal_start",
+   "t": 156.2,
+   "st": 1681.8,
+   "enemy": "brute",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 157.7,
+   "st": 1683.3,
+   "enemy": "brute",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "drop",
+   "t": 158.7,
+   "st": 1684.4,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 160.4,
+   "st": 1686,
+   "enemy": "archer",
+   "item": "march"
+  },
+  {
+   "type": "player_kill",
+   "t": 160.9,
+   "st": 1686.6,
+   "enemy": "ice"
+  },
+  {
+   "type": "steal_done",
+   "t": 161.3,
+   "st": 1686.9,
+   "enemy": "archer",
+   "item": "march",
+   "via": "died"
+  },
+  {
+   "type": "ground_expire",
+   "t": 163.4,
+   "st": 1689.1,
+   "item": "melee"
+  },
+  {
+   "type": "drop",
+   "t": 164.5,
+   "st": 1690.1,
+   "item": "march"
+  },
+  {
+   "type": "steal_start",
+   "t": 165.7,
+   "st": 1691.3,
+   "enemy": "thunder",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 166.5,
+   "st": 1692.1,
+   "enemy": "thunder",
+   "item": "march",
+   "via": "died"
+  },
+  {
+   "type": "ground_expire",
+   "t": 168.7,
+   "st": 1694.4,
+   "item": "march"
+  },
+  {
+   "type": "drop",
+   "t": 169.2,
+   "st": 1694.9,
+   "item": "march"
+  },
+  {
+   "type": "ground_expire",
+   "t": 175,
+   "st": 1700.7,
+   "item": "march"
+  },
+  {
+   "type": "flag_plant",
+   "t": 178.4,
+   "st": 1704,
+   "reason": "rally",
+   "unit": "soldier",
+   "x": 308,
+   "y": 151
+  },
+  {
+   "type": "ground_expire",
+   "t": 180.5,
+   "st": 1706.1,
+   "item": "march"
+  },
+  {
+   "type": "level_end",
+   "t": 190.2,
+   "st": 1715.9,
+   "result": "win",
+   "wave": 5,
+   "castleHp": 20,
+   "stars": 3
+  }
+ ]
+}

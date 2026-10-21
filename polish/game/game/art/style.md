@@ -1,8 +1,8 @@
-# 魂匠守衛者 美術規格(打磨第 4 輪, 沿用打磨第 3 輪)
+# 魂匠守衛者 美術規格(打磨第 5 輪, 沿用打磨第 4 輪)
 
 > RD 只讀這份。`index.html` 必須宣告 `<meta charset="utf-8">`, 否則 art.js 的中文字會變亂碼。
 > art.js 是一般 script(不是 module), 載入後提供 `window.Art`。全部 Canvas 2D 幾何繪製, 沒有外部資源; 字型只用系統字型(微軟正黑體 → 蘋方 → sans-serif)。
-> 函式名、參數、state 欄位全部照 interface.json, 一個不多一個不少(共 51 個函式)。**本輪新增** `drawTutorialClear`、`drawGuide`、`drawTutorialWarn`、`drawSpawnMark`、`drawWavePanel`、`drawWaveBanner`、`drawComboReveal`、`drawCodex`、`drawPause`; 沒有刪除函式。打磨沒有說明頁, 沒有 `drawGuidePage`。
+> 函式名、參數、state 欄位全部照 interface.json, 一個不多一個不少(共 51 個函式)。**本輪沒有新增或刪除函式**; 只改內部畫法: `drawTutorial`(新欄位 large 兩行大泡泡 + 單位清單)、`drawCodex`(opened → unlocked, 未解鎖整列問號, 刪「已組過」章)、`drawWavePanel`(新 status "clear")、`drawEnemy`(swift 意象改成「跑得快、打不痛」)。打磨沒有說明頁, 沒有 `drawGuidePage`。
 
 ## 邏輯畫布尺寸
 
@@ -41,12 +41,12 @@
 | shop / shopDeep / shopZone | #ffb84a / #3b2410 / #ffcf70 | 購買徽章、購買光座、購買區、商店提示 |
 | optionCell | #2f2a22 | 單位選單的選項格(拆除 / 重設集結點) |
 
-只出現在函式內、不進 palette 的本輪新色: 引導卡聚光燈描邊與箭頭 #ffd25a(暖黃)、教學擋下提示框 #c8483a(磚紅)、波次面板「完成新手任務後開始」#f0b060(教學琥珀)、圖鑑「已組過」章 #5fd07a、教學關卡片綠 #1c3324 / #25432f / 框 #4f9a5e、新芽 #7ee08a、低血量血量牌暗紅 → 亮紅閃爍。
+只出現在函式內、不進 palette 的顏色: 引導卡聚光燈描邊與箭頭 #ffd25a(暖黃)、教學擋下提示框 #c8483a(磚紅)、波次面板「完成新手任務後開始」#f0b060(教學琥珀)、**波次面板「打倒這波敵人後開始」#dfe4ee(一般淺灰白)+ 白刃銅柄小劍(本輪)**、**圖鑑未解鎖問號格 底 #121620 / 虛線框 rgba(169,176,191,0.45) / 問號 #8a91a2、「???」#6f7686(本輪)**、教學關卡片綠 #1c3324 / #25432f / 框 #4f9a5e、新芽 #7ee08a、低血量血量牌暗紅 → 亮紅閃爍。圖鑑「已組過」章 #5fd07a 本輪刪除。
 
 **色相張力(請製作人驗收)**:
 - 沿用上一版: 8 種基本魂件排滿色輪, 只有會共鳴的 5 色兩兩拉開(最近 44°); 不共鳴的 3 色吸收撞色(最差 電擊—衝鋒 33°), 靠圖示形狀分。
 - **引導卡聚光燈描邊 #ffd25a 和游標金 #ffd24a 幾乎同色**(介面指定「暖黃色系」)。引導卡出現時遊戲整個暫停、彈窗會先關掉, 同一畫面不會有游標框; 兩者再靠形狀分(聚光燈 = 圓圈 + 粗箭頭, 游標 = 方框)。
-- 教學的「完成」綠 #2fae4e、圖鑑「已組過」#5fd07a、教學關卡片綠 #4f9a5e 都是綠色系, 意思同為「已完成 / 新手的」, 不和治癒薄荷綠 #52e39a(150°)混在同一個物件上。
+- 教學的「完成」綠 #2fae4e、教學關卡片綠 #4f9a5e 都是綠色系, 意思同為「已完成 / 新手的」, 不和治癒薄荷綠 #52e39a(150°)混在同一個物件上。
 
 ## 形狀語言
 
@@ -54,18 +54,19 @@
 
 ## 理念落實
 
-- P0 辨識度先於好看: 我方 / 敵 / 玩家 / 中立 用剪影分; 魂件三類用三種外形分; 輕快小鬼 = 小鬼剪影瘦一圈 + 淺色 + 白綁帶, 縮圖尺度和一般小鬼分得出; 教學鎖住的格子 / 品項畫鎖頭(不只變暗), 和「金幣不足」一眼分開。
+- P0 辨識度先於好看: 我方 / 敵 / 玩家 / 中立 用剪影分; 魂件三類用三種外形分; 輕快小鬼 = 小鬼剪影輕巧一號 + 淺色 + 白綁帶 + 移動時腳邊兩道速度線(本輪: 意象是「跑得快」, 血條照一般小鬼畫, 不暗示血薄), 縮圖尺度和一般小鬼分得出; 教學鎖住的格子 / 品項畫鎖頭(不只變暗), 和「金幣不足」一眼分開; 圖鑑未解鎖的問號格 = 暗底虛線框 + 問號, 和任何魂件圖示(彩色方塊 / 金八角 / 金環圓)外形都不同。
 - P1 視覺權重跟著決策迫切度走: 地面層 ≤ 16% 淡染; 波次面板倒數 ≤ 6 秒(預警中)才變警示色並脈動; 波次橫幅只在 (640,200) 停 0.8 秒就縮進面板, 半透明讓底下單位看得見; 主堡血量牌平常是深底小牌, 生命 ≤ 5 才變紅閃。
-- P2 規則上存在的東西畫面上就存在: 教學鎖 = 格子鎖頭 + 商店鎖頭 + 「教學中不能動」灰字 + 「不能裝 / 不能搶」紅字提示 + 擋下提示; 地上魂件 frozen 時不閃爍(計時真的停了); 波次時鐘停住時面板寫「完成新手任務後開始」+ 沙漏; 主堡生命常駐在主堡身上。
+- P2 規則上存在的東西畫面上就存在: 教學鎖 = 格子鎖頭 + 商店鎖頭 + 「教學中不能動」灰字 + 「不能裝 / 不能搶」紅字提示 + 擋下提示; 地上魂件 frozen 時不閃爍(計時真的停了); 波次在等教學時面板寫「完成新手任務後開始」+ 沙漏, 在等清怪時寫「打倒這波敵人後開始」+ 小劍(本輪), 玩家看得出下一波卡在哪個條件; 主堡生命常駐在主堡身上; 階段 17 大泡泡的兩項單位清單做到就打勾。
 - P3 一個意義一種長相: 教學一律淺紙底深墨字(泡泡、引導卡、擋下提示、檢查清單), 和全畫面所有深色面板相反; 合成演出 / 圖鑑 / 選單 / 說明區的魂件圖示都是同一個函式; 開始畫面的玩家記號就是 drawPlayer 的角色; 「新組合!」在頭上名稱與合成演出都是金色; 鍵帽全畫面同一套。
-- P4 關鍵區分走兩條通道: 教學鎖住 vs 金幣不足 = 亮度(0.22 vs 0.4)+ 鎖頭 / 虛線框; 教學關卡片 vs 一般關 = 底色(綠 vs 藍灰)+ 新芽圖示; 暫停 vs 慢動作 = 中性黑壓暗 + 暫停雙槓 vs 冷藍去色 + 冰藍邊框 + 「慢動作」。
+- P4 關鍵區分走兩條通道: 教學鎖住 vs 金幣不足 = 亮度(0.22 vs 0.4)+ 鎖頭 / 虛線框; 教學關卡片 vs 一般關 = 底色(綠 vs 藍灰)+ 新芽圖示; 波次等教學 vs 等清怪 = 色(琥珀 vs 淺灰白)+ 圖示(沙漏 vs 劍); 圖鑑解鎖列 vs 未解鎖列 = 亮度(整列較暗)+ 內容(真實圖示與名稱 vs 問號格與「???」); 暫停 vs 慢動作 = 中性黑壓暗 + 暫停雙槓 vs 冷藍去色 + 冰藍邊框 + 「慢動作」。
 - P7 每個元素都要掙得版面: HUD 拿掉主堡生命與波次(各自搬到主堡與左上面板, 不重述); 波次面板的倒數條只在 countdown 畫, 「教學中 / 最後一波」不畫空條。
 - P9 以最混亂的那一刻驗收: 波次橫幅 72% 半透明; 擋下提示用紙底 + 磚紅框, 壓在任何地面上都讀得到; 聚光燈描邊在 0.6 壓暗上用最亮的暖黃。
 - P13 事件要排隊: 引導卡、合成演出、圖鑑、暫停同一幀至多一個(由 RD 排); 教學泡泡完成特效 0.6 秒播完才換下一個; 波次橫幅飛進面板後面板才 +1 並閃(兩段不同時)。
 - P15 回饋強度與份量成正比: 組合名稱(頭上 1.5 秒)< 第一次合成演出(全畫面暫停); 波次推進(橫幅)< 教學全部完成(全畫面放射光 + 彩帶); 一般格子按鈕抖動 < 教學擋下提示。
 - P17 進度圖形與數字分工: 波次面板數字 = 下一波還有幾秒, 進度條 = 這段間隔走了多少(RD 傳的 progress); 引導卡進度環 = 「還要等多久才能按 Z」, 環沒有數字; 主堡血量牌數字給精確值、條給比例。
-- P18 重要資訊不能只存在一瞬間: 第一次合成演出閃過後, 配方留在組合圖鑑(C 隨時查)並蓋「已組過」章; 波次推進橫幅閃過後, 波數常駐在左上面板。
-- P19 資訊貼著物件: 血量牌在主堡身上、擋下提示在玩家腳下、教學泡泡箭頭尖端貼物件、引導卡聚光燈直接圈住物件 + 箭頭碰到圈、「!」標示立在出怪點上。
+- P18 重要資訊不能只存在一瞬間: 第一次合成演出閃過後, 配方留在組合圖鑑(C 隨時查), 那一列從問號變成完整配方(本輪拿掉「已組過」章, 解鎖本身就是記號); 波次推進橫幅閃過後, 波數常駐在左上面板。
+- P19 資訊貼著物件: 血量牌在主堡身上、擋下提示在玩家腳下、教學泡泡箭頭尖端貼物件、引導卡聚光燈直接圈住物件 + 箭頭碰到圈、「!」標示立在出怪點上(第 1、2 關)。
+- P21 示意圖要選對錯理解會分岔的例子: 打磨沒有說明頁, 本作不適用。
 
 ## 繪製層級(照 interface.json drawOrder)
 
@@ -78,20 +79,23 @@
 - 半徑一律指外緣: 購買區 110、魂柱範圍 150、冰霜圈 70、治癒領域 100、雷電球電場 60、範圍攻擊 60 / 30、搶奪環 24、重生圓盤 15、**引導卡聚光燈 r = 挖空外緣(柔邊往內, 寬 min(12, 0.3r)), 描邊在 r + 2.5(寬 3, 涵蓋 r+1~r+4)、引導卡進度環外緣 20(環寬 3)**。
 - **drawCastle 血量牌**: hp 夾在 0~maxHp(無條件進位); hp ≤ 5 時底板暗紅 ↔ 亮紅、生命條紅色, 以約 1 秒週期只改顏色閃爍。正面藍色軍旗本輪上移到主堡中段(讓出血量牌)。
 - **drawCoin**: spawnAge 在播時金幣往上抬 14 × sin(π × p), 地上影子在 (x, y+5) 隨高度縮小; 位置平移由 RD 更新。
-- **drawEnemy swift**: 只在 type = "imp" 時有效; 其他 type 傳 true 也照一般外觀。
+- **drawEnemy swift**: 只在 type = "imp" 時有效; 其他 type 傳 true 也照一般外觀。本輪: moving 為 true 時腳邊多兩道往後的速度線(x−15.5~−11, 框內); 血條照 hp / maxHp 畫, 沒有任何「血薄」的另外暗示。
 - **drawGroundPart frozen**: 不閃爍、剩餘細條不轉紅, 其他照一般外觀。
 - **drawActionHint**: 「不能蓋」「不能插」「不能裝」「不能搶」= 紅底紅框紅字 + Z 鍵變淡。
-- **drawTutorial**: `stage` 刻意不讀(外觀只由 text、keys / checklist、pressedKeys、side 決定)。checklist 有項目時 keys 一律不畫(即使 RD 傳了); 項目的 item 只認 pierce / melee / seek、to 只認 soldier / crossbow, 表外值畫虛線空框。「新手任務」標籤和本體一起縮放、一起淡出。箭頭與完成特效沿用上一版。
+- **drawTutorial**: `stage` 刻意不讀(外觀只由 text、large、keys / checklist、pressedKeys、side 決定)。checklist 有項目時 keys 一律不畫(即使 RD 傳了)。「新手任務」標籤和本體一起縮放、一起淡出。箭頭與完成特效沿用上一版。
+  - **large 只認 true**(其他值當一般泡泡)。large: 本體 400×100; text 以第一個 \n 分兩行(第一行中心 bodyY−30、第二行 bodyY−6, 18px 粗, 每行超過 352 寬整行等比縮; 沒有 \n 時單行畫在 bodyY−18); 標籤中心 (bodyX−160, bodyY−50); 清單只取前 2 項, 第 k 項中心 (bodyX + (k−0.5)×120, bodyY+26)。箭頭底邊中點夾在本體寬度內(上下: x 在 bodyX ± 186; 左右: y 在 bodyY ± 38)。
+  - 一般泡泡的 text 若含 \n, 去掉換行畫成一行。
+  - 清單項依 item 分兩種畫法: item 是 "crossbowKit" / "soldierKit" → **單位清單項**(104×26; 一般泡泡裡出現時縮成 88×26): 左邊單位小圖 22×22(和商店品項圖示同一套: 木箱底 + 單位), 右邊打勾位 14×14 — done = 綠圓白勾、未完成 = 虛線空圓; 不寫字, to 不讀。其他 → **魂件清單項**(沿用): item 只認 pierce / melee / seek、to 只認 soldier / crossbow, 表外值畫虛線空框。
 - **drawGuide**: phase 不是 intro / outro 一律當 card。**intro 期間壓暗已帶挖空**(聚光燈圓內不壓暗), 但不畫描邊、箭頭與卡片 — 介面寫「還不畫聚光燈」, 我把聚光燈理解成描邊; 挖空讓壓暗淡入時目標本來就亮著, 不會在 0.3 秒時突然「開洞」。spots 最多 2 個, r 夾在 20~154; arrows 只取前 spots.length 項。兩個聚光燈重疊時, 重疊處仍是挖空(用逐圈剪裁, 不用 evenodd 一次填)。卡片文字: text 用 \n 分行、最多 2 行(23px, 行距 30), 超過 400 寬整行等比縮; sub 16px 最寬 300(避開右下的鍵帽與進度環)。text / sub 裡的 [Z] [X] [C] [M] [Esc] [空白鍵] [←][→][↑][↓] 畫成 22×22 鍵帽。index / total: total 夾在 1~10。
 - **drawTutorialWarn**: 文字最寬 196(整塊 240×30 左側是禁止記號)。
 - **drawSpawnMark**: 上下彈跳 0~−7px、外圈亮度脈動, 都在 48×64 內; 不畫字。
-- **drawWavePanel**: status 表外值當 countdown; wave 夾在 0~totalWaves; nextWaveIn 無條件進位, ≤ 6 時第二行與進度條變警示橘紅並脈動。bump 期間只有第一行的數字(wave)放大到 1.3 倍, 面板整塊亮一下。
+- **drawWavePanel**: status 認 countdown / tutorial / clear / last, 表外值當 countdown; clear(本輪)= 小劍 +「打倒這波敵人後開始」淺灰白, 不畫進度條、不脈動; wave 夾在 0~totalWaves; nextWaveIn 無條件進位, ≤ 6 時第二行與進度條變警示橘紅並脈動。bump 期間只有第一行的數字(wave)放大到 1.3 倍, 面板整塊亮一下。
 - **drawWaveBanner**: 動畫時間軸以 duration 等比換算(duration = 1.6 時就是介面寫的 0.3 / 1.1 / 1.6 秒)。翻牌是 wave−1 往上出、wave 從下進, 剪在數字格內; last 時不翻、不畫「共 N 波」, 金框改紅框。
 - **drawComboReveal**: a、b 只認基本魂件、result 只認組合魂件, 表外值畫虛線空框; 「[Z] 確定」要 ready 為 true 且 age ≥ 1.5 才畫。age 超過 1.5 當 1.5。
-- **drawCodex**: entries 固定照索引畫 11 列(第 0~5 左欄、6~10 右欄), 缺的列畫空框不跳號; opened 只認 true。
+- **drawCodex**: entries 固定照索引畫 11 列(第 0~5 左欄、6~10 右欄)。**unlocked 只認 true**; false、缺欄位、缺的列一律畫成未解鎖列(問號), 寧可多藏不洩漏配方。未解鎖列: 材料 A / B 位置 32×32 問號格、組合位置 40×40 問號格, 「+」「=」照畫(淡), 組合名稱位置寫「???」, 材料名稱與效果不寫; 整列底比解鎖列暗。不讀 opened(上一版欄位), 「已組過」章已刪。
 - **drawTitle**: tutorial 為 true 的卡片 = 綠色系底 + 綠框 + 右上角新芽(未解鎖時新芽變淡); 名稱超過 5 個字用 25px。玩家記號推進時: 前 80% 時間沿弧線跳(最高點比兩端高 60), 後 20% 落地壓扁(以底邊為軸寬 1.15 / 高 0.82); 閒置時微微上下浮 1.5px。開鎖: 前 15% 鎖頭抖、之後碎成 7 片往外飛並淡出, 卡片暗罩從 0.72 淡到 0、內緣金光一閃。
 - **drawShopPopup**: state 認 ok / poor / max / locked, 其他當 ok; message「教學期間不能買」用教學琥珀色, 其他訊息照舊紅橘。
-- **drawSoulPopup**: cells 每項的 locked 只認 true; 游標停在 locked 格、或 actionLabel 是「教學中不能動」時, actionLabel 畫灰色。
+- **drawSoulPopup**: 拆除格「+refund 金」refund 取整、負值當 0, 兩位數(+24 金)11px 約 34 寬, 在 46 寬上限內不縮字; cells 每項的 locked 只認 true; 游標停在 locked 格、或 actionLabel 是「教學中不能動」時, actionLabel 畫灰色。
 - **drawResult**: options 空時勝利預設 [繼續, 重玩]、失敗預設 [重來, 關卡預覽]。
 - 敵人 moving = false 會畫頭上問號(= 失去進攻主堡、呆站); 請只在「身上沒有進攻主堡而停住」時傳 false(沿用上一版的請求)。
 - 表外值的預設外觀: 敵人 / 消散種類未知 → 小鬼; drawAreaHit kind 未知 → 旋風斬; drawPlacePreview kind 未知 → 弩塔; drawUnitBreak / drawRespawnQueue kind 未知 → 步兵; drawGolem team 不是 "ally" → 中立; drawTutorial side 未知 → up; owner 不是 "enemy" → 我方; 物品字串未知 → 虛線空框; drawSoulPopup mode 非 "replace" → 選單; cells 空 → 一格空魂件格。
@@ -100,12 +104,12 @@
 
 ## 畫面文字歸屬
 
-依介面 textOwnership, 下列文字與鍵帽都由美術畫, **RD 不要另畫**: drawTitle(大標題、「第 N 關」、關名、星、鎖、「[←][→] 選關  [Z] 開始  [M] 靜音」)、**drawTutorialClear(「恭喜完成新手任務!」「[Z] 繼續」)**、drawGolem(「中立」)、**drawCastle(血量牌「hp/maxHp」)**、drawRespawnQueue、drawShopHint、drawComboName、drawActionHint、drawSoulPopup(含「教學中不能動」)、drawShopPopup(含「教學期間不能買」)、drawHud(關名、金幣、喇叭、「[Z] 互動  [C] 圖鑑  [Esc] 暫停  [M] 靜音」)、**drawWavePanel(「第 w / N 波」「開戰前」「下一波 S 秒」「完成新手任務後開始」「最後一波!」)**、**drawWaveBanner(「第 N 波」「共 T 波」「最後一波!」)**、drawSlowMo、**drawPause(「暫停」「[Esc] 繼續」)**、**drawCodex(「組合圖鑑」「已發現 n / 10」「已組過」「[C] 關閉」與 RD 傳的名稱 / 效果)**、**drawComboReveal(「新組合!」「[Z] 確定」與 RD 傳的名稱 / 效果 / 材料名)**、drawResult。
-新手教學三個函式: **drawTutorial**(text 由 RD 傳, 美術畫; 「新手任務」標籤、鍵帽、檢查清單、打勾、完成特效由美術畫)、**drawGuide**(text / sub 由 RD 傳, 美術畫; 「下一張」「繼續」、進度環、小圓點由美術畫)、**drawTutorialWarn**(text 由 RD 傳, 美術畫)。drawShopZone、drawSpawnMark 不畫任何字。
+依介面 textOwnership, 下列文字與鍵帽都由美術畫, **RD 不要另畫**: drawTitle(大標題、「第 N 關」、關名、星、鎖、「[←][→] 選關  [Z] 開始  [M] 靜音」)、**drawTutorialClear(「恭喜完成新手任務!」「[Z] 繼續」)**、drawGolem(「中立」)、**drawCastle(血量牌「hp/maxHp」)**、drawRespawnQueue、drawShopHint、drawComboName、drawActionHint、drawSoulPopup(含「教學中不能動」)、drawShopPopup(含「教學期間不能買」)、drawHud(關名、金幣、喇叭、「[Z] 互動  [C] 圖鑑  [Esc] 暫停  [M] 靜音」)、**drawWavePanel(「第 w / N 波」「開戰前」「下一波 S 秒」「完成新手任務後開始」「打倒這波敵人後開始」「最後一波!」)**、**drawWaveBanner(「第 N 波」「共 T 波」「最後一波!」)**、drawSlowMo、**drawPause(「暫停」「[Esc] 繼續」)**、**drawCodex(「組合圖鑑」「已發現 n / 10」、未解鎖列的問號格與「???」、「[C] 關閉」與解鎖列 RD 傳的名稱 / 效果)**、**drawComboReveal(「新組合!」「[Z] 確定」與 RD 傳的名稱 / 效果 / 材料名)**、drawResult。
+新手教學三個函式: **drawTutorial**(text 由 RD 傳, 美術畫, 大泡泡的兩行也是同一個 text 用 \n 分; 「新手任務」標籤、鍵帽、檢查清單(魂件清單 / 單位清單)、打勾、完成特效由美術畫)、**drawGuide**(text / sub 由 RD 傳, 美術畫; 「下一張」「繼續」、進度環、小圓點由美術畫)、**drawTutorialWarn**(text 由 RD 傳, 美術畫)。drawShopZone、drawSpawnMark 不畫任何字。
 
 ## 物件表
 
-所有 x, y 是物件中心(集結旗例外: 旗桿插地點); `targeted: true` 時在 size 外畫一圈白框(內緣貼齊 size 外邊, 寬 3)。沒標「本輪」的列與上一版相同。
+所有 x, y 是物件中心(集結旗例外: 旗桿插地點); `targeted: true` 時在 size 外畫一圈白框(內緣貼齊 size 外邊, 寬 3)。標「**第 5 輪**」的是這一輪的異動; 標「本輪」「新」的是第 4 輪留下的說明, 照舊有效。
 
 | 物件 | 函式 | state 欄位 | 各狀態視覺差異 |
 |---|---|---|---|
@@ -125,7 +129,7 @@
 | 石魔像 | `drawGolem(ctx, s)` | x, y, team, hp, maxHp, hitAge, hitDuration, attackAge, attackDuration, moving, charging, rooted, healing, resonating, returning, targeted | 沿用 |
 | 集結旗 | `drawRallyFlag(ctx, s)` | x, y, plantAge, plantDuration | 沿用 |
 | 潰散 | `drawUnitBreak(ctx, s)` | kind, x, y, age, duration | 沿用 |
-| 敵人 | `drawEnemy(ctx, s)` | type, x, y, hp, maxHp, hitAge, hitDuration, attackAge, attackDuration, moving, slowed, stunAge, stunDuration, healing, swift, targeted | **本輪 swift(只對小鬼)**: 身形寬 0.84、體色淺粉 #e88aa0、額頭白綁帶 + 兩條往後飄的帶尾; 受擊 / 減速疊層跟著瘦身形。其餘沿用 |
+| 敵人 | `drawEnemy(ctx, s)` | type, x, y, hp, maxHp, hitAge, hitDuration, attackAge, attackDuration, moving, slowed, stunAge, stunDuration, healing, swift, targeted | swift(只對小鬼): 身形寬 0.84、體色淺粉 #e88aa0、額頭白綁帶 + 兩條往後飄的帶尾; 受擊 / 減速疊層跟著輕巧身形。**第 5 輪**: 移動時腳邊兩道往後的白色速度線(「跑得快」); 不另做血薄暗示。其餘沿用 |
 | 敵人倒下消散 | `drawCorpse(ctx, s)` | kind, x, y, life, maxLife | 沿用 |
 | 地上的魂件 | `drawGroundPart(ctx, s)` | item, x, y, spawnAge, spawnDuration, life, maxLife, permanent, frozen, targeted | **本輪 frozen**: 不閃爍、細條不轉紅 |
 | 金幣 | `drawCoin(ctx, s)` | x, y, spawnAge, spawnDuration | **本輪**: 落地中往上抬(最多 14px)+ 地上影子 |
@@ -148,15 +152,15 @@
 | 組合名稱 | `drawComboName(ctx, s)` | x, y, name, isNew, age, duration | 沿用 |
 | 出怪點「!」標示 | `drawSpawnMark(ctx, s)` | x, y, t | **新**: 暗紅圓牌 + 紅環 + 奶油色「!」符號 + 往下指路口的尖角; 隨 t 上下彈跳(≤ 7px)、外圈亮度脈動; 和出怪預警同一套配色 |
 | 出怪點預警 | `drawSpawnWarning(ctx, s)` | x, y, angle, remaining, total | 沿用 |
-| 新手任務泡泡 | `drawTutorial(ctx, s)` | stage, text, keys, pressedKeys, checklist, tipX, tipY, side, bodyX, bodyY, doneAge, doneDuration | **本輪**: 本體左上角「新手任務」琥珀標籤 72×18(中心 (bodyX−110, bodyY−36)); checklist 3 項 88×26 小卡: [魂件] → [單位], done = 淺綠底綠框 + 右側白勾綠圓、未完成 = 米色底 50% 淡。其餘沿用 |
+| 新手任務泡泡 | `drawTutorial(ctx, s)` | stage, text, large, keys, pressedKeys, checklist, tipX, tipY, side, bodyX, bodyY, doneAge, doneDuration | 本體左上角「新手任務」琥珀標籤 72×18(中心 (bodyX−110, bodyY−36)); checklist 3 項 88×26 小卡: [魂件] → [單位], done = 淺綠底綠框 + 右側白勾綠圓、未完成 = 米色底 50% 淡。**第 5 輪 large**: 本體 400×100、兩行 18px 字、標籤 (bodyX−160, bodyY−50); 單位清單 2 項 104×26: [弩塔 / 步兵木箱小圖 22] + 打勾位(done 綠圓白勾 + 淺綠底綠框; 未完成 虛線空圓 + 米色底、小圖 55% 淡); 完成特效同一般泡泡(放大 1.15 = 460×115)。其餘沿用 |
 | 暫停式引導卡 | `drawGuide(ctx, s)` | phase, phaseAge, phaseDuration, text, sub, index, total, last, spots, arrows, cardX, cardY, cardAge, cardDuration, readAge, readDuration, ready | **新**: 全畫面黑 0.6 壓暗, 聚光燈圓內挖空(柔邊往內); 描邊暖黃寬 3 亮度脈動; 粗箭頭(桿 8、三角 20×16)同色; 卡片 440×140 紙底深墨框 + 琥珀內框; 主句 23px、小字 16px; 右下 [Z] 26×26 + 進度環(琥珀 → 滿了綠), ready 前鍵帽與「下一張 / 繼續」35% 暗; 底部小圓點; intro: 壓暗淡入; outro: 卡片上飛 80 + 全部淡出 |
 | HUD | `drawHud(ctx, s)` | level, levelName, gold, muted | **本輪**: 「第 N 關」+ 關名(x 16)、金幣(x 340)、喇叭 (860,25)、右側「[Z] 互動  [C] 圖鑑  [Esc] 暫停  [M] 靜音」(總寬約 260, 左緣約 1004) |
-| 波次面板 | `drawWavePanel(ctx, s)` | x, y, wave, totalWaves, status, nextWaveIn, progress, bumpAge, bumpDuration | **新**: 220×58 深底淡金框; 第一行 22px「第 w / N 波」(w 金色)/「開戰前」; 第二行 14px: countdown「下一波 S 秒」+ 200×4 進度條(≤ 6 秒警示橘紅脈動)/ tutorial 沙漏 +「完成新手任務後開始」琥珀 / last「最後一波!」紅; bump: 面板亮一下 + 數字 1.3 倍彈 |
+| 波次面板 | `drawWavePanel(ctx, s)` | x, y, wave, totalWaves, status, nextWaveIn, progress, bumpAge, bumpDuration | **新**: 220×58 深底淡金框; 第一行 22px「第 w / N 波」(w 金色)/「開戰前」; 第二行 14px: countdown「下一波 S 秒」+ 200×4 進度條(≤ 6 秒警示橘紅脈動)/ tutorial 沙漏 +「完成新手任務後開始」琥珀 / **第 5 輪 clear 小劍 +「打倒這波敵人後開始」淺灰白(一般色、不脈動)** / last「最後一波!」紅; bump: 面板亮一下 + 數字 1.3 倍彈 |
 | 波次推進橫幅 | `drawWaveBanner(ctx, s)` | wave, totalWaves, last, age, duration | **新**: 560×96 半透明深底金框; 48px「第 N 波」(數字翻牌)+ 右下「共 T 波」; last: 紅框紅字「最後一波!」; 0~0.3 從左滑入、0.3~1.1 停住 + 一道掃光、1.1~1.6 縮到 0.39 倍飛進 (118,83) 並淡到 0.6 |
 | 慢動作效果 | `drawSlowMo(ctx)` | (無) | 沿用 |
 | 單位選單 / 替換彈窗 | `drawSoulPopup(ctx, s)` | mode, x, y, title, cells[{type, item/refund, locked}], index, hand, actionLabel, desc{name, text, materials, alt}, shakeAge, shakeDuration | **本輪 locked**: 格子壓暗 60% + 右下角 16×16 暗底鎖頭(魂件圖示照畫); 「教學中不能動」灰字 |
 | 第一次合成演出 | `drawComboReveal(ctx, s)` | a, b, result, name, text, aName, bName, age, ready, closing, closeAge, closeDuration | **新**: 0~0.3 壓暗到 0.7; 0.3~0.9 材料 A / B(64)從兩側滑入 + 中間金「+」; 0.9~1.05 撞向中央 + 白光圈擴到 90; 1.05~1.2 組合圖示 96 彈 1.25; 1.2~1.5 面板 600×200 深底金框上滑淡入(「新組合!」、圖示 56、名稱 26px、效果 18px、[A] + [B] 小圖示與名稱); ready: 閃爍「[Z] 確定」; closing 淡出 |
-| 組合圖鑑 | `drawCodex(ctx, s)` | entries[{a, b, result, aName, bName, name, text, opened}], foundCount | **新**: 壓暗 0.7 + 面板 1040×620; 標題、「已發現 n / 10」; 兩欄 11 列, 每列 [A] + [B] = [組合] 名稱 / 效果; opened: 右上綠框「已組過」章; 中間一條淡分隔線; 底部「[C] 關閉」 |
+| 組合圖鑑 | `drawCodex(ctx, s)` | entries[{a, b, result, aName, bName, name, text, unlocked}], foundCount | 壓暗 0.7 + 面板 1040×620; 標題、「已發現 n / 10」; 兩欄 11 列; 中間一條淡分隔線; 底部「[C] 關閉」。**第 5 輪**: unlocked = true → [A] + [B] = [組合] 名稱 / 效果(完整); 其他 → 整列較暗, 三個問號格(暗底虛線框 + 灰問號)+ 淡「+」「=」+「???」, 不畫任何真實圖示、名稱、效果; 「已組過」章刪除 |
 | 暫停 | `drawPause(ctx)` | (無) | **新**: 黑壓暗 0.5 + 面板 360×160 灰框; 白色暫停雙槓 + 「暫停」40px; 「[Esc] 繼續」 |
 | 商店彈窗 | `drawShopPopup(ctx, s)` | items[{item, name, price, state, count, cap}], cursorIndex, message, shakeAge, shakeDuration | **本輪 locked**: 格底更黑 + 虛線框, 圖示 22%、品名 / 價格 45% 灰, 圖示位置疊 20×20 米色鎖頭(暗圓底); 游標仍可停上去(格內微亮 + 金框); 「教學期間不能買」琥珀色 |
 | 結算畫面 | `drawResult(ctx, s)` | win, allClear, level, levelName, wave, totalWaves, castleHp, castleMaxHp, stars, starAge, starDuration, comboCount, options, cursorIndex | **本輪**: 按鈕 2 顆(545 / 735), 字照 options |
@@ -174,14 +178,14 @@
 | 敵人 | 同上一版 | 輕快小鬼身形寬約 27, 帶尾到 x−15, 都在 32×32 內 |
 | 教學擋下提示 | 240×30 | 彈入最大 264×33(允許); 禁止記號圓心 (x−102, y) 半徑 9; 文字中心 x+8、最寬 196 |
 | 出怪點「!」標示 | 48×64 | 牌身半徑 19、外圈外緣 23(中心 y−2); 尖角到 y+28; 彈跳 0~−7 → 全部在 x±24、y−32~+28 |
-| 新手任務泡泡 | 本體 300×72 / 標籤 72×18 | 標籤 x bodyX−146~−74、y bodyY−45~−27; 清單項 88×26 中心 (bodyX + (k−1)×96, bodyY+16): 魂件圖示 20 在 −30、箭頭 −17~−6、單位小圖 20 在 +6、完成勾直徑 14 在 +31; 完成特效 345×83(允許) |
+| 新手任務泡泡 | 本體 300×72 / 標籤 72×18 | 標籤 x bodyX−146~−74、y bodyY−45~−27; 清單項 88×26 中心 (bodyX + (k−1)×96, bodyY+16): 魂件圖示 20 在 −30、箭頭 −17~−6、單位小圖 20 在 +6、完成勾直徑 14 在 +31; 完成特效 345×83(允許)。**第 5 輪大泡泡**: 本體 400×100 / 標籤 72×18 在 x bodyX−196~−124、y bodyY−59~−41; 兩行字中心 y −30 / −6、最寬 352; 單位清單項 104×26 中心 (bodyX ∓ 60, bodyY+26)(y +13~+39, 在本體下緣 +50 之內): 小圖 22 在 −14、打勾位直徑 14 在 +16; 完成特效 460×115(允許)。驗算位置 本體 (1080,274)、尖端 (1180,344): 全部繪製在 x 880~1280、y 215~344 |
 | 引導卡 | 壓暗 1280×720 / 卡片 440×140 | 卡片彈入最大 462×147(允許); 主句中心 y −16(有 sub)/ −6, 兩行時 ±15; sub 中心 +26、最寬 300; [Z] 26×26 中心 (+180, +44), 進度環外緣 20; 「下一張 / 繼續」右緣 +158; 小圓點 y +54、直徑 8(未選為 6.5 空心)、間距 14; 箭頭桿寬 8、三角 20×16; 聚光燈圓可伸出畫面(介面允許) |
 | HUD | 1280×50 | 右側提示鍵帽 22×22 / Esc 32×22, 總寬約 260, 右緣 1264、左緣約 1004 |
 | 波次面板 | 220×58 | 範圍 x 8~228、y 54~112; 第一行中心 y−12(數字彈到 1.3 倍上緣約 y−26, 未超出面板); 第二行中心 y+10; 進度條 x−100~+100、y+21~+25 |
 | 波次推進橫幅 | 560×96 | 停住時 x 360~920、y 152~248; 縮到 0.39 倍 ≈ 218×37 中心 (118,83); 翻牌剪在數字格內 |
 | 單位選單 / 替換彈窗 | 320×180 | 鎖頭底 16×16 在格右下(格中心 +3~+19); actionLabel 最寬 120 |
 | 第一次合成演出 | 壓暗 1280×720 / 面板 600×200 | 材料 64×64(y 250); 閃光外緣 ≤ 90; 組合圖示 96(彈到 120); 面板停在中心 (640,470); 面板內版位照介面 |
-| 組合圖鑑 | 壓暗 1280×720 / 面板 1040×620 / 列 480×76 | 列中心 x 380 / 900、y 165 + 84i; 名稱最寬 170、效果最寬 236; 「已組過」56×18 中心 (列 x+204, 列 y−24) |
+| 組合圖鑑 | 壓暗 1280×720 / 面板 1040×620 / 列 480×76 | 列中心 x 380 / 900、y 165 + 84i; 名稱最寬 170、效果最寬 236; 問號格 32×32 在 (−200, −10)、(−116, −10), 40×40 在 (−34, −10), 問號字級 = 邊長 × 0.66; 「???」左緣 −4、中心 y −16(第 5 輪) |
 | 暫停 | 壓暗 1280×720 / 面板 360×160 | 面板中心 (640,360); 暫停雙槓 x 562~586、y 320~350; 「暫停」(640,335) 40px; 「[Esc] 繼續」(640,395) |
 | 商店彈窗 | 480×150 | 鎖頭 20×20 中心 (格 x, −14.5), 暗圓底半徑 14 |
 | 結算畫面 | 1280×720 | 按鈕 2 顆中心 x 545 / 735 |
@@ -189,6 +193,12 @@
 
 ## 交付自查紀錄
 
+**第 5 輪**(只改 4 個函式, 其餘原樣搬過來):
+- `node --check` 通過; 匯出表 = 介面的 51 個函式, 沒有多出或缺少; `Art.canvas` = 介面 1280×720。
+- 用追蹤變換矩陣的假 ctx 對**匯出表全部 51 個函式**各餵空物件 / undefined / 表外值一次, 另對本輪改到的函式逐狀態呼叫: drawTutorial 一般 / large × 4 個 side × 完成進度 0~0.6(7 點)× 3 種清單(空 / 魂件 3 項 / 單位 2 項), 加上規格驗算位置 (1080,274); drawWavePanel 4 種 status × wave 0 / 1 / 3 × bump 0~0.4; drawCodex 全鎖 / 全開 / 交錯; drawEnemy 小鬼 swift × moving × slowed × 攻擊中; drawSoulPopup 拆除 +24 金; drawTitle 第 2 關新關名; drawSpawnMark 第 2 關 (40,194)。共 327 次: 不拋錯、save/restore 成對、超框 0 筆(完成特效的 1.15 倍以介面允許框比)。
+- 欄位讀取檢查: 介面每個 state 欄位在 art.js 都讀得到, 只有 drawTutorial 的 `stage` 刻意不讀; drawCodex 不再讀 `opened`, 改讀 `unlocked`; drawTutorial 讀新欄位 `large`。
+
+**第 4 輪**(沿用的紀錄):
 - `node --check` 通過; 匯出表 = 介面的 51 個函式, 沒有多出或缺少。
 - 用會追蹤變換矩陣、剪裁、線寬, 並依實際角度取樣 arc / ellipse 與二次 / 三次曲線的假 ctx, 對**匯出表全部 51 個函式**呼叫約 8400 次(5 個時間點 × 各狀態): 開始畫面 5 個游標 × 記號跳躍 0~0.8 每 0.05 × 開鎖 0~0.6 每 0.04、教學完成大提示 0~3.2 秒 × 關閉、主堡 hp 20 / 13 / 5 / 1 / 0 × 受擊 × 攻擊、金幣落地 0~0.4、小鬼 swift × 移動 / 減速 / 治癒 / 攻擊、19 種魂件 × frozen × life、Z 提示 5 種 label、擋下提示 0~1.2、「!」標示 0~3 秒、波次面板 3 種 status × wave 0 / 1 / 3 × bump 0~0.4 × 倒數 24 / 6 / 1、波次橫幅 0~1.6 × last、教學泡泡 4 方向 × 4 種按鍵列 × 3 種清單 × 完成進度 0~0.6、引導卡 5 組聚光燈(含兩圈重疊、半徑 154、伸出畫面)× 3 個 phase × 卡片彈入 × 閱讀進度、卡片長字串 × 9 個小圓點、合成演出 0~1.5 × 關閉、圖鑑 11 列、暫停、選單 2 組格子(全鎖 / 不鎖)× 游標 × 3 種 actionLabel、商店 3 / 4 格 × 4 種狀態 × 3 種訊息、結算勝 / 敗, 外加每個函式 4 組壞狀態(空物件、undefined、null、表外字串 / NaN / 非陣列 / 極大值)。結果: 不拋錯、save/restore 成對、合成模式不殘留。
 - 超框: 擋下提示、「!」標示、波次面板、波次橫幅三段、主堡(含血量牌)、金幣、輕快小鬼、Z 提示、教學泡泡(非完成特效時)、引導卡卡片(含彈入最大一幀)、選單、商店都在框內。剩下的報警是已知且允許的: 開始畫面與背景的路線伸到畫布外(畫布裁掉)、第 1 關出怪點的聚光燈 (40,290) r 56 左緣伸出畫面 16~20px(介面「照畫」)。開始畫面記號與開鎖碎片在整張畫面裡量不出來, 以尺寸表的數學驗算為準。
