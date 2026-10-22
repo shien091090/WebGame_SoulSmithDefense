@@ -1,0 +1,846 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-6",
+ "summary": {
+  "level": 1,
+  "levelName": "新手教學・初陣",
+  "attempt": 1,
+  "failsBefore": 0,
+  "result": "win",
+  "durationSec": 109.4,
+  "gameSec": 85.7,
+  "slowMoSec": 8.4,
+  "hiddenSec": 0,
+  "pauseSec": 0,
+  "pauses": 0,
+  "codexSec": 0,
+  "codexOpens": 0,
+  "guideSec": 14.9,
+  "revealSec": 2.1,
+  "reveals": 1,
+  "gateSec": 49.5,
+  "clearWaitSec": 7.9,
+  "tutorialBlocks": {
+   "install": 2
+  },
+  "tutorialSpawns": 1,
+  "tutorialGold": 0,
+  "tutorialFloor": 0,
+  "menuBlocks": 0,
+  "waveReached": 3,
+  "totalWaves": 3,
+  "castleHp": 20,
+  "stars": 3,
+  "leaks": 0,
+  "leaksByWave": [
+   0,
+   0,
+   0
+  ],
+  "leaksBySpawn": {},
+  "kills": 17,
+  "playerKills": 0,
+  "playerHits": 0,
+  "goldEarned": 26,
+  "goldRefund": 0,
+  "goldSpent": 27,
+  "goldEnd": 29,
+  "purchases": {
+   "crossbow": 1,
+   "soldier": 1
+  },
+  "pillarCap": 1,
+  "pillarsMax": 0,
+  "steals": {
+   "started": 1,
+   "done": 1,
+   "diedDone": 0,
+   "canceled": 0
+  },
+  "installs": {
+   "direct": 3,
+   "replace": 1
+  },
+  "fuses": {
+   "穿透箭": 1
+  },
+  "drops": 0,
+  "groundExpired": 0,
+  "demolishes": 0,
+  "homeRefunds": {},
+  "bundledBack": 0,
+  "flags": {
+   "purchase": 1,
+   "rally": 0
+  },
+  "unitDowns": 0,
+  "maxRespawnQueue": 0,
+  "marchLoops": 0,
+  "blinks": 0,
+  "healed": 0,
+  "enemyHealed": 0,
+  "recruits": 0,
+  "combosFoundThisLevel": [
+   "穿透箭"
+  ],
+  "combosFoundTotal": 1,
+  "recipesOpenedTotal": 1,
+  "stranded": 0,
+  "tutorialLevel": true,
+  "tutorialClearSt": null
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 2.1,
+   "doneSt": 3.7,
+   "kind": "card"
+  },
+  "2": {
+   "shownSt": 3.7,
+   "doneSt": 5.3,
+   "kind": "card"
+  },
+  "3": {
+   "shownSt": 5.3,
+   "doneSt": 7.1,
+   "kind": "card"
+  },
+  "4": {
+   "shownSt": 7.4,
+   "doneSt": 8.1,
+   "kind": "quest"
+  },
+  "5": {
+   "shownSt": 8.7,
+   "doneSt": 9.3,
+   "kind": "quest"
+  },
+  "6": {
+   "shownSt": 9.9,
+   "doneSt": 9.9,
+   "kind": "quest"
+  },
+  "7": {
+   "shownSt": 10.5,
+   "doneSt": 11.6,
+   "kind": "quest"
+  },
+  "8": {
+   "shownSt": 12.5,
+   "doneSt": 14.1,
+   "kind": "card"
+  },
+  "9": {
+   "shownSt": 27.1,
+   "doneSt": 28.8,
+   "kind": "card"
+  },
+  "10": {
+   "shownSt": 32.6,
+   "doneSt": 34.5,
+   "kind": "card"
+  },
+  "11": {
+   "shownSt": 34.8,
+   "doneSt": 48.1,
+   "kind": "quest"
+  },
+  "12": {
+   "shownSt": 48.7,
+   "doneSt": 54.9,
+   "kind": "quest"
+  },
+  "13": {
+   "shownSt": 55.5,
+   "doneSt": 58.6,
+   "kind": "quest"
+  },
+  "14": {
+   "shownSt": 59.2,
+   "doneSt": 60.7,
+   "kind": "quest"
+  },
+  "15": {
+   "shownSt": 77.5,
+   "doneSt": 79.1,
+   "kind": "card"
+  },
+  "16": {
+   "shownSt": 79.4,
+   "doneSt": 90.8,
+   "kind": "quest"
+  },
+  "17": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "18": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "card"
+  },
+  "19": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "card"
+  },
+  "20": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "21": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "22": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "23": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "24": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "25": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "26": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "27": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "28": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "card"
+  },
+  "29": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "card"
+  },
+  "30": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  },
+  "31": {
+   "shownSt": null,
+   "doneSt": null,
+   "kind": "quest"
+  }
+ },
+ "events": [
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 0.8,
+   "level": 1,
+   "attempt": 1
+  },
+  {
+   "type": "guide_start",
+   "t": 1,
+   "st": 1.8,
+   "stages": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 1.3,
+   "st": 2.1,
+   "stage": 1,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 2.9,
+   "st": 3.7,
+   "stage": 1,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 2.9,
+   "st": 3.7,
+   "stage": 2,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 4.5,
+   "st": 5.3,
+   "stage": 2,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 4.5,
+   "st": 5.3,
+   "stage": 3,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 6.2,
+   "st": 7.1,
+   "stage": 3,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 6.6,
+   "st": 7.4,
+   "stages": [
+    1,
+    2,
+    3
+   ],
+   "sec": 5.6
+  },
+  {
+   "type": "tutorial_show",
+   "t": 6.6,
+   "st": 7.4,
+   "stage": 4,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 7.3,
+   "st": 8.1,
+   "stage": 4,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 7.9,
+   "st": 8.7,
+   "stage": 5,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 8.4,
+   "st": 9.3,
+   "stage": 5,
+   "kind": "quest"
+  },
+  {
+   "type": "purchase",
+   "t": 8.9,
+   "st": 9.7,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 15
+  },
+  {
+   "type": "tutorial_show",
+   "t": 9,
+   "st": 9.9,
+   "stage": 6,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 9,
+   "st": 9.9,
+   "stage": 6,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 9.6,
+   "st": 10.5,
+   "stage": 7,
+   "kind": "quest"
+  },
+  {
+   "type": "place",
+   "t": 10.8,
+   "st": 11.6,
+   "kind": "crossbow",
+   "x": 696,
+   "y": 362,
+   "bundled": [
+    "ranged"
+   ]
+  },
+  {
+   "type": "tutorial_done",
+   "t": 10.8,
+   "st": 11.6,
+   "stage": 7,
+   "kind": "quest"
+  },
+  {
+   "type": "guide_start",
+   "t": 11.4,
+   "st": 12.2,
+   "stages": [
+    8
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 11.7,
+   "st": 12.5,
+   "stage": 8,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 13.3,
+   "st": 14.1,
+   "stage": 8,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 13.6,
+   "st": 14.4,
+   "stages": [
+    8
+   ],
+   "sec": 2.2
+  },
+  {
+   "type": "wave_warning",
+   "t": 13.6,
+   "st": 14.4,
+   "wave": 1,
+   "reason": "tutorial"
+  },
+  {
+   "type": "wave_start",
+   "t": 19.6,
+   "st": 20.4,
+   "wave": 1
+  },
+  {
+   "type": "guide_start",
+   "t": 26,
+   "st": 26.8,
+   "stages": [
+    9
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 26.3,
+   "st": 27.1,
+   "stage": 9,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 27.9,
+   "st": 28.8,
+   "stage": 9,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 28.2,
+   "st": 29.1,
+   "stages": [
+    9
+   ],
+   "sec": 2.3
+  },
+  {
+   "type": "guide_start",
+   "t": 31.4,
+   "st": 32.3,
+   "stages": [
+    10
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 31.7,
+   "st": 32.6,
+   "stage": 10,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 33.6,
+   "st": 34.5,
+   "stage": 10,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 34,
+   "st": 34.8,
+   "stages": [
+    10
+   ],
+   "sec": 2.5
+  },
+  {
+   "type": "tutorial_show",
+   "t": 34,
+   "st": 34.8,
+   "stage": 11,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_spawn",
+   "t": 40.9,
+   "st": 41.7,
+   "enemy": "archer",
+   "spawn": "A",
+   "stage": 11
+  },
+  {
+   "type": "steal_start",
+   "t": 45.7,
+   "st": 46.6,
+   "enemy": "archer",
+   "item": "ranged"
+  },
+  {
+   "type": "steal_done",
+   "t": 47.2,
+   "st": 48.1,
+   "enemy": "archer",
+   "item": "ranged",
+   "via": "bar"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 47.2,
+   "st": 48.1,
+   "stage": 11,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 47.8,
+   "st": 48.7,
+   "stage": 12,
+   "kind": "quest"
+  },
+  {
+   "type": "wave_clear",
+   "t": 49,
+   "st": 49.8,
+   "wave": 1,
+   "stranded": 0
+  },
+  {
+   "type": "tutorial_block",
+   "t": 49.6,
+   "st": 50.4,
+   "action": "install",
+   "stage": 12,
+   "item": "ranged"
+  },
+  {
+   "type": "tutorial_block",
+   "t": 50.2,
+   "st": 51,
+   "action": "install",
+   "stage": 12,
+   "item": "ranged"
+  },
+  {
+   "type": "install",
+   "t": 51.9,
+   "st": 52.8,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 51.9,
+   "st": 52.8,
+   "item": "pierce",
+   "unit": "crossbow",
+   "materials": [
+    "ranged",
+    "ranged"
+   ]
+  },
+  {
+   "type": "combo_new",
+   "t": 51.9,
+   "st": 52.8,
+   "name": "穿透箭",
+   "unit": "crossbow"
+  },
+  {
+   "type": "combo_reveal",
+   "t": 52,
+   "st": 52.8,
+   "name": "穿透箭",
+   "materials": [
+    "ranged",
+    "ranged"
+   ],
+   "action": "show"
+  },
+  {
+   "type": "combo_reveal",
+   "t": 54.1,
+   "st": 54.9,
+   "name": "穿透箭",
+   "materials": [
+    "ranged",
+    "ranged"
+   ],
+   "action": "close",
+   "readSec": 2.1
+  },
+  {
+   "type": "tutorial_done",
+   "t": 54.1,
+   "st": 54.9,
+   "stage": 12,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 54.7,
+   "st": 55.5,
+   "stage": 13,
+   "kind": "quest"
+  },
+  {
+   "type": "purchase",
+   "t": 57.8,
+   "st": 58.6,
+   "item": "soldier",
+   "price": 12,
+   "goldAfter": 13
+  },
+  {
+   "type": "tutorial_done",
+   "t": 57.8,
+   "st": 58.6,
+   "stage": 13,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 58.4,
+   "st": 59.2,
+   "stage": 14,
+   "kind": "quest"
+  },
+  {
+   "type": "flag_plant",
+   "t": 59.9,
+   "st": 60.7,
+   "reason": "purchase",
+   "unit": "soldier",
+   "x": 649,
+   "y": 455
+  },
+  {
+   "type": "tutorial_done",
+   "t": 59.9,
+   "st": 60.7,
+   "stage": 14,
+   "kind": "quest"
+  },
+  {
+   "type": "wave_warning",
+   "t": 60.5,
+   "st": 61.3,
+   "wave": 2,
+   "reason": "tutorial"
+  },
+  {
+   "type": "wave_start",
+   "t": 66.5,
+   "st": 67.3,
+   "wave": 2
+  },
+  {
+   "type": "wave_clear",
+   "t": 74.3,
+   "st": 75.2,
+   "wave": 2,
+   "stranded": 0
+  },
+  {
+   "type": "guide_start",
+   "t": 76.3,
+   "st": 77.2,
+   "stages": [
+    15
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 76.6,
+   "st": 77.5,
+   "stage": 15,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 78.3,
+   "st": 79.1,
+   "stage": 15,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 78.6,
+   "st": 79.4,
+   "stages": [
+    15
+   ],
+   "sec": 2.3
+  },
+  {
+   "type": "tutorial_arrow",
+   "t": 78.6,
+   "st": 79.4,
+   "item": "pierce",
+   "from": "crossbow",
+   "to": "soldier"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 78.6,
+   "st": 79.4,
+   "stage": 16,
+   "kind": "quest"
+  },
+  {
+   "type": "take",
+   "t": 83,
+   "st": 83.8,
+   "item": "pierce",
+   "from": "crossbow"
+  },
+  {
+   "type": "tutorial_arrow",
+   "t": 83,
+   "st": 83.8,
+   "item": "pierce",
+   "from": "hand",
+   "to": "soldier"
+  },
+  {
+   "type": "install",
+   "t": 85.6,
+   "st": 86.4,
+   "item": "pierce",
+   "to": "soldier",
+   "mode": "replace",
+   "swappedOut": "melee"
+  },
+  {
+   "type": "tutorial_arrow",
+   "t": 85.6,
+   "st": 86.4,
+   "item": "melee",
+   "from": "hand",
+   "to": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 86.8,
+   "st": 87.6,
+   "item": "melee",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "tutorial_arrow",
+   "t": 86.8,
+   "st": 87.7,
+   "item": "seek",
+   "from": "soldier",
+   "to": "crossbow"
+  },
+  {
+   "type": "take",
+   "t": 88.8,
+   "st": 89.6,
+   "item": "seek",
+   "from": "soldier"
+  },
+  {
+   "type": "tutorial_arrow",
+   "t": 88.8,
+   "st": 89.6,
+   "item": "seek",
+   "from": "hand",
+   "to": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 90,
+   "st": 90.8,
+   "item": "seek",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "tutorial_done",
+   "t": 90,
+   "st": 90.8,
+   "stage": 16,
+   "kind": "quest"
+  },
+  {
+   "type": "wave_warning",
+   "t": 90.6,
+   "st": 91.4,
+   "wave": 3,
+   "reason": "tutorial"
+  },
+  {
+   "type": "wave_start",
+   "t": 99.1,
+   "st": 100,
+   "wave": 3
+  },
+  {
+   "type": "wave_clear",
+   "t": 109.4,
+   "st": 110.2,
+   "wave": 3,
+   "stranded": 0
+  },
+  {
+   "type": "level_end",
+   "t": 109.4,
+   "st": 110.2,
+   "result": "win",
+   "wave": 3,
+   "castleHp": 20,
+   "stars": 3
+  }
+ ]
+}

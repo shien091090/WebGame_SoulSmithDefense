@@ -1,0 +1,1093 @@
+{
+ "game": "SoulSmithDefense",
+ "version": "polish-6",
+ "summary": {
+  "level": 2,
+  "levelName": "新手教學・共鳴",
+  "attempt": 1,
+  "failsBefore": 0,
+  "result": "win",
+  "durationSec": 171.7,
+  "gameSec": 140.7,
+  "slowMoSec": 16.9,
+  "hiddenSec": 0,
+  "pauseSec": 0,
+  "pauses": 0,
+  "codexSec": 0,
+  "codexOpens": 0,
+  "guideSec": 15.3,
+  "revealSec": 2.3,
+  "reveals": 1,
+  "gateSec": 23.2,
+  "clearWaitSec": 56.2,
+  "tutorialBlocks": {
+   "install": 1
+  },
+  "tutorialSpawns": 0,
+  "tutorialGold": 0,
+  "tutorialFloor": 0,
+  "menuBlocks": 3,
+  "waveReached": 3,
+  "totalWaves": 3,
+  "castleHp": 18,
+  "stars": 2,
+  "leaks": 1,
+  "leaksByWave": [
+   0,
+   1,
+   0
+  ],
+  "leaksBySpawn": {
+   "A": 1
+  },
+  "kills": 21,
+  "playerKills": 2,
+  "playerHits": 3,
+  "goldEarned": 60,
+  "goldRefund": 0,
+  "goldSpent": 82,
+  "goldEnd": 48,
+  "purchases": {
+   "crossbow": 2,
+   "soldier": 1,
+   "pillar": 1
+  },
+  "pillarCap": 2,
+  "pillarsMax": 1,
+  "steals": {
+   "started": 4,
+   "done": 4,
+   "diedDone": 0,
+   "canceled": 0
+  },
+  "installs": {
+   "direct": 7,
+   "replace": 4
+  },
+  "fuses": {
+   "旋風斬": 1,
+   "穿透箭": 1
+  },
+  "drops": 4,
+  "groundExpired": 2,
+  "demolishes": 0,
+  "homeRefunds": {},
+  "bundledBack": 0,
+  "flags": {
+   "purchase": 1,
+   "rally": 1
+  },
+  "unitDowns": 3,
+  "maxRespawnQueue": 1,
+  "marchLoops": 0,
+  "blinks": 1,
+  "healed": 0,
+  "enemyHealed": 0,
+  "recruits": 1,
+  "combosFoundThisLevel": [
+   "旋風斬",
+   "雷電球",
+   "瞬閃"
+  ],
+  "combosFoundTotal": 4,
+  "recipesOpenedTotal": 2,
+  "stranded": 0,
+  "tutorialLevel": true,
+  "tutorialClearSt": null
+ },
+ "tutorial": {
+  "1": {
+   "shownSt": 2.1,
+   "doneSt": 3.7,
+   "kind": "card"
+  },
+  "2": {
+   "shownSt": 3.7,
+   "doneSt": 5.3,
+   "kind": "card"
+  },
+  "3": {
+   "shownSt": 5.3,
+   "doneSt": 7.1,
+   "kind": "card"
+  },
+  "4": {
+   "shownSt": 7.4,
+   "doneSt": 8.1,
+   "kind": "quest"
+  },
+  "5": {
+   "shownSt": 8.7,
+   "doneSt": 9.3,
+   "kind": "quest"
+  },
+  "6": {
+   "shownSt": 9.9,
+   "doneSt": 9.9,
+   "kind": "quest"
+  },
+  "7": {
+   "shownSt": 10.5,
+   "doneSt": 11.6,
+   "kind": "quest"
+  },
+  "8": {
+   "shownSt": 12.5,
+   "doneSt": 14.1,
+   "kind": "card"
+  },
+  "9": {
+   "shownSt": 27.1,
+   "doneSt": 28.8,
+   "kind": "card"
+  },
+  "10": {
+   "shownSt": 32.6,
+   "doneSt": 34.5,
+   "kind": "card"
+  },
+  "11": {
+   "shownSt": 34.8,
+   "doneSt": 48.1,
+   "kind": "quest"
+  },
+  "12": {
+   "shownSt": 48.7,
+   "doneSt": 54.9,
+   "kind": "quest"
+  },
+  "13": {
+   "shownSt": 55.5,
+   "doneSt": 58.6,
+   "kind": "quest"
+  },
+  "14": {
+   "shownSt": 59.2,
+   "doneSt": 60.7,
+   "kind": "quest"
+  },
+  "15": {
+   "shownSt": 77.5,
+   "doneSt": 79.1,
+   "kind": "card"
+  },
+  "16": {
+   "shownSt": 79.4,
+   "doneSt": 90.8,
+   "kind": "quest"
+  },
+  "17": {
+   "shownSt": 116.6,
+   "doneSt": 123.5,
+   "kind": "quest"
+  },
+  "18": {
+   "shownSt": 133.6,
+   "doneSt": 140,
+   "kind": "card"
+  },
+  "19": {
+   "shownSt": 140,
+   "doneSt": 142.1,
+   "kind": "card"
+  },
+  "20": {
+   "shownSt": 142.5,
+   "doneSt": 146.9,
+   "kind": "quest"
+  },
+  "21": {
+   "shownSt": 147.5,
+   "doneSt": 148.8,
+   "kind": "quest"
+  },
+  "22": {
+   "shownSt": 151.8,
+   "doneSt": 169,
+   "kind": "quest"
+  },
+  "23": {
+   "shownSt": 169.6,
+   "doneSt": 171.9,
+   "kind": "quest"
+  },
+  "24": {
+   "shownSt": 172.5,
+   "doneSt": 175.6,
+   "kind": "quest"
+  },
+  "25": {
+   "shownSt": 176.2,
+   "doneSt": 178.8,
+   "kind": "quest"
+  },
+  "26": {
+   "shownSt": 185.4,
+   "doneSt": 195.4,
+   "kind": "quest"
+  },
+  "27": {
+   "shownSt": 196,
+   "doneSt": 224,
+   "kind": "quest"
+  },
+  "28": {
+   "shownSt": 224.9,
+   "doneSt": 227.3,
+   "kind": "card"
+  },
+  "29": {
+   "shownSt": 263.2,
+   "doneSt": 265.6,
+   "kind": "card"
+  },
+  "30": {
+   "shownSt": 266,
+   "doneSt": 286.2,
+   "kind": "quest"
+  },
+  "31": {
+   "shownSt": 279.3,
+   "doneSt": 285.6,
+   "kind": "quest"
+  }
+ },
+ "events": [
+  {
+   "type": "menu_block",
+   "t": null,
+   "st": 113,
+   "level": 1
+  },
+  {
+   "type": "menu_block",
+   "t": null,
+   "st": 113.3,
+   "level": 1
+  },
+  {
+   "type": "menu_block",
+   "t": null,
+   "st": 114.5,
+   "level": 1
+  },
+  {
+   "type": "level_start",
+   "t": 0,
+   "st": 115.5,
+   "level": 2,
+   "attempt": 1
+  },
+  {
+   "type": "tutorial_show",
+   "t": 1,
+   "st": 116.6,
+   "stage": 17,
+   "kind": "quest"
+  },
+  {
+   "type": "purchase",
+   "t": 2.3,
+   "st": 117.9,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 55
+  },
+  {
+   "type": "place",
+   "t": 4.1,
+   "st": 119.6,
+   "kind": "crossbow",
+   "x": 792,
+   "y": 314,
+   "bundled": [
+    "ranged"
+   ]
+  },
+  {
+   "type": "purchase",
+   "t": 6.1,
+   "st": 121.7,
+   "item": "soldier",
+   "price": 12,
+   "goldAfter": 43
+  },
+  {
+   "type": "flag_plant",
+   "t": 8,
+   "st": 123.5,
+   "reason": "purchase",
+   "unit": "soldier",
+   "x": 734,
+   "y": 365
+  },
+  {
+   "type": "tutorial_done",
+   "t": 8,
+   "st": 123.5,
+   "stage": 17,
+   "kind": "quest"
+  },
+  {
+   "type": "wave_warning",
+   "t": 8.6,
+   "st": 124.2,
+   "wave": 1,
+   "reason": "tutorial"
+  },
+  {
+   "type": "take",
+   "t": 10.2,
+   "st": 125.8,
+   "item": "ranged",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 10.9,
+   "st": 126.4,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "wave_start",
+   "t": 15.7,
+   "st": 131.3,
+   "wave": 1
+  },
+  {
+   "type": "guide_start",
+   "t": 17.7,
+   "st": 133.3,
+   "stages": [
+    18,
+    19
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 18,
+   "st": 133.6,
+   "stage": 18,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 24.4,
+   "st": 140,
+   "stage": 18,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 24.4,
+   "st": 140,
+   "stage": 19,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 26.6,
+   "st": 142.1,
+   "stage": 19,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 26.9,
+   "st": 142.5,
+   "stages": [
+    18,
+    19
+   ],
+   "sec": 9.2
+  },
+  {
+   "type": "tutorial_show",
+   "t": 26.9,
+   "st": 142.5,
+   "stage": 20,
+   "kind": "quest"
+  },
+  {
+   "type": "steal_start",
+   "t": 29.8,
+   "st": 145.4,
+   "enemy": "imp",
+   "item": "march"
+  },
+  {
+   "type": "steal_done",
+   "t": 31.4,
+   "st": 146.9,
+   "enemy": "imp",
+   "item": "march",
+   "via": "bar"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 31.4,
+   "st": 146.9,
+   "stage": 20,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 32,
+   "st": 147.5,
+   "stage": 21,
+   "kind": "quest"
+  },
+  {
+   "type": "install",
+   "t": 33.3,
+   "st": 148.8,
+   "item": "march",
+   "to": "neutral",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "tutorial_done",
+   "t": 33.3,
+   "st": 148.8,
+   "stage": 21,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_wait",
+   "t": 36.3,
+   "st": 151.8,
+   "waitedSec": 3
+  },
+  {
+   "type": "tutorial_show",
+   "t": 36.3,
+   "st": 151.8,
+   "stage": 22,
+   "kind": "quest"
+  },
+  {
+   "type": "steal_start",
+   "t": 41.3,
+   "st": 156.9,
+   "enemy": "imp",
+   "item": "melee"
+  },
+  {
+   "type": "steal_done",
+   "t": 42.9,
+   "st": 158.4,
+   "enemy": "imp",
+   "item": "melee",
+   "via": "bar"
+  },
+  {
+   "type": "install",
+   "t": 44.5,
+   "st": 160,
+   "item": "melee",
+   "to": "soldier",
+   "mode": "replace",
+   "swappedOut": "seek"
+  },
+  {
+   "type": "fuse",
+   "t": 44.5,
+   "st": 160,
+   "item": "whirl",
+   "unit": "soldier",
+   "materials": [
+    "melee",
+    "melee"
+   ]
+  },
+  {
+   "type": "combo_new",
+   "t": 44.5,
+   "st": 160,
+   "name": "旋風斬",
+   "unit": "soldier"
+  },
+  {
+   "type": "combo_reveal",
+   "t": 44.5,
+   "st": 160,
+   "name": "旋風斬",
+   "materials": [
+    "melee",
+    "melee"
+   ],
+   "action": "show"
+  },
+  {
+   "type": "combo_reveal",
+   "t": 46.7,
+   "st": 162.3,
+   "name": "旋風斬",
+   "materials": [
+    "melee",
+    "melee"
+   ],
+   "action": "close",
+   "readSec": 2.3
+  },
+  {
+   "type": "install",
+   "t": 47.2,
+   "st": 162.8,
+   "item": "seek",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "unit_down",
+   "t": 48.2,
+   "st": 163.7,
+   "unit": "soldier",
+   "x": 690,
+   "y": 223,
+   "queueLen": 1
+  },
+  {
+   "type": "recruit",
+   "t": 48.4,
+   "st": 163.9
+  },
+  {
+   "type": "wave_clear",
+   "t": 50.5,
+   "st": 166,
+   "wave": 1,
+   "stranded": 1
+  },
+  {
+   "type": "unit_respawn",
+   "t": 53.2,
+   "st": 168.7,
+   "unit": "soldier",
+   "waitSec": 5
+  },
+  {
+   "type": "tutorial_done",
+   "t": 53.5,
+   "st": 169,
+   "stage": 22,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 54.1,
+   "st": 169.6,
+   "stage": 23,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 56.4,
+   "st": 171.9,
+   "stage": 23,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 57,
+   "st": 172.5,
+   "stage": 24,
+   "kind": "quest"
+  },
+  {
+   "type": "purchase",
+   "t": 60,
+   "st": 175.6,
+   "item": "pillar",
+   "price": 40,
+   "goldAfter": 11
+  },
+  {
+   "type": "tutorial_done",
+   "t": 60,
+   "st": 175.6,
+   "stage": 24,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 60.6,
+   "st": 176.2,
+   "stage": 25,
+   "kind": "quest"
+  },
+  {
+   "type": "ground_expire",
+   "t": 61.9,
+   "st": 177.4,
+   "item": "march"
+  },
+  {
+   "type": "place",
+   "t": 63.3,
+   "st": 178.8,
+   "kind": "pillar",
+   "x": 792,
+   "y": 362,
+   "bundled": []
+  },
+  {
+   "type": "tutorial_done",
+   "t": 63.3,
+   "st": 178.8,
+   "stage": 25,
+   "kind": "quest"
+  },
+  {
+   "type": "wave_warning",
+   "t": 63.9,
+   "st": 179.5,
+   "wave": 2,
+   "reason": "tutorial"
+  },
+  {
+   "type": "wave_start",
+   "t": 69.9,
+   "st": 185.4,
+   "wave": 2
+  },
+  {
+   "type": "tutorial_show",
+   "t": 69.9,
+   "st": 185.4,
+   "stage": 26,
+   "kind": "quest"
+  },
+  {
+   "type": "steal_start",
+   "t": 71.3,
+   "st": 186.9,
+   "enemy": "imp",
+   "item": "melee"
+  },
+  {
+   "type": "steal_done",
+   "t": 72.8,
+   "st": 188.4,
+   "enemy": "imp",
+   "item": "melee",
+   "via": "bar"
+  },
+  {
+   "type": "tutorial_block",
+   "t": 75.5,
+   "st": 191,
+   "action": "install",
+   "stage": 26,
+   "item": "melee"
+  },
+  {
+   "type": "drop",
+   "t": 76.6,
+   "st": 192.2,
+   "item": "melee"
+  },
+  {
+   "type": "steal_start",
+   "t": 78.3,
+   "st": 193.9,
+   "enemy": "thunder",
+   "item": "shock"
+  },
+  {
+   "type": "steal_done",
+   "t": 79.8,
+   "st": 195.4,
+   "enemy": "thunder",
+   "item": "shock",
+   "via": "bar"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 79.8,
+   "st": 195.4,
+   "stage": 26,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 80.4,
+   "st": 196,
+   "stage": 27,
+   "kind": "quest"
+  },
+  {
+   "type": "drop",
+   "t": 81,
+   "st": 196.5,
+   "item": "shock"
+  },
+  {
+   "type": "unit_down",
+   "t": 88.6,
+   "st": 204.1,
+   "unit": "soldier",
+   "x": 702,
+   "y": 251,
+   "queueLen": 1
+  },
+  {
+   "type": "unit_respawn",
+   "t": 93.6,
+   "st": 209.1,
+   "unit": "soldier",
+   "waitSec": 5
+  },
+  {
+   "type": "leak",
+   "t": 103.6,
+   "st": 219.1,
+   "wave": 2,
+   "enemy": "imp",
+   "spawn": "A",
+   "castleHpAfter": 18
+  },
+  {
+   "type": "wave_clear",
+   "t": 103.6,
+   "st": 219.1,
+   "wave": 2,
+   "stranded": 1
+  },
+  {
+   "type": "take",
+   "t": 106.9,
+   "st": 222.4,
+   "item": "shock",
+   "from": "ground"
+  },
+  {
+   "type": "install",
+   "t": 108.4,
+   "st": 224,
+   "item": "shock",
+   "to": "pillar",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "combo_new",
+   "t": 108.5,
+   "st": 224,
+   "name": "雷電球",
+   "unit": "crossbow"
+  },
+  {
+   "type": "combo_new",
+   "t": 108.5,
+   "st": 224,
+   "name": "瞬閃",
+   "unit": "soldier"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 108.5,
+   "st": 224,
+   "stage": 27,
+   "kind": "quest"
+  },
+  {
+   "type": "guide_start",
+   "t": 109.1,
+   "st": 224.6,
+   "stages": [
+    28
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 109.4,
+   "st": 224.9,
+   "stage": 28,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 111.7,
+   "st": 227.3,
+   "stage": 28,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 112,
+   "st": 227.6,
+   "stages": [
+    28
+   ],
+   "sec": 3
+  },
+  {
+   "type": "wave_warning",
+   "t": 112,
+   "st": 227.6,
+   "wave": 3,
+   "reason": "tutorial"
+  },
+  {
+   "type": "take",
+   "t": 116.5,
+   "st": 232,
+   "item": "melee",
+   "from": "ground"
+  },
+  {
+   "type": "drop",
+   "t": 118.4,
+   "st": 233.9,
+   "item": "melee"
+  },
+  {
+   "type": "wave_start",
+   "t": 118.4,
+   "st": 233.9,
+   "wave": 3
+  },
+  {
+   "type": "purchase",
+   "t": 126,
+   "st": 241.5,
+   "item": "crossbow",
+   "price": 15,
+   "goldAfter": 16
+  },
+  {
+   "type": "place",
+   "t": 127.6,
+   "st": 243.1,
+   "kind": "crossbow",
+   "x": 840,
+   "y": 362,
+   "bundled": [
+    "ranged"
+   ]
+  },
+  {
+   "type": "ground_expire",
+   "t": 130,
+   "st": 245.6,
+   "item": "melee"
+  },
+  {
+   "type": "take",
+   "t": 130.5,
+   "st": 246,
+   "item": "ranged",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 132.5,
+   "st": 248.1,
+   "item": "ranged",
+   "to": "soldier",
+   "mode": "replace",
+   "swappedOut": "seek"
+  },
+  {
+   "type": "install",
+   "t": 134.1,
+   "st": 249.7,
+   "item": "seek",
+   "to": "soldier",
+   "mode": "replace",
+   "swappedOut": "ranged"
+  },
+  {
+   "type": "unit_down",
+   "t": 135.4,
+   "st": 251,
+   "unit": "soldier",
+   "x": 620,
+   "y": 224,
+   "queueLen": 1
+  },
+  {
+   "type": "install",
+   "t": 135.5,
+   "st": 251,
+   "item": "ranged",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "fuse",
+   "t": 135.5,
+   "st": 251,
+   "item": "pierce",
+   "unit": "crossbow",
+   "materials": [
+    "ranged",
+    "ranged"
+   ]
+  },
+  {
+   "type": "unit_respawn",
+   "t": 140.9,
+   "st": 256.5,
+   "unit": "soldier",
+   "waitSec": 5
+  },
+  {
+   "type": "take",
+   "t": 142.4,
+   "st": 258,
+   "item": "pierce",
+   "from": "crossbow"
+  },
+  {
+   "type": "install",
+   "t": 143.4,
+   "st": 259,
+   "item": "pierce",
+   "to": "pillar",
+   "mode": "replace",
+   "swappedOut": "shock"
+  },
+  {
+   "type": "player_kill",
+   "t": 143.4,
+   "st": 259,
+   "enemy": "archer"
+  },
+  {
+   "type": "install",
+   "t": 144.4,
+   "st": 260,
+   "item": "shock",
+   "to": "crossbow",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "player_kill",
+   "t": 147,
+   "st": 262.5,
+   "enemy": "thunder"
+  },
+  {
+   "type": "wave_clear",
+   "t": 147.3,
+   "st": 262.9,
+   "wave": 3,
+   "stranded": 1
+  },
+  {
+   "type": "guide_start",
+   "t": 147.3,
+   "st": 262.9,
+   "stages": [
+    29
+   ]
+  },
+  {
+   "type": "tutorial_show",
+   "t": 147.6,
+   "st": 263.2,
+   "stage": 29,
+   "kind": "card"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 150.1,
+   "st": 265.6,
+   "stage": 29,
+   "kind": "card"
+  },
+  {
+   "type": "guide_end",
+   "t": 150.4,
+   "st": 266,
+   "stages": [
+    29
+   ],
+   "sec": 3.1
+  },
+  {
+   "type": "tutorial_show",
+   "t": 150.4,
+   "st": 266,
+   "stage": 30,
+   "kind": "quest"
+  },
+  {
+   "type": "flag_plant",
+   "t": 158.3,
+   "st": 273.9,
+   "reason": "rally",
+   "unit": "soldier",
+   "x": 266,
+   "y": 194
+  },
+  {
+   "type": "take",
+   "t": 162.9,
+   "st": 278.5,
+   "item": "whirl",
+   "from": "soldier"
+  },
+  {
+   "type": "tutorial_show",
+   "t": 163.7,
+   "st": 279.3,
+   "stage": 31,
+   "kind": "quest"
+  },
+  {
+   "type": "drop",
+   "t": 165,
+   "st": 280.6,
+   "item": "whirl"
+  },
+  {
+   "type": "take",
+   "t": 167.6,
+   "st": 283.1,
+   "item": "whirl",
+   "from": "ground"
+  },
+  {
+   "type": "install",
+   "t": 170.1,
+   "st": 285.6,
+   "item": "whirl",
+   "to": "soldier",
+   "mode": "direct",
+   "swappedOut": null
+  },
+  {
+   "type": "tutorial_done",
+   "t": 170.1,
+   "st": 285.6,
+   "stage": 31,
+   "kind": "quest"
+  },
+  {
+   "type": "tutorial_done",
+   "t": 170.7,
+   "st": 286.2,
+   "stage": 30,
+   "kind": "quest"
+  },
+  {
+   "type": "level_end",
+   "t": 171.7,
+   "st": 287.2,
+   "result": "win",
+   "wave": 3,
+   "castleHp": 18,
+   "stars": 2
+  }
+ ]
+}

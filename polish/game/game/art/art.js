@@ -1,4 +1,4 @@
-// 魂匠守衛者(打磨第 6 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
+// 魂匠守衛者(打磨第 7 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
 // 全域物件 window.Art; 每個函式自己 save/restore。
 (function () {
   'use strict';
@@ -37,7 +37,9 @@
   // 會共鳴的魂件(conventions.resonantKinds): 攻擊類 + 支援類 12 種
   var RESONANT = { ranged: 1, melee: 1, frost: 1, shock: 1, heal: 1, pierce: 1, iceArrow: 1, whirl: 1, frostSmash: 1, thunderSlash: 1, thunderOrb: 1, healRay: 1 };
   var KITS = { crossbowKit: 'crossbow', pillarKit: 'pillar', soldierKit: 'soldier', golemKit: 'golem' };
-  var ENEMY_SIZE = { imp: 32, archer: 32, ice: 32, drummer: 36, thunder: 36, healer: 36, brute: 44 };
+  var ENEMY_SIZE = { imp: 32, archer: 32, ice: 32, drummer: 36, thunder: 36, healer: 36, brute: 44, bossFrost: 72, bossBull: 72, bossThunder: 72 };
+  var BOSS = { bossFrost: 1, bossBull: 1, bossThunder: 1 };
+  function isBoss(t) { return typeof t === 'string' && BOSS[t] === 1; }
 
   // ---------- 小工具 ----------
   function num(v, d) { v = +v; return isFinite(v) ? v : d; }
@@ -398,7 +400,7 @@
       case 'heal': // 十字(治癒)
         plusPath(ctx, 0, 0, s * 0.78); ctx.fill();
         break;
-      case 'charge': // 牛角頭(衝鋒; 衝鬼頭上同一對角)
+      case 'charge': // 牛角頭(衝鋒; 奔牛怪頭上同一對角)
         ctx.beginPath(); ctx.arc(0, s * 0.38, s * 0.3, 0, TAU); ctx.fill();
         ctx.lineWidth = Math.max(1.4, s * 0.24);
         ctx.beginPath(); ctx.moveTo(-s * 0.22, s * 0.22); ctx.quadraticCurveTo(-s * 0.85, s * 0.1, -s * 0.66, -s * 0.78); ctx.stroke();
@@ -639,15 +641,15 @@
     ctx.closePath();
   }
   function leanPose(ctx) { ctx.transform(1, 0, -0.16, 1, 0, 0); ctx.scale(0.86, 0.86); }
-  var ENEMY_COL = { imp: '#b23a52', archer: '#963a86', ice: '#5a5aa8', drummer: '#8a4a3a', thunder: '#4b3f9a', healer: '#2f6e5a', brute: '#7e1a30' };
+  var ENEMY_COL = { imp: '#b23a52', archer: '#963a86', ice: '#5a5aa8', drummer: '#8a4a3a', thunder: '#4b3f9a', healer: '#2f6e5a', brute: '#7e1a30', bossFrost: '#4f55b0', bossBull: '#7a3828', bossThunder: '#3a2466' };
   function enemyBody(ctx, type, S, opt) {
     opt = opt || {};
     var swift = type === 'imp' && opt.swift;
     var body = opt.body || (swift ? '#e88aa0' : ENEMY_COL[type]);
     var hs = S / 2;
-    // 輕快小鬼: 身形瘦一圈(寬 0.84)、體色較淺、頭上綁帶往後飄
+    // 疾行怪: 身形瘦一圈(寬 0.84)、體色較淺、頭上綁帶往後飄
     if (swift) { ctx.save(); ctx.scale(0.84, 1); }
-    // 衝鬼: 身體前傾(上半身往右 = 前進方向)
+    // 奔牛怪: 身體前傾(上半身往右 = 前進方向)
     var lean = type === 'drummer' && !opt.flat && !opt.noLean;
     if (lean) { ctx.save(); leanPose(ctx); }
     ctx.fillStyle = C.enemyDark; ghostPath(ctx, S - 1, S - 1); ctx.fill();
@@ -713,6 +715,156 @@
       ctx.beginPath(); ctx.moveTo(-12, -hs + 10); ctx.quadraticCurveTo(-14.5, -hs + 11 - fl, -15, -hs + 14 - fl); ctx.stroke();
     }
     if (lean) ctx.restore();
+  }
+
+  // ---------- Boss(第 7 輪, 72×72) ----------
+  // 共同語言: 一般敵人的「鬼」剪影放大(62 寬, 中心下移 5 讓出頭頂配件)+ 粗暗紅外描 + 橘眼, 加上怒眉、獠牙與王者配件。
+  // 三隻: 霜角巨怪 = 靛藍身 + 冰晶巨角 + 冰甲肩 + 雙冰刃; 蠻角牛王 = 赭紅身前傾 + 鐵盔鐵肩 + 粗彎角 + 金鼻環;
+  //       雷霆魔王 = 墨紫身 + 金色雷角王冠 + 周身電弧 + 治癒寶珠權杖。全部畫在 ±36 內(中心為原點)。
+  function bossSil(ctx, w) { ctx.save(); ctx.translate(0, 5); ghostPath(ctx, w, w); ctx.restore(); }
+  function bossLean(ctx, k) { ctx.transform(1, 0, -k, 1, 0, 0); }
+  // opt: { tint, mono, dead, roar(0~1 張嘴), eyeGlow(0~1), hornFlash(0~1), arcs(bool, 雷霆魔王身邊電弧; 預設 true) }
+  function bossBody(ctx, type, opt) {
+    opt = opt || {};
+    var mono = opt.mono || null;
+    function F(c) { return mono || c; }
+    var body = F(ENEMY_COL[type] || ENEMY_COL.bossFrost), dk = F(C.enemyDark);
+    ctx.save();
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    if (type === 'bossBull') bossLean(ctx, 0.1);
+    // ---- 身後的配件(先畫, 讓身體蓋住根部) ----
+    if (type === 'bossFrost') {
+      // 冰晶巨角: 頭頂兩側往外上斜, 角尖 (±25, −33)
+      for (var sd = -1; sd <= 1; sd += 2) {
+        ctx.beginPath(); ctx.moveTo(sd * 7, -17); ctx.lineTo(sd * 15, -28); ctx.lineTo(sd * 25, -33); ctx.lineTo(sd * 22, -23); ctx.lineTo(sd * 18, -16); ctx.closePath();
+        ctx.fillStyle = dk; ctx.lineWidth = 3; ctx.strokeStyle = dk; ctx.stroke(); ctx.fill();
+        ctx.fillStyle = F('#dff6ff'); ctx.fill();
+        ctx.strokeStyle = F(C.frost); ctx.lineWidth = 1.2; ctx.stroke();
+        if (!mono) { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sd * 12, -19); ctx.lineTo(sd * 21, -29.5); ctx.stroke(); }
+      }
+      // 雙冰刃(兩件近戰): 手在 (±28, 11), 刃尖朝外上到 (±33.5, −14)
+      for (var sb = -1; sb <= 1; sb += 2) {
+        ctx.beginPath(); ctx.moveTo(sb * 25, 10); ctx.lineTo(sb * 33.5, -14); ctx.lineTo(sb * 32, 12); ctx.closePath();
+        ctx.strokeStyle = dk; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.fillStyle = F('#eefcff'); ctx.fill();
+        ctx.strokeStyle = F(C.frost); ctx.lineWidth = 1; ctx.stroke();
+      }
+    } else if (type === 'bossBull') {
+      // 粗彎角: 從頭側往外彎再往上, 角尖 (±27, −30.5), 尖端衝鋒洋紅
+      for (var hb = -1; hb <= 1; hb += 2) {
+        var hornB = function () { ctx.beginPath(); ctx.moveTo(hb * 10, -17); ctx.quadraticCurveTo(hb * 29, -18, hb * 27, -30.5); };
+        ctx.strokeStyle = dk; ctx.lineWidth = 8.5; hornB(); ctx.stroke();
+        ctx.strokeStyle = F('#efe2c4'); ctx.lineWidth = 5.5; hornB(); ctx.stroke();
+        if (!mono) {
+          ctx.fillStyle = C.charge; ctx.beginPath(); ctx.arc(hb * 27, -30, 2.6, 0, TAU); ctx.fill();
+          var hf = clamp(num(opt.hornFlash, 0), 0, 1);
+          if (hf > 0) { ctx.save(); ctx.globalAlpha *= hf; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; hornB(); ctx.stroke(); ctx.restore(); }
+        }
+      }
+    } else if (type === 'bossThunder') {
+      // 權杖(右手): 杖身 x 27, 頂端治癒寶珠 (27, −20) r 6.5 = 「牠會補血」
+      ctx.strokeStyle = dk; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(27, 31); ctx.lineTo(27, -14); ctx.stroke();
+      ctx.strokeStyle = F('#b08a4a'); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(27, 31); ctx.lineTo(27, -14); ctx.stroke();
+      ctx.fillStyle = dk; ctx.beginPath(); ctx.arc(27, -20, 8, 0, TAU); ctx.fill();
+      ctx.fillStyle = F(C.heal); ctx.beginPath(); ctx.arc(27, -20, 6.5, 0, TAU); ctx.fill();
+      if (!mono) {
+        ctx.fillStyle = '#ffffff'; plusPath(ctx, 27, -20, 4); ctx.fill();
+        ctx.strokeStyle = rgba(C.heal, 0.45 + 0.3 * Math.sin(now() * 4)); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(27, -20, 7.6, 0, TAU); ctx.stroke();
+      }
+    }
+    // ---- 身體 ----
+    ctx.fillStyle = dk; bossSil(ctx, 62); ctx.fill();
+    ctx.fillStyle = body; bossSil(ctx, 57); ctx.fill();
+    if (opt.tint && !mono) { ctx.fillStyle = opt.tint; bossSil(ctx, 57); ctx.fill(); }
+    if (!mono) {
+      // 腹部亮面(厚重的體積感)
+      ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.beginPath(); ctx.ellipse(0, 14, 18, 14, 0, 0, TAU); ctx.fill();
+    }
+    // ---- 身前的配件 ----
+    if (type === 'bossFrost') {
+      // 冰甲肩: 兩肩各 3 片冰晶往外上
+      for (var sa = -1; sa <= 1; sa += 2) {
+        var cx0 = sa * 20, cy0 = -6;
+        [[-0.9, 9], [-0.4, 11], [0.15, 8]].forEach(function (q) {
+          var a = -PI / 2 + sa * (PI / 2 + q[0]) * 0.75, L = q[1];
+          var tx = cx0 + Math.cos(a) * L, ty = cy0 + Math.sin(a) * L;
+          var nx = -Math.sin(a) * 3.2, ny = Math.cos(a) * 3.2;
+          ctx.beginPath(); ctx.moveTo(cx0 + nx, cy0 + ny); ctx.lineTo(tx, ty); ctx.lineTo(cx0 - nx, cy0 - ny); ctx.closePath();
+          ctx.strokeStyle = dk; ctx.lineWidth = 2; ctx.stroke();
+          ctx.fillStyle = F('#c4ecff'); ctx.fill();
+        });
+        ctx.fillStyle = F('#9fdcff'); ctx.beginPath(); ctx.ellipse(cx0, cy0 + 2, 7, 4.5, 0, 0, TAU); ctx.fill();
+      }
+      // 胸前霜紋
+      if (!mono) { ctx.strokeStyle = 'rgba(200,240,255,0.55)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(-8, 18); ctx.lineTo(-3, 24); ctx.lineTo(0, 19); ctx.lineTo(3, 24); ctx.lineTo(8, 18); ctx.stroke(); }
+    } else if (type === 'bossBull') {
+      // 鐵盔: 頭頂一片鐵板 + 鉚釘
+      ctx.save(); ctx.translate(0, 5);
+      ctx.beginPath(); ctx.arc(0, -2, 28.5, PI * 1.13, PI * 1.87); ctx.lineTo(18, -16); ctx.quadraticCurveTo(0, -12, -18, -16); ctx.closePath();
+      ctx.fillStyle = dk; ctx.fill(); ctx.strokeStyle = dk; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -2, 26.5, PI * 1.15, PI * 1.85); ctx.lineTo(17, -17.5); ctx.quadraticCurveTo(0, -13.5, -17, -17.5); ctx.closePath();
+      ctx.fillStyle = F('#737a88'); ctx.fill();
+      if (!mono) { ctx.fillStyle = '#cfd4de'; [-12, 0, 12].forEach(function (rx) { ctx.beginPath(); ctx.arc(rx, -22 + Math.abs(rx) * 0.12, 1.6, 0, TAU); ctx.fill(); }); }
+      ctx.restore();
+      // 鐵肩甲
+      for (var sp = -1; sp <= 1; sp += 2) {
+        ctx.fillStyle = dk; rr(ctx, sp * 25 - 8, -4, 16, 13, 4); ctx.fill();
+        ctx.fillStyle = F('#737a88'); rr(ctx, sp * 25 - 6.5, -2.5, 13, 10, 3); ctx.fill();
+        if (!mono) { ctx.fillStyle = '#cfd4de'; ctx.beginPath(); ctx.arc(sp * 25, 2.5, 1.4, 0, TAU); ctx.fill(); }
+      }
+      // 口鼻 + 鼻孔 + 金鼻環
+      ctx.fillStyle = dk; ctx.beginPath(); ctx.ellipse(0, 11, 15, 10, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = F('#b0705a'); ctx.beginPath(); ctx.ellipse(0, 11, 13, 8.5, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = dk; ctx.beginPath(); ctx.ellipse(-5, 10, 2.2, 3, 0, 0, TAU); ctx.ellipse(5, 10, 2.2, 3, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = dk; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 18, 5, 0.15 * PI, 0.85 * PI); ctx.stroke();
+      ctx.strokeStyle = F(C.gold); ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(0, 18, 5, 0.15 * PI, 0.85 * PI); ctx.stroke();
+    } else if (type === 'bossThunder') {
+      // 金色王冠 + 三支雷角(電擊紫閃電)
+      ctx.fillStyle = dk; boltGlyph(ctx, -12, -25, 7.5); ctx.fill(); boltGlyph(ctx, 12, -25, 7.5); ctx.fill(); boltGlyph(ctx, 0, -26, 9); ctx.fill();
+      ctx.fillStyle = F(C.shock); boltGlyph(ctx, -12, -25, 6); ctx.fill(); boltGlyph(ctx, 12, -25, 6); ctx.fill(); boltGlyph(ctx, 0, -26, 7.4); ctx.fill();
+      ctx.fillStyle = dk; rr(ctx, -17, -23, 34, 9, 2); ctx.fill();
+      ctx.fillStyle = F(C.gold); rr(ctx, -15.5, -21.5, 31, 6, 1.5); ctx.fill();
+      if (!mono) { ctx.fillStyle = C.shock; ctx.beginPath(); ctx.arc(0, -18.5, 2, 0, TAU); ctx.fill(); }
+      // 胸前鋸齒紋(和電電怪同一個記號)
+      ctx.strokeStyle = F(lighten(C.shock, 0.3)); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-17, 18); ctx.lineTo(-8, 12); ctx.lineTo(-2, 20); ctx.lineTo(5, 12); ctx.lineTo(14, 19); ctx.stroke();
+      // 左手爪尖的小電火花
+      if (!mono) { ctx.fillStyle = '#ffffff'; boltGlyph(ctx, -29, 12, 5); ctx.fill(); }
+    }
+    // ---- 臉: 怒眉 + 大眼 + 獠牙 ----
+    var ex = type === 'bossBull' ? 12 : 11, ey = type === 'bossBull' ? -5 : -4;
+    if (opt.dead) {
+      ctx.strokeStyle = F('#1a0a10'); ctx.lineWidth = 2.6;
+      for (var s2 = -1; s2 <= 1; s2 += 2) { ctx.beginPath(); ctx.moveTo(s2 * ex - 4, ey - 4); ctx.lineTo(s2 * ex + 4, ey + 4); ctx.moveTo(s2 * ex + 4, ey - 4); ctx.lineTo(s2 * ex - 4, ey + 4); ctx.stroke(); }
+    } else {
+      ctx.fillStyle = dk; ctx.beginPath(); ctx.ellipse(-ex, ey, 6, 5.5, 0, 0, TAU); ctx.ellipse(ex, ey, 6, 5.5, 0, 0, TAU); ctx.fill();
+      var eg = clamp(num(opt.eyeGlow, type === 'bossThunder' ? 0.35 : 0), 0, 1);
+      if (eg > 0 && !mono) {
+        ctx.fillStyle = 'rgba(255,240,150,' + (0.35 * eg) + ')'; ctx.beginPath(); ctx.arc(-ex, ey, 6 + 3 * eg, 0, TAU); ctx.arc(ex, ey, 6 + 3 * eg, 0, TAU); ctx.fill();
+      }
+      ctx.fillStyle = mono ? mono : (eg > 0.5 ? '#fff6c0' : C.enemyEye);
+      ctx.beginPath(); ctx.arc(-ex, ey + 0.5, 3.2, 0, TAU); ctx.arc(ex, ey + 0.5, 3.2, 0, TAU); ctx.fill();
+      // 怒眉(往中間壓低)
+      ctx.strokeStyle = dk; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(-ex - 7, ey - 9); ctx.lineTo(-ex + 6, ey - 5); ctx.moveTo(ex + 7, ey - 9); ctx.lineTo(ex - 6, ey - 5); ctx.stroke();
+    }
+    if (type !== 'bossBull') {
+      var ro = clamp(num(opt.roar, 0), 0, 1), my = 10;
+      ctx.fillStyle = dk; ctx.beginPath(); ctx.ellipse(0, my + 1 + ro * 2, 9 + ro * 2, 2.5 + ro * 5, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = F(type === 'bossFrost' ? '#eefcff' : '#f4ecff');
+      ctx.beginPath(); ctx.moveTo(-6, my - 1); ctx.lineTo(-3.5, my + 5 + ro * 2); ctx.lineTo(-1, my - 1); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(6, my - 1); ctx.lineTo(3.5, my + 5 + ro * 2); ctx.lineTo(1, my - 1); ctx.closePath(); ctx.fill();
+    }
+    // 雷霆魔王身邊的常駐電弧(框內, 半徑 30~34)
+    if (type === 'bossThunder' && !mono && opt.arcs !== false && !opt.dead) {
+      var seed = Math.floor(now() * 12);
+      ctx.strokeStyle = rgba(C.shock, 0.85); ctx.lineWidth = 1.6;
+      for (var ai = 0; ai < 2; ai++) {
+        var a0 = hash(seed, ai, 3) * TAU, a1 = a0 + 0.7;
+        boltPath(ctx, Math.cos(a0) * 31, 4 + Math.sin(a0) * 29, Math.cos(a1) * 31, 4 + Math.sin(a1) * 29, 2.5, seed + ai); ctx.stroke();
+      }
+    }
+    ctx.restore();
   }
   function playerBody(ctx) {
     // 斗篷底
@@ -1074,6 +1226,42 @@
     coinGlyph(ctx, x, y - 0.5 - lift, 7);
     ctx.restore();
   }
+  // Boss 倒下(1.2 秒, p = 0~1): 0~0.22 X 眼左右晃; 0.22~0.5 往前傾倒、壓扁貼地(落地一圈塵環);
+  // 0.5~1 本體淡出, 同時依意象散開: 霜角 = 冰塊碎片往外飛; 牛王 = 一團團塵土; 魔王 = 紫電火花 + 短電弧。全部在 72×72 內
+  function bossCorpse(ctx, type, x, y, p) {
+    ctx.save(); ctx.translate(x, y);
+    var shake = p < 0.22 ? Math.sin(p * 90) * 0.07 * (1 - p / 0.22) : 0;
+    var fall = clamp((p - 0.22) / 0.28, 0, 1), fe = fall * fall;
+    var sy = 1 - 0.55 * fe, alpha = p < 0.5 ? 1 : Math.max(0, 1 - (p - 0.5) / 0.5);
+    ctx.save();
+    ctx.globalAlpha = 0.95 * alpha * alpha;
+    ctx.translate(0, 36); ctx.transform(1, 0, -(shake * 0.5 + 0.06 * fe), 1, 0, 0); ctx.scale(1 - 0.08 * fe, sy); ctx.translate(0, -36);
+    bossBody(ctx, type, { dead: true, arcs: false, tint: 'rgba(60,50,70,' + (0.25 + 0.35 * fe) + ')' });
+    ctx.restore();
+    // 落地塵環
+    if (fall > 0.6) {
+      var rp = clamp((p - 0.43) / 0.35, 0, 1);
+      ctx.globalAlpha = 0.6 * (1 - rp);
+      ctx.strokeStyle = type === 'bossFrost' ? '#dff6ff' : type === 'bossThunder' ? lighten(C.shock, 0.2) : '#c8b08a';
+      ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(0, 29.5, 14 + 18 * rp, 3 + 2 * rp, 0, 0, TAU); ctx.stroke();
+    }
+    var q = clamp((p - 0.45) / 0.55, 0, 1);
+    if (q > 0) {
+      for (var i = 0; i < 8; i++) {
+        var a = -PI * 0.95 + i * (PI * 0.9 / 7) + (hash(i, 7, 1) - 0.5) * 0.3;
+        var d = 8 + 22 * q * (0.75 + 0.25 * hash(i, 3, 2));
+        var px = Math.cos(a) * d, py = 22 + Math.sin(a) * d * 0.9;
+        ctx.globalAlpha = 0.9 * (1 - q);
+        if (type === 'bossFrost') iceShard(ctx, px, py, a + q * 3, 4.5);
+        else if (type === 'bossBull') { ctx.fillStyle = '#9a8468'; ctx.beginPath(); ctx.arc(px * 0.85, py, 4 + 5 * q, 0, TAU); ctx.fill(); }
+        else {
+          ctx.fillStyle = i % 2 ? '#ffffff' : C.shock; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, TAU); ctx.fill();
+          if (i % 3 === 0) { ctx.strokeStyle = rgba(C.shock, 0.9); ctx.lineWidth = 1.5; boltPath(ctx, px * 0.4, py * 0.4 + 10, px, py, 2.5, i * 5 + Math.floor(now() * 20)); ctx.stroke(); }
+        }
+      }
+    }
+    ctx.restore();
+  }
   function drawCorpse(ctx, s) {
     s = s || {};
     // 倒下消散(0.6 秒): 灰掉的鬼往下塌扁、變淡, 原地冒幾團灰紫煙往上散; 不閃爍、不可互動
@@ -1083,6 +1271,7 @@
     var ml = num(s.maxLife, 0.6) || 0.6, life = clamp(num(s.life, ml), 0, ml);
     if (!(life > 0)) return;
     var p = 1 - life / ml;
+    if (isBoss(type)) { bossCorpse(ctx, type, x, y, p); return; }
     ctx.save();
     ctx.translate(x, y);
     // 本體: 塌扁(高 1 → 0.45)、往下沉到貼底、淡出
@@ -1451,12 +1640,36 @@
     var ph = prog(s.hitAge, num(s.hitDuration, 0.2));
     var tint = null;
     if (bool(s.slowed)) tint = 'rgba(150,220,255,0.5)';
+    if (isBoss(type)) {
+      // Boss: 同一套撲擊 / 受擊白閃 / 減速冰藍 / 治癒 / 暈眩星 / 呆站問號, 位置照 72×72 放大; 不畫身上小血條(血量在 drawBossBar)
+      lungeGhost(ctx, L, function () { bossBody(ctx, type, { arcs: false }); });
+      ctx.save(); applyLunge(ctx, L); ctx.translate(ax, bob * 0.6);
+      bossBody(ctx, type, { tint: tint });
+      ctx.save(); if (type === 'bossBull') bossLean(ctx, 0.1);
+      if (ph >= 0) { ctx.globalAlpha = 0.75 * (1 - ph); ctx.fillStyle = '#ffffff'; bossSil(ctx, 57); ctx.fill(); ctx.globalAlpha = 1; }
+      if (bool(s.slowed)) { ctx.strokeStyle = 'rgba(220,245,255,0.9)'; ctx.lineWidth = 2; bossSil(ctx, 57); ctx.stroke(); }
+      ctx.restore();
+      if (bool(s.healing)) healGlow(ctx, S, S, true);
+      ctx.restore();
+      var pstB = prog(s.stunAge, num(s.stunDuration, 1.0));
+      if (pstB >= 0) {
+        var stB = now() * 6;
+        for (var sib = 0; sib < 4; sib++) {
+          var saB = stB + sib * TAU / 4, sxB = Math.cos(saB) * 24, syB = -26 + Math.sin(saB) * 4;
+          ctx.fillStyle = '#3a2a00'; starPath(ctx, sxB, syB, 6, 2.7); ctx.fill();
+          ctx.fillStyle = C.stun; starPath(ctx, sxB, syB, 4.6, 2); ctx.fill();
+        }
+      } else if (!moving) txt(ctx, '?', 0, -24, { size: 22, color: '#ffe14a', stroke: '#1a0a10', sw: 4 });
+      ctx.restore();
+      if (bool(s.targeted)) targetFrame(ctx, x, y, S, S);
+      return;
+    }
     lungeGhost(ctx, L, function () { if (type === 'drummer') leanPose(ctx); enemyBody(ctx, type, S, { noLean: true, swift: type === 'imp' && bool(s.swift) }); });
     ctx.save(); applyLunge(ctx, L); ctx.translate(ax, bob);
-    if (type === 'drummer') leanPose(ctx); // 衝鬼前傾: 本體與受擊 / 減速 / 治癒疊層同一個姿勢
+    if (type === 'drummer') leanPose(ctx); // 奔牛怪前傾: 本體與受擊 / 減速 / 治癒疊層同一個姿勢
     var swift = type === 'imp' && bool(s.swift);
     if (swift && moving) {
-      // 輕快小鬼: 腳邊往後(左)兩道短速度線 = 「跑得快」(畫在 32×32 內)
+      // 疾行怪: 腳邊往後(左)兩道短速度線 = 「跑得快」(畫在 32×32 內)
       var sl = (now() * 6) % 1;
       ctx.save(); ctx.strokeStyle = 'rgba(255,244,246,' + (0.45 + 0.35 * sl) + ')'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(-15.5, 6); ctx.lineTo(-11.5 - 2 * sl, 6); ctx.moveTo(-15.5, 11); ctx.lineTo(-12.5 - 2 * sl, 11); ctx.stroke();
@@ -1514,7 +1727,7 @@
     }
     ctx.restore();
     if (bool(s.resonating)) {
-      // 共鳴微光(和弩塔 / 兵同一個淡紫), 圓形, 框內
+      // 共鳴微光(和箭塔 / 兵同一個淡紫), 圓形, 框內
       var t = 0.6 + 0.4 * Math.sin(now() * 5);
       ctx.save();
       ctx.globalAlpha = 0.85 * t; ctx.strokeStyle = C.resonance; ctx.lineWidth = 2.5;
@@ -1574,7 +1787,7 @@
   function drawSoulSlots(ctx, s) {
     s = s || {};
     var x = num(s.x, 0), y = num(s.y, 0);
-    var slots = arr(s.slots).slice(0, 3), L = slots.length;
+    var slots = arr(s.slots).slice(0, 4), L = slots.length;
     var virt = arr(s.virtual);
     ctx.save();
     if (L > 0) {
@@ -2077,7 +2290,7 @@
     ctx.restore();
   }
   // Z 情境提示: 玩家腳下, 本體 96×22
-  var BAD_HINT = { '不能蓋': 1, '不能插': 1, '不能裝': 1, '不能搶': 1 };
+  var BAD_HINT = { '不能蓋': 1, '不能插': 1, '不能裝': 1, '不能搶': 1, '暫不能拔除': 1 };
   function drawActionHint(ctx, s) {
     s = s || {};
     var label = str(s.label); if (!label) return;
@@ -2483,12 +2696,13 @@
           itemIcon(ctx, alt, mx + 8, 24, 16);
         }
       }
-      txt(ctx, str(desc.text), -140, 48, { size: 13, align: 'left', color: '#d6dbe6', weight: 'normal', maxW: 280 });
+      var dt = str(desc.text), dfs = textW(ctx, dt, 15, 'normal') > 280 ? 14 : 15;
+      txt(ctx, dt, -140, 48, { size: dfs, align: 'left', color: '#d6dbe6', weight: 'normal', maxW: 280 });
     }
     // 底部 y = 78
     var al = str(s.actionLabel);
     var curLocked = cells[idx] && cells[idx].locked;
-    var grey = al === '教學中不能動' || curLocked;
+    var grey = al === '教學期間不可操作' || al === '教學中不能動' || curLocked;
     if (al) txt(ctx, al, -148, 78, { size: 14, align: 'left', color: grey ? '#8a909e' : C.cursor, maxW: 120 });
     hintRow(ctx, [{ keys: ['z'], label: '確定' }, { keys: ['x'], label: '關閉' }], 148, 78, { align: 'right', size: 12, gap: 12 });
     ctx.restore();
@@ -2865,7 +3079,7 @@
     }
     ctx.save(); ctx.globalAlpha *= ready ? 1 : 0.35;
     keyIcon(ctx, 'z', 180, 44, 26, 26, false);
-    txt(ctx, bool(s.last) ? '繼續' : '下一張', 158, 44.5, { size: 15, align: 'right', color: C.tutorInk });
+    txt(ctx, bool(s.last) ? '繼續' : '下一步', 158, 44.5, { size: 15, align: 'right', color: C.tutorInk });
     ctx.restore();
     // 第幾張 / 共幾張: 小圓點直徑 8、間距 14, 中心 y = 54
     var tot = clamp(Math.floor(num(s.total, 1)), 1, 10), idx = Math.floor(num(s.index, 0));
@@ -2977,7 +3191,7 @@
     s = s || {};
     var d = num(s.duration, 1.6) || 1.6, a = num(s.age, d);
     if (!(a >= 0 && a < d)) return;
-    var tw = Math.max(1, Math.floor(num(s.totalWaves, 3))), w = Math.max(1, Math.floor(num(s.wave, 1))), last = bool(s.last);
+    var tw = Math.max(1, Math.floor(num(s.totalWaves, 3))), w = Math.max(1, Math.floor(num(s.wave, 1))), last = bool(s.last) || bool(s.boss);
     var t = a * 1.6 / d; // 換算回規格時間軸
     var cx = 640, cy = 200, sc = 1, al = 1, e = 1;
     if (t < 0.3) { e = 1 - Math.pow(1 - t / 0.3, 3); cx = -280 + 920 * e; }
@@ -2994,7 +3208,17 @@
       ctx.fillStyle = g; ctx.fillRect(sx - 50, -48, 100, 96);
       ctx.restore();
     }
-    if (last) {
+    if (last && bool(s.boss)) {
+      // Boss 關最後一波: 「最後一波!」上移 12, 下方 (0, +28) 一行金字紅描邊「BOSS 來襲」, 兩側紅色角記號(和 Boss 名牌、血條同一個紅)
+      txt(ctx, '最後一波!', 0, -12, { size: 42, color: '#ff5a4a', stroke: '#2a0000', sw: 5, maxW: 520 });
+      var bw2 = textW(ctx, 'BOSS 來襲', 20);
+      txt(ctx, 'BOSS 來襲', 0, 28, { size: 20, color: C.gold, stroke: '#6a0010', sw: 4 });
+      ctx.fillStyle = '#ff3a4a';
+      for (var bsd = -1; bsd <= 1; bsd += 2) {
+        var hx = bsd * (bw2 / 2 + 16);
+        ctx.beginPath(); ctx.moveTo(hx - 6, 28); ctx.lineTo(hx, 21); ctx.lineTo(hx + 6, 28); ctx.lineTo(hx, 35); ctx.closePath(); ctx.fill();
+      }
+    } else if (last) {
       txt(ctx, '最後一波!', 0, 0, { size: 48, color: '#ff5a4a', stroke: '#2a0000', sw: 5, maxW: 520 });
     } else {
       var a1 = '第 ', a3 = ' 波', nNew = String(w), nOld = String(Math.max(0, w - 1));
@@ -3012,6 +3236,271 @@
       } else txt(ctx, nNew, nx, ty, o);
       ctx.restore();
       txt(ctx, '共 ' + tw + ' 波', 262, 32, { size: 16, align: 'right', color: '#c8cedb', weight: 'normal' });
+    }
+    ctx.restore();
+  }
+
+  // ---------- Boss 血條(第 7 輪, HUD 中間 360×40) ----------
+  // 深紅黑底 + 紅細邊; 左上紅底白字「BOSS」小標 + 名稱; 右上 hp / maxHp; 下方 348×10 紅色生命條(上緣一條該 Boss 的意象色細線)
+  var BOSS_TINT = { bossFrost: '#8fd8ff', bossBull: '#efe2c4', bossThunder: '#d27cff' };
+  var BOSS_RED = '#ff3a4a';
+  function drawBossBar(ctx, s) {
+    s = s || {};
+    var x = num(s.x, 650), y = num(s.y, 25);
+    var type = isBoss(s.type) ? s.type : 'bossFrost';
+    var mh = Math.max(1, num(s.maxHp, 1)), hp = clamp(num(s.hp, mh), 0, mh), r = hp / mh;
+    var sd = num(s.showDuration, 0.4) || 0.4, sa = clamp(num(s.showAge, sd), 0, sd), sp = sa / sd, se = 1 - (1 - sp) * (1 - sp);
+    var al = sp;
+    if (bool(s.hiding)) { var hd = num(s.hideDuration, 0.6) || 0.6; al *= 1 - clamp(num(s.hideAge, 0), 0, hd) / hd; }
+    if (!(al > 0)) return;
+    ctx.save();
+    ctx.globalAlpha = al; ctx.translate(x, y); ctx.scale(0.9 + 0.1 * se, 0.9 + 0.1 * se);
+    ctx.fillStyle = 'rgba(32,8,14,0.9)'; rr(ctx, -180, -20, 360, 40, 8); ctx.fill();
+    ctx.strokeStyle = BOSS_RED; ctx.lineWidth = 1.5; rr(ctx, -179.25, -19.25, 357.5, 37.5, 7.5); ctx.stroke();
+    // 「BOSS」小標 40×16 中心 (−158, −9)
+    ctx.fillStyle = '#c8283a'; rr(ctx, -178, -17, 40, 16, 4); ctx.fill();
+    txt(ctx, 'BOSS', -158, -8.5, { size: 11, color: '#ffffff' });
+    var hs = Math.ceil(hp) + ' / ' + Math.round(mh), hw = textW(ctx, hs, 12);
+    txt(ctx, hs, 172, -8.5, { size: 12, align: 'right', color: '#ffd0d4' });
+    txt(ctx, str(s.name), -132, -8.5, { size: 15, align: 'left', color: '#ffffff', maxW: Math.max(40, 300 - hw - 8) });
+    // 生命條 348×10, 中心 (0, 10)
+    ctx.fillStyle = 'rgba(0,0,0,0.65)'; rr(ctx, -174, 5, 348, 10, 3); ctx.fill();
+    if (r > 0) {
+      ctx.save(); rr(ctx, -174, 5, 348, 10, 3); ctx.clip();
+      ctx.fillStyle = '#e0303e'; ctx.fillRect(-174, 5, 348 * r, 10);
+      ctx.fillStyle = BOSS_TINT[type]; ctx.fillRect(-174, 5, 348 * r, 2);
+      ctx.restore();
+    }
+    var ph = prog(s.hitAge, num(s.hitDuration, 0.15));
+    if (ph >= 0) { ctx.save(); ctx.globalAlpha *= 0.85 * (1 - ph); ctx.fillStyle = '#ffffff'; rr(ctx, -174, 5, 348, 10, 3); ctx.fill(); ctx.restore(); }
+    if (bool(s.healing)) {
+      // 治癒中: 條上薄荷綠斜紋往右流 + 白綠小十字(治癒意象)
+      ctx.save(); rr(ctx, -174, 5, 348, 10, 3); ctx.clip();
+      var off = (now() * 40) % 24;
+      ctx.fillStyle = rgba(C.heal, 0.5);
+      for (var i = -1; i < 16; i++) { var sx = -174 + i * 24 + off; if (sx < -174 || sx + 14 > 174) continue; ctx.beginPath(); ctx.moveTo(sx, 15); ctx.lineTo(sx + 8, 5); ctx.lineTo(sx + 14, 5); ctx.lineTo(sx + 6, 15); ctx.closePath(); ctx.fill(); }
+      for (var j = 0; j < 3; j++) { var px = -169 + ((now() * 60 + j * 113) % 338); ctx.fillStyle = '#0f3a26'; plusPath(ctx, px, 10, 4.2); ctx.fill(); ctx.fillStyle = '#c8ffe0'; plusPath(ctx, px, 10, 3); ctx.fill(); }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // ---------- Boss 出場演出(第 7 輪, 2.9 秒真實時間) ----------
+  var BOSS_POS = { bossFrost: [40, 146], bossBull: [360, 670], bossThunder: [40, 434] };
+  function seg(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
+  function eOut(u) { return 1 - (1 - u) * (1 - u); }
+  // 全畫面壓暗 a, 在 (x, y) 挖半徑 R 的聚光圈(往內柔化 soft); 圈內另壓 inner(雷霆魔王的烏雲)
+  function dimSpot(ctx, x, y, R, soft, a, inner) {
+    if (!(a > 0) && !(inner > 0)) return;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,' + a + ')';
+    ctx.beginPath(); ctx.rect(0, 0, 1280, 720); ctx.arc(x, y, R, 0, TAU, true); ctx.fill();
+    var g = ctx.createRadialGradient(x, y, R - soft, x, y, R);
+    g.addColorStop(0, 'rgba(0,0,0,' + inner + ')'); g.addColorStop(1, 'rgba(0,0,0,' + a + ')');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function puff(ctx, x, y, r, col, a) {
+    if (!(a > 0) || !(r > 0)) return;
+    ctx.save(); ctx.globalAlpha *= a; ctx.fillStyle = col;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.arc(x + r * 0.6, y + r * 0.2, r * 0.7, 0, TAU); ctx.arc(x - r * 0.6, y + r * 0.25, r * 0.65, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function bossFigure(ctx, type, x, y, o) {
+    o = o || {};
+    ctx.save(); ctx.translate(x + (o.dx || 0), y + (o.dy || 0));
+    if (o.scale) ctx.scale(o.scale, o.scale);
+    if (o.lean) bossLean(ctx, o.lean);
+    bossBody(ctx, type, o);
+    ctx.restore();
+  }
+  function drawBossIntro(ctx, s) {
+    s = s || {};
+    var type = isBoss(s.type) ? s.type : 'bossFrost';
+    var d = num(s.duration, 2.9) || 2.9, age = num(s.age, 0);
+    if (!(age >= 0 && age < d)) return;
+    var t = age * 2.9 / d; // 換算回規格時間軸
+    var def = BOSS_POS[type], x = num(s.x, def[0]), y = num(s.y, def[1]);
+    var out = t >= 2.6 ? 1 - seg(t, 2.6, 2.9) : 1;
+    var dim = 0.55 * seg(t, 0, 0.3), inner = 0;
+    if (type === 'bossThunder') {
+      if (t >= 0.3 && t < 1.1) { dim = 0.55 + 0.2 * seg(t, 0.3, 0.6); inner = 0.4 * seg(t, 0.3, 0.6); }
+      else if (t >= 1.1) { dim = 0.75 - 0.2 * seg(t, 1.1, 2.6); inner = 0.4 * (1 - seg(t, 1.1, 1.3)); }
+    }
+    ctx.save();
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    dimSpot(ctx, x, y, 140, 16, dim * out, inner * out);
+    var i, k;
+    if (type === 'bossFrost') {
+      // 地面結霜: 0.3~0.9 半徑 0 → 100, 冰晶放射紋 + 閃爍的小冰星; 留到淡出
+      if (t >= 0.3) {
+        var fr = 100 * eOut(seg(t, 0.3, 0.9));
+        ctx.save(); ctx.globalAlpha = out;
+        var g = ctx.createRadialGradient(x, y, 0, x, y, Math.max(1, fr));
+        g.addColorStop(0, 'rgba(220,245,255,0.42)'); g.addColorStop(1, 'rgba(180,230,255,0.14)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, fr, 0, TAU); ctx.fill();
+        ctx.strokeStyle = 'rgba(235,250,255,0.75)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, Math.max(0.5, fr - 1), 0, TAU); ctx.stroke();
+        ctx.strokeStyle = 'rgba(235,250,255,0.6)'; ctx.lineWidth = 1.2;
+        for (i = 0; i < 12; i++) {
+          var a = i * TAU / 12 + hash(i, 2, 9) * 0.4, r0 = fr * 0.25, r1 = fr * (0.7 + 0.25 * hash(i, 5, 1));
+          ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0); ctx.lineTo(x + Math.cos(a) * r1, y + Math.sin(a) * r1);
+          var bm = (r0 + r1) / 2; ctx.moveTo(x + Math.cos(a) * bm, y + Math.sin(a) * bm); ctx.lineTo(x + Math.cos(a + 0.18) * (bm + fr * 0.12), y + Math.sin(a + 0.18) * (bm + fr * 0.12)); ctx.stroke();
+        }
+        for (i = 0; i < 9; i++) {
+          var sa2 = hash(i, 8, 3) * TAU, sr = fr * (0.2 + 0.7 * hash(i, 4, 6)), tw = 0.5 + 0.5 * Math.sin(now() * 9 + i * 1.7);
+          ctx.globalAlpha = out * tw; ctx.fillStyle = '#ffffff'; starPath(ctx, x + Math.cos(sa2) * sr, y + Math.sin(sa2) * sr, 4, 1.2); ctx.fill();
+        }
+        ctx.restore();
+      }
+      // 0.9~1.5 冰塊竄出把 Boss 封住(84×100, 中心 (x, y−10)), 裂痕越來越多
+      if (t >= 0.9 && t < 1.5) {
+        var rise = eOut(seg(t, 0.9, 1.1)), bx = x, by = y - 10;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(bx - 44, by + 50 - 100 * rise, 88, 100 * rise + 2); ctx.clip();
+        bossFigure(ctx, type, x, y, { mono: '#0e1626' });
+        var poly = [[-42, -25], [-24, -50], [18, -50], [42, -30], [40, 32], [20, 50], [-26, 50], [-42, 30]];
+        ctx.beginPath(); poly.forEach(function (q, n) { if (n) ctx.lineTo(bx + q[0], by + q[1]); else ctx.moveTo(bx + q[0], by + q[1]); }); ctx.closePath();
+        ctx.fillStyle = 'rgba(175,228,255,0.74)'; ctx.fill();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(bx - 24, by - 50); ctx.lineTo(bx - 14, by + 50); ctx.moveTo(bx + 18, by - 50); ctx.lineTo(bx + 24, by + 50); ctx.stroke();
+        var nc = Math.floor(1 + 9 * seg(t, 1.1, 1.5));
+        for (i = 0; i < nc; i++) {
+          var ca = hash(i, 1, 4) * TAU, cx = bx + (hash(i, 2, 4) - 0.5) * 30, cy = by + (hash(i, 3, 4) - 0.5) * 40;
+          ctx.beginPath(); ctx.moveTo(cx, cy);
+          for (k = 1; k <= 3; k++) { ca += (hash(i, k, 5) - 0.5) * 1.2; cx += Math.cos(ca) * 9; cy += Math.sin(ca) * 9; ctx.lineTo(clamp(cx, bx - 40, bx + 40), clamp(cy, by - 48, by + 48)); }
+          ctx.strokeStyle = '#2a4a78'; ctx.lineWidth = 2.2; ctx.stroke();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+        }
+        ctx.restore();
+      }
+      // 1.5 起 Boss 現身; 1.7~1.85 仰頭咆哮放大到 1.15, 1.85~2.0 收回 1.0(age ≥ 2.0 一定是 1.0)
+      if (t >= 1.5) {
+        var sc = 1, ro = 0;
+        if (t >= 1.7 && t < 1.85) { sc = 1 + 0.15 * eOut(seg(t, 1.7, 1.85)); }
+        else if (t >= 1.85 && t < 2.0) { sc = 1.15 - 0.15 * seg(t, 1.85, 2.0); }
+        ro = (sc - 1) / 0.15;
+        bossFigure(ctx, type, x, y, { scale: sc, roar: ro });
+      }
+      // 1.5~1.9 冰塊炸開: 白閃 + 14 片碎冰往外飛(最遠 130)
+      if (t >= 1.5 && t < 1.9) {
+        var kb = seg(t, 1.5, 1.75);
+        if (t < 1.65) { var fk = seg(t, 1.5, 1.65); ctx.save(); ctx.globalAlpha = 0.75 * (1 - fk); ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x, y - 10, 30 + 40 * fk, 0, TAU); ctx.fill(); ctx.restore(); }
+        ctx.save(); ctx.globalAlpha = 1 - seg(t, 1.65, 1.9);
+        for (i = 0; i < 14; i++) {
+          var ia = i * TAU / 14 + hash(i, 6, 2) * 0.35, idist = 16 + 98 * eOut(kb) * (0.75 + 0.25 * hash(i, 7, 2));
+          iceShard(ctx, x + Math.cos(ia) * idist, y - 10 + Math.sin(ia) * idist, ia + kb * 4, 5 + 3 * hash(i, 9, 2));
+        }
+        ctx.restore();
+      }
+      // 1.7~2.6 嘴前白色寒氣(往右上噴, 最遠 60), 2.0 起散去
+      if (t >= 1.7) {
+        var reach = eOut(seg(t, 1.7, 2.0)), ba = t < 2.0 ? seg(t, 1.7, 1.8) : 1 - seg(t, 2.0, 2.6);
+        var mx = x + 6, my2 = y + 14, dir = -0.55;
+        for (i = 0; i < 5; i++) {
+          var dd = (8 + i * 10) * reach + (t > 2.0 ? (t - 2.0) * 6 : 0);
+          puff(ctx, mx + Math.cos(dir) * dd, my2 + Math.sin(dir) * dd - (t > 2.0 ? (t - 2.0) * 8 : 0), (3 + i * 1.6) * (0.5 + 0.5 * reach), '#f2fbff', 0.75 * ba * out);
+        }
+      }
+    } else if (type === 'bossBull') {
+      // 0.3~1.0 畫面下緣冒一團團塵土(x − 120 ~ x + 120), 1.4 前散掉
+      if (t >= 0.3 && t < 1.4) {
+        var da = seg(t, 0.3, 0.45) * (1 - seg(t, 1.0, 1.4));
+        for (i = 0; i < 9; i++) {
+          var ph2 = (now() * 2.2 + hash(i, 1, 8)) % 1;
+          puff(ctx, x - 120 + i * 30, 718 - 22 * ph2, 9 + 7 * ph2, '#8f7a5c', 0.7 * da * (1 - ph2 * 0.6));
+        }
+      }
+      // 1.0~1.4 從 (x, 800) 低頭直線衝到 (x, y), 身後拖塵土; 1.4~1.8 急煞(前傾、往前多滑 6 後回); 1.8~2.0 抬頭
+      if (t >= 1.0) {
+        var cy2 = t < 1.4 ? 800 + (y - 800) * Math.pow(seg(t, 1.0, 1.4), 0.85) : y;
+        var dyb = t >= 1.4 && t < 1.8 ? -6 * Math.sin(seg(t, 1.4, 1.8) * PI) : 0;
+        var extra = t < 1.8 ? 0.16 : 0.16 * (1 - seg(t, 1.8, 2.0));
+        if (t < 1.6) {
+          var ta = t < 1.4 ? 1 : 1 - seg(t, 1.4, 1.6);
+          for (i = 0; i < 6; i++) { var ty2 = cy2 + 34 + i * 16; if (ty2 > 806) break; puff(ctx, x + (hash(i, 2, 7) - 0.5) * 24, ty2, 8 + i * 1.5, '#9a8468', 0.6 * ta * (1 - i / 7)); }
+        }
+        if (t >= 1.4 && t < 2.2) {
+          var kb2 = seg(t, 1.4, 1.8), fa = 1 - seg(t, 1.7, 2.2);
+          for (var sd2 = -1; sd2 <= 1; sd2 += 2) {
+            puff(ctx, x + sd2 * (20 + 60 * eOut(kb2)), y + 28 - 10 * kb2, 6 + 4 * kb2, '#a8916f', 0.75 * fa);
+            puff(ctx, x + sd2 * (14 + 40 * eOut(kb2)), y + 32, 5 + 3 * kb2, '#8f7a5c', 0.6 * fa);
+          }
+        }
+        var hf = t >= 2.0 && t < 2.35 ? Math.sin(seg(t, 2.0, 2.35) * PI) : 0;
+        bossFigure(ctx, type, x, cy2, { dy: dyb, lean: extra, hornFlash: hf });
+      }
+      // 2.0~2.6 鼻孔噴兩道白氣(往左下 / 右下, 最遠 40)
+      if (t >= 2.0) {
+        var sk = seg(t, 2.0, 2.6), sa3 = Math.sin(sk * PI);
+        for (var nsd = -1; nsd <= 1; nsd += 2) {
+          for (i = 0; i < 3; i++) {
+            var sdist = (6 + i * 9) * (0.4 + 0.6 * sk) + 4;
+            puff(ctx, x + nsd * (5 + sdist * 0.8), y + 12 + sdist * 0.55, 2.5 + i * 1.3, '#f4f4f0', 0.8 * sa3 * out);
+          }
+        }
+      }
+    } else {
+      // 雷霆魔王: 0.6 / 0.85 / 1.1 三道落雷(每道 0.15 秒), 落點各炸一小圈電光(半徑 40)
+      var bolts = [[0.6, x - 30, 3], [0.85, x + 30, 3], [1.1, x, 5.5]];
+      for (i = 0; i < 3; i++) {
+        var T = bolts[i][0], tx = bolts[i][1], bwd = bolts[i][2];
+        if (t >= T && t < T + 0.15) {
+          var bal = 1 - 0.5 * seg(t, T, T + 0.15), seed = i * 31 + Math.floor(now() * 30);
+          ctx.save(); ctx.globalAlpha = bal;
+          ctx.strokeStyle = rgba(C.shock, 0.45); ctx.lineWidth = bwd + 8; boltPath(ctx, tx + 18 - i * 12, 0, tx, y, 14, seed); ctx.stroke();
+          ctx.strokeStyle = C.shock; ctx.lineWidth = bwd; boltPath(ctx, tx + 18 - i * 12, 0, tx, y, 14, seed); ctx.stroke();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(1.2, bwd * 0.45); boltPath(ctx, tx + 18 - i * 12, 0, tx, y, 14, seed); ctx.stroke();
+          ctx.restore();
+        }
+        if (t >= T && t < T + 0.3) {
+          var er = 40 * eOut(seg(t, T, T + 0.2)), ea = 1 - seg(t, T + 0.1, T + 0.3);
+          ctx.save(); ctx.globalAlpha = ea;
+          var eg2 = ctx.createRadialGradient(tx, y, 0, tx, y, Math.max(1, er));
+          eg2.addColorStop(0, 'rgba(255,255,255,0.95)'); eg2.addColorStop(0.45, rgba(C.shock, 0.7)); eg2.addColorStop(1, rgba(C.shock, 0));
+          ctx.fillStyle = eg2; ctx.beginPath(); ctx.arc(tx, y, er, 0, TAU); ctx.fill();
+          ctx.restore();
+        }
+      }
+      // 1.1 起 Boss 現身; 1.3~2.0 周身電弧(半徑 ≤ 56)+ 雙眼發光; 2.0~2.6 電弧收進身體
+      if (t >= 1.1) {
+        var eyeG = t < 1.3 ? 0.6 : t < 2.0 ? 1 : 1 - 0.65 * seg(t, 2.0, 2.6);
+        bossFigure(ctx, type, x, y, { eyeGlow: eyeG });
+        if (t >= 1.3) {
+          var Ra = t < 2.0 ? 48 : 48 - 28 * seg(t, 2.0, 2.6), aa = t < 2.0 ? seg(t, 1.3, 1.4) : 1 - 0.85 * seg(t, 2.0, 2.6);
+          var sd3 = Math.floor(now() * 20);
+          ctx.save(); ctx.globalAlpha = aa * out;
+          for (i = 0; i < 6; i++) {
+            var a0 = i * TAU / 6 + now() * 1.5, a1 = a0 + 0.8, rA = i % 2 ? Ra : Ra * 0.82;
+            var p0x = x + Math.cos(a0) * rA, p0y = y + Math.sin(a0) * rA, p1x = x + Math.cos(a1) * rA, p1y = y + Math.sin(a1) * rA;
+            ctx.strokeStyle = rgba(C.shock, 0.55); ctx.lineWidth = 4.5; boltPath(ctx, p0x, p0y, p1x, p1y, 5, sd3 + i); ctx.stroke();
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; boltPath(ctx, p0x, p0y, p1x, p1y, 5, sd3 + i); ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
+      // 1.1~1.3 全畫面白閃(0.6 → 0), 蓋在壓暗與 Boss 之上、名牌之下
+      if (t >= 1.1 && t < 1.3) { ctx.fillStyle = 'rgba(255,255,255,' + (0.6 * (1 - seg(t, 1.1, 1.3))) + ')'; ctx.fillRect(0, 0, 1280, 720); }
+    }
+    // 名牌 520×110: 1.6~2.0 從 (640,340) 滑到 (640,300) 並淡入, 2.0~2.6 停住, 2.6~2.9 淡出
+    if (t >= 1.6) {
+      var pu = seg(t, 1.6, 2.0), py = 340 - 40 * eOut(pu);
+      ctx.save(); ctx.globalAlpha = pu * out; ctx.translate(640, py);
+      ctx.fillStyle = 'rgba(22,8,14,0.9)'; rr(ctx, -260, -55, 520, 110, 12); ctx.fill();
+      ctx.strokeStyle = BOSS_RED; ctx.lineWidth = 3; rr(ctx, -258.5, -53.5, 517, 107, 11); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,210,74,0.7)'; ctx.lineWidth = 1; rr(ctx, -252, -47, 504, 94, 8); ctx.stroke();
+      ctx.strokeStyle = BOSS_RED; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-70, -36); ctx.lineTo(-34, -36); ctx.moveTo(34, -36); ctx.lineTo(70, -36); ctx.stroke();
+      txt(ctx, 'BOSS', 0, -36, { size: 16, color: BOSS_RED, stroke: '#2a0008', sw: 3 });
+      txt(ctx, str(s.name), 0, -6, { size: 34, color: '#ffffff', stroke: '#2a0008', sw: 5, maxW: 480 });
+      var parts = arr(s.parts).slice(0, 4);
+      for (k = 0; k < 4; k++) {
+        var pcx = -48 + 32 * k;
+        ctx.fillStyle = 'rgba(16,20,30,0.9)'; rr(ctx, pcx - 14, 20, 28, 28, 4); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1; rr(ctx, pcx - 13.5, 20.5, 27, 27, 4); ctx.stroke();
+        if (typeof parts[k] === 'string' && parts[k]) itemIcon(ctx, parts[k], pcx, 34, 24);
+      }
+      ctx.restore();
     }
     ctx.restore();
   }
@@ -3063,7 +3552,7 @@
       txt(ctx, '新組合!', 0, -76, { size: 22, color: C.gold, stroke: '#2a1a00', sw: 3 });
       itemIcon(ctx, R, -230, -6, 56);
       txt(ctx, str(s.name), -190, -24, { size: 26, align: 'left', color: '#ffffff', maxW: 300 });
-      txt(ctx, str(s.text), -190, 12, { size: 18, align: 'left', color: '#d6dbe6', weight: 'normal', maxW: 300 });
+      txt(ctx, str(s.text), -190, 12, { size: 17, align: 'left', color: '#d6dbe6', weight: 'normal', maxW: 289 });
       itemIcon(ctx, A, 140, -10, 24);
       txt(ctx, '+', 188, -9.5, { size: 18, color: C.textDim });
       itemIcon(ctx, B, 236, -10, 24);
@@ -3105,7 +3594,7 @@
     txt(ctx, '=', -74, -9.5, { size: 18, color: C.textDim });
     itemIcon(ctx, R, -34, -10, 40);
     txt(ctx, str(e.name), -4, -16, { size: 18, align: 'left', color: '#ffffff', maxW: 170 });
-    txt(ctx, str(e.text), -4, 14, { size: 13, align: 'left', color: '#c8cedb', weight: 'normal', maxW: 236 });
+    txt(ctx, str(e.text), -4, 14, { size: 13, align: 'left', color: '#c8cedb', weight: 'normal', maxW: 232 });
     ctx.restore();
   }
   // 問號格: 中心 (cx, cy), 邊長 sz; 暗底 + 虛線框 + 大問號(和任何魂件圖示的外形都不同: 不是方塊色、不是金八角)
@@ -3201,10 +3690,12 @@
     drawHud: drawHud,
     drawWavePanel: drawWavePanel,
     drawWaveBanner: drawWaveBanner,
+    drawBossBar: drawBossBar,
     drawSlowMo: drawSlowMo,
     drawSoulPopup: drawSoulPopup,
     drawShopPopup: drawShopPopup,
     drawComboReveal: drawComboReveal,
+    drawBossIntro: drawBossIntro,
     drawCodex: drawCodex,
     drawPause: drawPause,
     drawResult: drawResult
