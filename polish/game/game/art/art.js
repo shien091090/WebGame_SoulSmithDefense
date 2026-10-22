@@ -1,4 +1,4 @@
-// 魂匠守衛者(打磨第 5 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
+// 魂匠守衛者(打磨第 6 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
 // 全域物件 window.Art; 每個函式自己 save/restore。
 (function () {
   'use strict';
@@ -732,6 +732,29 @@
     for (var i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(hs + 2 + Math.abs(i) * 2, i * hs * 0.45); ctx.lineTo(hs + 11, i * hs * 0.45); ctx.stroke(); }
     ctx.restore();
   }
+  // 近戰撲擊(attackKind "melee", attackDuration 0.25): 0~0.08 秒朝 attackAngle 前衝 10px 並沿方向拉長,
+  // 0.08~0.25 秒彈回; 回傳 {dx, dy, a, f} 或 null(不是近戰或沒在播)
+  function lungeOf(s) {
+    if (!s || s.attackKind !== 'melee') return null;
+    var d = num(s.attackDuration, 0.25) || 0.25, t = num(s.attackAge, d);
+    if (!(t >= 0 && t < d)) return null;
+    var hit = Math.min(0.08, d * 0.32), f;
+    if (t < hit) { var u = t / hit; f = 1 - (1 - u) * (1 - u); }
+    else { var v = (t - hit) / (d - hit); f = 1 - v * v * (3 - 2 * v); }
+    var a = num(s.attackAngle, 0);
+    return { dx: Math.cos(a) * 10 * f, dy: Math.sin(a) * 10 * f, a: a, f: f };
+  }
+  // 撲擊姿勢: 平移 + 沿出手方向拉長 12%、側向收 8%(前傾 / 拉長)
+  function applyLunge(ctx, L) {
+    if (!L) return;
+    ctx.translate(L.dx, L.dy);
+    ctx.rotate(L.a); ctx.scale(1 + 0.12 * L.f, 1 - 0.08 * L.f); ctx.rotate(-L.a);
+  }
+  // 撲擊殘影: 原位留一道淡淡的本體輪廓(只在前衝段), 讓「衝出去又回來」讀得出來
+  function lungeGhost(ctx, L, bodyFn) {
+    if (!L || L.f < 0.25) return;
+    ctx.save(); ctx.globalAlpha *= 0.22 * L.f; bodyFn(); ctx.restore();
+  }
   function chargePose(ctx) { ctx.translate(-1, 0); ctx.transform(1, 0, -0.12, 1, 0, 0); ctx.scale(0.85, 0.85); }
   // 不動如山(紮根): 框內底部一排岩塊 + 下半圈土色粗框; 和共鳴微光(整圈淡紫)分開
   function rootedMark(ctx, w, h) {
@@ -1263,17 +1286,22 @@
   function drawCrossbow(ctx, s) {
     s = s || {};
     var x = num(s.x, 0), y = num(s.y, 0);
-    var pa = prog(s.attackAge, num(s.attackDuration, 0.15));
+    var L = lungeOf(s);
+    var pa = L ? -1 : prog(s.attackAge, num(s.attackDuration, 0.15));
     var rooted = bool(s.rooted);
     var charging = !rooted && bool(s.charging), moving = !rooted && (bool(s.moving) || charging);
     ctx.save(); ctx.translate(x, y);
     if (charging) speedLines(ctx, 24);
+    lungeGhost(ctx, L, function () { crossbowBody(ctx, 0, false); });
+    ctx.save();
+    applyLunge(ctx, L);
     ctx.save();
     if (charging) chargePose(ctx);
     crossbowBody(ctx, pa >= 0 ? 3 * Math.sin(pa * PI) : 0, moving);
     ctx.restore();
     if (rooted) rootedMark(ctx, 48, 48);
     if (bool(s.resonating)) inGlow(ctx, 48, 48, 7);
+    ctx.restore();
     ctx.restore();
     if (bool(s.targeted)) targetFrame(ctx, x, y, 48, 48);
   }
@@ -1321,12 +1349,16 @@
       rr(ctx, -hs + 1.5, -hs + 2.5, S - 3, S - 4, 6); ctx.stroke(); ctx.setLineDash([]);
       ctx.restore();
     } else {
-      var pa = prog(s.attackAge, num(s.attackDuration, 0.15));
+      var L = lungeOf(s);
+      var pa = L ? -1 : prog(s.attackAge, num(s.attackDuration, 0.15));
       var ax = pa >= 0 ? -3 * Math.sin(pa * PI) : 0;
       var rooted = bool(s.rooted);
       var charging = !rooted && bool(s.charging);
       if (charging) speedLines(ctx, hs);
-      var bob = bool(s.moving) && !charging && !rooted ? Math.abs(Math.sin(now() * 8)) * -1.5 : 0;
+      var bob = bool(s.moving) && !charging && !rooted && !L ? Math.abs(Math.sin(now() * 8)) * -1.5 : 0;
+      lungeGhost(ctx, L, function () { bodyFn(false); });
+      ctx.save();
+      applyLunge(ctx, L);
       ctx.save(); ctx.translate(ax, bob);
       if (charging) chargePose(ctx);
       bodyFn(false);
@@ -1336,6 +1368,7 @@
       if (rooted) rootedMark(ctx, S, S);
       if (bool(s.healing)) healGlow(ctx, S, S, false);
       if (bool(s.resonating)) inGlow(ctx, S, S, 6);
+      ctx.restore();
     }
     ctx.restore();
     var hp = num(s.hp, 1), mh = num(s.maxHp, 1);
@@ -1351,7 +1384,7 @@
     var team = s.team === 'ally' ? 'ally' : 'neutral';
     var src = s;
     if (team === 'neutral') {
-      s = { x: s.x, y: s.y, hp: 1, maxHp: 1, hitAge: s.hitAge, hitDuration: s.hitDuration, attackAge: s.attackAge, attackDuration: s.attackDuration, moving: s.moving, charging: false, rooted: false, healing: false, resonating: false, returning: false, targeted: src.targeted };
+      s = { x: s.x, y: s.y, hp: 1, maxHp: 1, hitAge: s.hitAge, hitDuration: s.hitDuration, attackAge: s.attackAge, attackDuration: s.attackDuration, attackKind: s.attackKind, attackAngle: s.attackAngle, moving: s.moving, charging: false, rooted: false, healing: false, resonating: false, returning: false, targeted: src.targeted };
     }
     mobile(ctx, s, 56, function () { golemBody(ctx, team); });
     if (team === 'neutral') {
@@ -1410,14 +1443,16 @@
     var type = enemyType(s.type), S = ENEMY_SIZE[type], hs = S / 2;
     var x = num(s.x, 0), y = num(s.y, 0);
     ctx.save(); ctx.translate(x, y);
-    var pa = prog(s.attackAge, num(s.attackDuration, 0.15));
+    var L = lungeOf(s);
+    var pa = L ? -1 : prog(s.attackAge, num(s.attackDuration, 0.15));
     var ax = pa >= 0 ? 3 * Math.sin(pa * PI) : 0;
     var moving = s.moving !== false;
-    var bob = moving ? Math.sin(now() * 6 + x * 0.05) * 1.2 : 0;
+    var bob = moving && !L ? Math.sin(now() * 6 + x * 0.05) * 1.2 : 0;
     var ph = prog(s.hitAge, num(s.hitDuration, 0.2));
     var tint = null;
     if (bool(s.slowed)) tint = 'rgba(150,220,255,0.5)';
-    ctx.save(); ctx.translate(ax, bob);
+    lungeGhost(ctx, L, function () { if (type === 'drummer') leanPose(ctx); enemyBody(ctx, type, S, { noLean: true, swift: type === 'imp' && bool(s.swift) }); });
+    ctx.save(); applyLunge(ctx, L); ctx.translate(ax, bob);
     if (type === 'drummer') leanPose(ctx); // 衝鬼前傾: 本體與受擊 / 減速 / 治癒疊層同一個姿勢
     var swift = type === 'imp' && bool(s.swift);
     if (swift && moving) {
@@ -1463,16 +1498,18 @@
       ctx.beginPath(); ctx.arc(x, y, 22, -PI / 2, -PI / 2 + TAU * sp); ctx.stroke();
     }
     ctx.translate(x, y);
-    // 共鳴出手: 往右前推 3px(框外 ≤ 4px)
-    var pa = prog(s.attackAge, num(s.attackDuration, 0.15));
+    // 共鳴出手: 往右前推 3px(框外 ≤ 4px); 近戰(attackKind "melee")改為朝 attackAngle 撲 10px
+    var L = lungeOf(s);
+    var pa = L ? -1 : prog(s.attackAge, num(s.attackDuration, 0.15));
     var ax = pa >= 0 ? 3 * Math.sin(pa * PI) : 0;
-    var bob = bool(s.moving) ? -Math.abs(Math.sin(now() * 10)) * 1.5 : 0;
-    ctx.save(); ctx.translate(ax, bob);
+    var bob = bool(s.moving) && !L ? -Math.abs(Math.sin(now() * 10)) * 1.5 : 0;
+    lungeGhost(ctx, L, function () { playerBody(ctx); });
+    ctx.save(); applyLunge(ctx, L); ctx.translate(ax, bob);
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0, 13, 10, 2.5, 0, 0, TAU); ctx.fill();
     playerBody(ctx);
-    if (pa >= 0) {
+    if (pa >= 0 || L) {
       // 出手閃: 身體外緣一圈白光(長在本體上)
-      ctx.globalAlpha = 0.8 * Math.sin(pa * PI); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.8 * (L ? L.f : Math.sin(pa * PI)); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(0, 1, 13.5, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
     }
     ctx.restore();
@@ -1836,6 +1873,115 @@
     }
     ctx.restore();
   }
+  // ---------- 近戰斬擊(取代近戰類命中的火花) ----------
+  // 沿二次曲線 P0→P1→P2 從參數 u0 到 u1 畫一條兩端尖、中段寬 maxW 的新月形刀光
+  function crescent(ctx, P0, P1, P2, u0, u1, maxW) {
+    var n = 14, i, u, top = [], bot = [];
+    if (u1 - u0 < 0.01) return false;
+    for (i = 0; i <= n; i++) {
+      u = u0 + (u1 - u0) * i / n;
+      var mu = 1 - u;
+      var px = mu * mu * P0[0] + 2 * mu * u * P1[0] + u * u * P2[0];
+      var py = mu * mu * P0[1] + 2 * mu * u * P1[1] + u * u * P2[1];
+      var tx = 2 * mu * (P1[0] - P0[0]) + 2 * u * (P2[0] - P1[0]);
+      var ty = 2 * mu * (P1[1] - P0[1]) + 2 * u * (P2[1] - P1[1]);
+      var tl = Math.hypot(tx, ty) || 1, nx = -ty / tl, ny = tx / tl;
+      // 寬度: 尾端尖、靠刀頭最寬(刀光由尾往頭變粗)
+      var k = (u - u0) / (u1 - u0), w = maxW * Math.sin(PI * (0.15 + 0.7 * k)) * (0.35 + 0.65 * k) / 2;
+      top.push([px + nx * w, py + ny * w]); bot.push([px - nx * w, py - ny * w]);
+    }
+    ctx.beginPath(); ctx.moveTo(top[0][0], top[0][1]);
+    for (i = 1; i <= n; i++) ctx.lineTo(top[i][0], top[i][1]);
+    for (i = n; i >= 0; i--) ctx.lineTo(bot[i][0], bot[i][1]);
+    ctx.closePath();
+    return true;
+  }
+  // ally(64×64): 一道新月形刀光 + 殘影 + 朝 angle 噴的衝擊線; enemy(44×44): 三道暗紅爪痕(形狀與顏色都和我方不同)
+  function drawMeleeSlash(ctx, s) {
+    s = s || {};
+    var d = num(s.duration, 0.25) || 0.25, age = num(s.age, d);
+    if (!(age >= 0 && age < d)) return;
+    var kind = ({ melee: 1, frostSmash: 1, thunderSlash: 1 }[s.kind]) ? s.kind : 'melee';
+    var enemy = s.team === 'enemy';
+    var frost = !enemy && bool(s.frost) && kind !== 'frostSmash';
+    var shock = !enemy && bool(s.shock) && kind !== 'thunderSlash';
+    var R = enemy ? 22 : 32;
+    var hitT = Math.min(0.08, d * 0.32);
+    var draw = age < hitT ? age / hitT : 1;                       // 劃過進度
+    var fade = age < hitT ? 1 : 1 - (age - hitT) / (d - hitT);    // 變細、淡出
+    var thick = kind === 'thunderSlash' ? 1.35 : 1;
+    ctx.save();
+    ctx.translate(num(s.x, 0), num(s.y, 0)); ctx.rotate(num(s.angle, 0));
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    var i, a;
+    if (enemy) {
+      // 三道平行爪痕, 由上往下斜劃; 暗紅襯 + 敵方粉紅芯
+      for (i = 0; i < 3; i++) {
+        var off = (i - 1) * 7;
+        var P0 = [-8 + off, -15], P1 = [3 + off, -1], P2 = [-2 + off, 15];
+        var u1 = clamp(draw * 1.25 - i * 0.12, 0, 1);
+        if (u1 <= 0) continue;
+        ctx.globalAlpha = fade;
+        ctx.fillStyle = '#3a0d1a'; if (crescent(ctx, P0, P1, P2, 0, u1, 7 * (0.5 + 0.5 * fade))) ctx.fill();
+        ctx.fillStyle = C.enemyShot; if (crescent(ctx, P0, P1, P2, 0.05, u1, 4 * (0.5 + 0.5 * fade))) ctx.fill();
+      }
+      // 命中點小暗紅閃
+      if (age < hitT * 1.5) {
+        ctx.globalAlpha = 1 - age / (hitT * 1.5);
+        ctx.fillStyle = '#ffd0dc'; ctx.beginPath(); ctx.arc(2, 0, 4, 0, TAU); ctx.fill();
+      }
+      ctx.restore();
+      return;
+    }
+    // 我方: 刀光從出手側(−x)那一側的上方劃到下方, 向 +x 鼓出(垂直於出手方向)
+    var Q0 = [-R * 0.3, -R * 0.78], Q1 = [R * 0.62, -R * 0.05], Q2 = [-R * 0.18, R * 0.8];
+    var outer = kind === 'frostSmash' ? C.frost : kind === 'thunderSlash' ? C.shock : C.gold;
+    var ink = kind === 'frostSmash' ? '#0a2a40' : kind === 'thunderSlash' ? '#2a1040' : '#3a2600';
+    var W = 15 * thick * (0.45 + 0.55 * fade);
+    // 殘影: 往出手方向後退一點、較淡
+    ctx.save(); ctx.translate(-6, 0); ctx.globalAlpha = 0.3 * fade;
+    ctx.fillStyle = outer; if (crescent(ctx, Q0, Q1, Q2, 0, draw * 0.85, W * 0.8)) ctx.fill();
+    ctx.restore();
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = ink; if (crescent(ctx, Q0, Q1, Q2, 0, draw, W + 3)) ctx.fill();
+    ctx.fillStyle = outer; if (crescent(ctx, Q0, Q1, Q2, 0, draw, W)) ctx.fill();
+    ctx.fillStyle = '#ffffff'; if (crescent(ctx, Q0, Q1, Q2, 0.08, draw, W * 0.45)) ctx.fill();
+    // 雷霆斬: 刀光上纏一道鋸齒電弧
+    if (kind === 'thunderSlash' || shock) {
+      var seed = Math.floor(now() * 30);
+      var e0x = Q0[0] + 3, e0y = Q0[1] + 4, e1x = Q2[0] + 3, e1y = Q2[1] - 4;
+      var ex = e0x + (e1x - e0x) * draw, ey = e0y + (e1y - e0y) * draw;
+      ctx.translate(R * 0.18, 0);
+      ctx.strokeStyle = kind === 'thunderSlash' ? '#ffffff' : C.shock; ctx.lineWidth = kind === 'thunderSlash' ? 2.2 : 1.8;
+      boltPath(ctx, e0x, e0y, ex, ey, 4, seed); ctx.stroke();
+      if (shock) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 0.9; boltPath(ctx, e0x, e0y, ex, ey, 4, seed); ctx.stroke(); }
+      ctx.translate(-R * 0.18, 0);
+    }
+    // 朝 angle(+x)噴 4 條短衝擊線
+    if (draw >= 0.6) {
+      var q = clamp((age - hitT * 0.6) / (d - hitT * 0.6), 0, 1);
+      var spreads = [-0.5, -0.17, 0.17, 0.5];
+      ctx.strokeStyle = kind === 'melee' ? '#fff6c0' : '#ffffff';
+      for (i = 0; i < spreads.length; i++) {
+        a = spreads[i];
+        var r0 = R * (0.3 + 0.35 * q), r1 = Math.min(R - 3, R * (0.55 + 0.4 * q) * (i === 1 || i === 2 ? 1 : 0.85));
+        ctx.lineWidth = (i === 1 || i === 2 ? 3 : 2.2) * thick * (1 - 0.5 * q);
+        ctx.beginPath(); ctx.moveTo(Math.cos(a) * r0, Math.sin(a) * r0); ctx.lineTo(Math.cos(a) * r1, Math.sin(a) * r1); ctx.stroke();
+      }
+    }
+    // 冰霜重擊 / 附冰: 碎冰沿刀光散出
+    if (kind === 'frostSmash' || frost) {
+      var nS = kind === 'frostSmash' ? 5 : 3;
+      for (i = 0; i < nS; i++) {
+        var u = (i + 0.5) / nS; if (u > draw) break;
+        var mu = 1 - u;
+        var px = mu * mu * Q0[0] + 2 * mu * u * Q1[0] + u * u * Q2[0], py = mu * mu * Q0[1] + 2 * mu * u * Q1[1] + u * u * Q2[1];
+        var push = 4 + 8 * (1 - fade);
+        iceShard(ctx, Math.min(R - 6, px + push), py * (1 + 0.1 * (1 - fade)), (i - 2) * 0.5, kind === 'frostSmash' ? 4 : 3.2);
+      }
+    }
+    ctx.restore();
+  }
   function drawStealLink(ctx, s) {
     s = s || {};
     var x1 = num(s.x1, 0), y1 = num(s.y1, 0), x2 = num(s.x2, x1), y2 = num(s.y2, y1);
@@ -1949,19 +2095,96 @@
     txt(ctx, label, x0 + 24, y + 0.5, { size: 13, align: 'left', color: bad ? '#ff9a8a' : '#ffffff', maxW: W - 28 });
     ctx.restore();
   }
+  // ---------- 新手教學搬運箭頭(階段 16) ----------
+  // 暖黃粗線(6 寬 + 外側 1.5 深墨描邊)+ 18×18 三角頭; 線上奶白虛線段往終點流; 起點一圈暖黃提示環
+  function bezPt(P0, P1, P2, u) {
+    var mu = 1 - u;
+    return [mu * mu * P0[0] + 2 * mu * u * P1[0] + u * u * P2[0], mu * mu * P0[1] + 2 * mu * u * P1[1] + u * u * P2[1]];
+  }
+  function drawTutorialArrow(ctx, s) {
+    s = s || {};
+    var P0 = [num(s.fromX, 0), num(s.fromY, 0)], P2 = [num(s.toX, P0[0]), num(s.toY, P0[1] - 60)];
+    var P1 = [num(s.ctrlX, (P0[0] + P2[0]) / 2), num(s.ctrlY, Math.min(P0[1], P2[1]) - 60)];
+    var fromR = clamp(num(s.fromR, 16), 6, 20), t = num(s.t, 0);
+    var ad = num(s.appearDuration, 0.3) || 0.3, aa = num(s.appearAge, ad);
+    var grow = (aa >= 0 && aa < ad) ? aa / ad : 1;
+    var hi = 'rgb(' + GUIDE_HI[0] + ',' + GUIDE_HI[1] + ',' + GUIDE_HI[2] + ')';
+    // 取樣曲線
+    var N = 48, pts = [], i;
+    for (i = 0; i <= N; i++) pts.push(bezPt(P0, P1, P2, i / N));
+    // 線起點: 離開提示環外緣; 線終點: 頭部底邊(距尖端 18)
+    var iS = 0, iE = N;
+    while (iS < N && Math.hypot(pts[iS][0] - P0[0], pts[iS][1] - P0[1]) < fromR) iS++;
+    while (iE > iS && Math.hypot(pts[iE][0] - P2[0], pts[iE][1] - P2[1]) < 18) iE--;
+    var iG = Math.floor(N * grow);
+    var iLast = Math.min(iE, iG);
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    var path = function () {
+      ctx.beginPath(); ctx.moveTo(pts[iS][0], pts[iS][1]);
+      for (var k = iS + 1; k <= iLast; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+      if (grow >= 1 && iE < N) {
+        // 接到頭部底邊中點
+        var tx0 = P2[0] - P1[0], ty0 = P2[1] - P1[1], tl0 = Math.hypot(tx0, ty0) || 1;
+        ctx.lineTo(P2[0] - tx0 / tl0 * 17, P2[1] - ty0 / tl0 * 17);
+      }
+    };
+    if (iLast > iS) {
+      ctx.lineCap = 'butt';
+      ctx.strokeStyle = C.tutorInk; ctx.lineWidth = 9; path(); ctx.stroke();
+      ctx.strokeStyle = hi; ctx.lineWidth = 6; path(); ctx.stroke();
+      // 流動段: 每秒 60px 往終點
+      ctx.strokeStyle = C.tutorPaper; ctx.lineWidth = 2.5; ctx.setLineDash([8, 16]); ctx.lineDashOffset = -((t * 60) % 24);
+      path(); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+    }
+    // 頭部: 長 18、底寬 18, 尖端正好在 (toX, toY), 方向 = 終點切線
+    if (grow >= 1) {
+      var tx = P2[0] - P1[0], ty = P2[1] - P1[1], tl = Math.hypot(tx, ty);
+      if (tl < 0.01) { tx = P2[0] - P0[0]; ty = P2[1] - P0[1]; tl = Math.hypot(tx, ty) || 1; }
+      var ux = tx / tl, uy = ty / tl, nx = -uy, ny = ux;
+      var bx = P2[0] - ux * 18, by = P2[1] - uy * 18;
+      var head = function (inset) {
+        ctx.beginPath();
+        ctx.moveTo(P2[0] - ux * inset * 1.8, P2[1] - uy * inset * 1.8);
+        ctx.lineTo(bx + nx * (9 - inset) + ux * inset * 0.5, by + ny * (9 - inset) + uy * inset * 0.5);
+        ctx.lineTo(bx - nx * (9 - inset) + ux * inset * 0.5, by - ny * (9 - inset) + uy * inset * 0.5);
+        ctx.closePath();
+      };
+      ctx.fillStyle = C.tutorInk; head(0); ctx.fill();
+      ctx.fillStyle = hi; head(1.6); ctx.fill();
+      // 中段小魂件圖示 14×14(曲線參數 0.5)
+      var it = s.item === 'pierce' || s.item === 'melee' || s.item === 'seek' ? s.item : null;
+      if (it) {
+        var m = bezPt(P0, P1, P2, 0.5);
+        ctx.fillStyle = C.tutorInk; rr(ctx, m[0] - 9, m[1] - 9, 18, 18, 4); ctx.fill();
+        ctx.fillStyle = C.tutorPaper; rr(ctx, m[0] - 8, m[1] - 8, 16, 16, 3.5); ctx.fill();
+        itemIcon(ctx, it, m[0], m[1], 14);
+      }
+    }
+    // 起點提示環: 外緣 fromR, 環寬 3(往內), 只改亮度脈動; 出現時 0.6 → 1.0 彈
+    var rs = 1;
+    if (grow < 1) { var g = grow; rs = g < 0.7 ? 0.6 + 0.5 * (g / 0.7) : 1.1 - 0.1 * ((g - 0.7) / 0.3); }
+    var pl = 0.6 + 0.4 * Math.sin(t * 5);
+    ctx.save(); ctx.translate(P0[0], P0[1]); ctx.scale(Math.min(1, rs), Math.min(1, rs));
+    ctx.strokeStyle = 'rgba(42,32,22,' + (0.5 * pl + 0.2) + ')'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, 0, fromR - 3.5, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = 'rgba(' + GUIDE_HI[0] + ',' + GUIDE_HI[1] + ',' + GUIDE_HI[2] + ',' + (0.55 + 0.45 * pl) + ')'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, fromR - 1.5, 0, TAU); ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+  }
   // ---------- 新手教學泡泡 ----------
   var SIDES = { up: 1, down: 1, left: 1, right: 1 };
   function drawTutorial(ctx, s) {
     s = s || {};
     var bx = num(s.bodyX, 640), by = num(s.bodyY, 360);
-    var side = SIDES[s.side] === 1 ? s.side : 'up';
+    var side = s.side === 'none' ? 'none' : SIDES[s.side] === 1 ? s.side : 'up';
     var dTy = bool(s.large) ? 70 : 56, dTx = bool(s.large) ? 220 : 170;
-    var defTip = { up: [bx, by + dTy], down: [bx, by - dTy], left: [bx + dTx, by], right: [bx - dTx, by] }[side];
+    var defTip = { up: [bx, by + dTy], down: [bx, by - dTy], left: [bx + dTx, by], right: [bx - dTx, by], none: [bx, by] }[side];
     var tx = num(s.tipX, defTip[0]), ty = num(s.tipY, defTip[1]);
     var text = str(s.text);
     var keys = arr(s.keys).filter(function (k) { return KEY_NAMES[k] === 1; }).slice(0, 4);
     var pressed = arr(s.pressedKeys);
-    // 兩行大泡泡(只有階段 17): 本體 400×100, 標籤中心 (−160, −50)
+    // 兩行大泡泡(階段 17 帶 2 項清單、階段 31 帶 [Z] 鍵帽, 都在 (0, +26) 那一列): 本體 400×100, 標籤中心 (−160, −50)
     var large = bool(s.large);
     var hw = large ? 200 : 150, hh = large ? 50 : 36;
     // checklist: 階段 16 = 3 項 {item, to, done}; 階段 17 = 2 項 {item: kit, to: null, done}; 有值時取代按鍵列
@@ -1998,10 +2221,11 @@
       ctx.closePath();
     };
     ctx.fillStyle = C.tutorPaper; ctx.strokeStyle = C.tutorInk; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
-    arrowPath(0); ctx.fill(); ctx.stroke();
+    // side "none"(階段 16 場上版): 固定版位、不畫箭頭三角, 指引交給搬運箭頭
+    if (side !== 'none') { arrowPath(0); ctx.fill(); ctx.stroke(); }
     // 本體: 淺紙色底 + 深墨框(和全畫面所有深色面板明暗相反)
     rr(ctx, -hw + 1.25, -hh + 1.25, hw * 2 - 2.5, hh * 2 - 2.5, 12); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = C.tutorPaper; arrowPath(3); ctx.fill(); // 蓋掉箭頭與本體交界的框線
+    if (side !== 'none') { ctx.fillStyle = C.tutorPaper; arrowPath(3); ctx.fill(); } // 蓋掉箭頭與本體交界的框線
     // 原地呼吸的內框(不外擴、不放大)
     var br = 0.35 + 0.35 * Math.sin(now() * 3.2);
     ctx.globalAlpha = clamp(alpha, 0, 1) * br;
@@ -2021,7 +2245,8 @@
       for (ci = 0; ci < Math.min(2, checklist.length); ci++) checkItemKit(ctx, (ci - 0.5) * 120, 26, checklist[ci]);
     } else {
       var ty0 = keys.length || checklist.length ? -14 : 0;
-      txt(ctx, text.replace(/\n/g, ''), 0, ty0, { size: 17, color: C.tutorInk, maxW: 280 });
+      var one = text.replace(/\n/g, '');
+      txt(ctx, one, 0, ty0, { size: one.length >= 15 ? 16 : 17, color: C.tutorInk, maxW: 280 });
       for (ci = 0; ci < checklist.length; ci++) {
         if (checklist[ci].item === 'crossbowKit' || checklist[ci].item === 'soldierKit') checkItemKit(ctx, (ci - (checklist.length - 1) / 2) * 96, 16, checklist[ci], 88);
         else checkItem(ctx, (ci - (checklist.length - 1) / 2) * 96, 16, checklist[ci]);
@@ -2033,7 +2258,7 @@
       var kx = -tot / 2;
       for (i = 0; i < keys.length; i++) {
         var w = keyW(keys[i], 26);
-        keyIcon(ctx, keys[i], kx + w / 2, 16, w, 26, pressed.indexOf(keys[i]) >= 0);
+        keyIcon(ctx, keys[i], kx + w / 2, large ? 26 : 16, w, 26, pressed.indexOf(keys[i]) >= 0);
         kx += w + 6;
       }
     }
@@ -2415,7 +2640,16 @@
       lockGlyph(ctx, 0, -6, 44);
       txt(ctx, name, 0, 44, { size: 15, color: '#4a5060', maxW: 180 });
     }
-    if (tut) sprout(ctx, 76, -52, unlocked ? 1 : 0.4);
+    var tLock = unlocked && lv.tutorialLocked === true && !selected;
+    // 教學鎖: 新芽讓到左上角, 右上角 (80, −58) 換成教學配色的小鎖頭
+    if (tut) sprout(ctx, tLock ? -76 : 76, -52, unlocked ? 1 : 0.4);
+    if (tLock) {
+      // 整張微暗(比未解鎖亮, 內容照讀得到)
+      ctx.fillStyle = 'rgba(6,8,14,0.42)'; rr(ctx, -100, -75, 200, 150, 12); ctx.fill();
+      ctx.fillStyle = 'rgba(10,12,18,0.92)'; rr(ctx, 70, -68, 20, 20, 5); ctx.fill();
+      ctx.strokeStyle = 'rgba(230,214,176,0.7)'; ctx.lineWidth = 1; rr(ctx, 70.5, -67.5, 19, 19, 4.5); ctx.stroke();
+      lockGlyph(ctx, 80, -57.5, 15, '#e6d6b0');
+    }
     if (unlockP >= 0) {
       // 開鎖: 卡片從暗變亮 + 內緣一圈金光; 鎖頭先抖、再碎成 7 片往外飛(不超出卡片外 20px)
       var q = unlockP;
@@ -2952,6 +3186,7 @@
     drawThunderOrb: drawThunderOrb,
     drawPierceBeam: drawPierceBeam,
     drawAreaHit: drawAreaHit,
+    drawMeleeSlash: drawMeleeSlash,
     drawShockChain: drawShockChain,
     drawHitSpark: drawHitSpark,
     drawBlink: drawBlink,
@@ -2960,6 +3195,7 @@
     drawSpawnWarning: drawSpawnWarning,
     drawTutorialWarn: drawTutorialWarn,
     drawSpawnMark: drawSpawnMark,
+    drawTutorialArrow: drawTutorialArrow,
     drawTutorial: drawTutorial,
     drawGuide: drawGuide,
     drawHud: drawHud,

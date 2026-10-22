@@ -1,5 +1,5 @@
 'use strict';
-// 魂匠守衛者(打磨版第 5 輪) — 玩法驗證 Demo。邏輯與繪製分離: update 改狀態, render 只呼叫 Art.drawXxx。
+// 魂匠守衛者(打磨版第 6 輪) — 玩法驗證 Demo。邏輯與繪製分離: update 改狀態, render 只呼叫 Art.drawXxx。
 
 const Placeholder = {}; // interface.json 涵蓋所有圖形, 無佔位
 
@@ -63,8 +63,8 @@ function gp(sp, pairs, gap) { return { sp, list: pairs, gap: gap || 1.2 }; } // 
 const LEVELS = [
   {
     name: '新手教學・初陣', gold: 30, cap: 1, mul: 1.0, t1: 15, gap: 24,
-    paths: [[[0, 290], [600, 290], [600, 434], [1180, 434]]],
-    spawns: [{ name: 'A', x: 40, y: 290, ang: 0 }],
+    paths: [[[624, 50], [624, 434], [1180, 434]]],
+    spawns: [{ name: 'A', x: 624, y: 90, ang: Math.PI / 2 }],
     towers: [], soldiers: [], neutrals: [],
     waves: [
       [gp(0, [['imp', 1], ['archer', 1]])],
@@ -174,13 +174,17 @@ const S = {
   unlocked: [true, false, false, false, false], best: [0, 0, 0, 0, 0], attempts: [0, 0, 0, 0, 0], fails: [0, 0, 0, 0, 0],
   combos: zeros(NCOMBO).map(() => false), recipes: zeros(11).map(() => false), golemUnlocked: false, pillarUnlocked: false, muted: false,
   won: [false, false, false, false, false], pendingUnlock: -1, tutClearShown: false, tutClearSt: null,
-  tut: { done: [], shownSt: [], doneSt: [], pressed: {}, fx: null, cur: 0, view: null, lastView: null }
+  tut: { done: [], shownSt: [], doneSt: [], pressed: {}, fx: null, cur: 0, view: null, lastView: null },
+  menuBlocks: 0, menuEvents: [] // 關卡預覽頁想選被教學鎖住的第 1 關: 次數與事件, 記進下一局的檔案
 };
 const G = {
   screen: 'title', cursor: 0, titleT: 0, tt: { clear: null, adv: null }, sq: [], music: null, inited: false, level: 1, popup: null, steal: null, hand: null, flag: null,
   fuseSnd: 0, comboSnd: 0, paused: false, codex: false, guide: null, reveal: null, revealQ: [], banner: null, panelWave: 0, bumpAge: 0.4,
   tapp: {}, run: {}, warn: null, resp: {}, waveAt: [], queue: [], firstKill: null, firstEnemyT: null, sawArcher: false, shopOpens: 0, qCur: 0, qBase: 0, q23seen: false, clearedW: [], strandedHit: false, vshown: {}, t30was4: false
 };
+
+// 關卡預覽頁的第 1 關教學鎖: 第 1 關勝利過、而且這次開網頁還沒在第 2 關勝利過
+function tutLock1() { return !!S.won[0] && !S.won[1]; }
 
 function emptyEv() {
   return {
@@ -191,7 +195,7 @@ function emptyEv() {
 function mkUnit(cat, x, y, half, slots) {
   return {
     cat, x, y, half, slots, factory: [], price: 0, cd: {}, ev: emptyEv(),
-    hitAge: 0.2, attackAge: 0.15, moving: false, charging: false, state: 'normal',
+    hitAge: 0.2, attackAge: 0.15, attackKind: 'other', attackAngle: 0, moving: false, charging: false, state: 'normal',
     hp: 1, maxHp: 1, slowT: 0, auraSlow: false, healing: false, onTrail: false, home: { x, y }, m: null, awayT: 0, flagObj: null, trailObj: null,
     prevCombos: zeros(NCOMBO), comboLast: zeros(NCOMBO).map(() => -99), removed: false, chHit: new Map(), rayT: -99
   };
@@ -244,7 +248,7 @@ function newStat() {
     steals: { started: 0, done: 0, diedDone: 0, canceled: 0 }, installs: { direct: 0, replace: 0 }, fuses: {}, drops: 0, groundExpired: 0,
     demolishes: 0, homeRefunds: {}, bundledBack: 0, flags: { purchase: 0, rally: 0 }, unitDowns: 0, maxRespawnQueue: 0, marchLoops: 0,
     blinks: 0, healed: 0, enemyHealed: 0, recruits: 0, combosNew: [],
-    pauseSec: 0, pauses: 0, codexSec: 0, codexOpens: 0, guideSec: 0, revealSec: 0, reveals: 0, gateSec: 0, clearWaitSec: 0, tutorialBlocks: {}, tutorialSpawns: 0, tutorialGold: 0
+    pauseSec: 0, pauses: 0, codexSec: 0, codexOpens: 0, guideSec: 0, revealSec: 0, reveals: 0, gateSec: 0, clearWaitSec: 0, tutorialBlocks: {}, tutorialSpawns: 0, tutorialGold: 0, tutorialFloor: 0, menuBlocks: 0
   };
 }
 
@@ -304,7 +308,7 @@ function startLevel(n) {
   G.golems = LV.neutrals.map(g => mkGolem(g[0], g[1], 'neutral'));
   G.enemies = []; G.corpses = []; G.parts = []; G.coins = []; G.flags = [];
   G.projs = []; G.beams = []; G.areas = []; G.sparks = []; G.names = []; G.breaks = [];
-  G.chains = []; G.orbs = []; G.hbeams = []; G.blinks = []; G.trails = [];
+  G.chains = []; G.orbs = []; G.hbeams = []; G.blinks = []; G.trails = []; G.slashes = [];
   G.frostAlly = []; G.frostEnemy = []; G.healAlly = []; G.healEnemy = [];
   G.castle = mkUnit('castle', 1180, 434, 56, nulls(3));
   G.castle.slots[0] = 'shop';
@@ -326,9 +330,12 @@ function startLevel(n) {
   G.tapp = {}; G.run = { placedTower: false, placedPillar: false }; G.warn = null; G.resp = {};
   G.firstKill = null; G.firstEnemyT = null; G.sawArcher = false; G.shopOpens = 0; G.qCur = 0; G.qBase = 0; G.q23seen = false;
   G.clearedW = []; G.strandedHit = false; G.vshown = {}; G.t30was4 = false; curSrc = null;
+  G.w2ClearT = null; G.rec22 = false; G.waitLogged = false; G.arrow16 = null; G.arrowKey = null;
   G.win = false; G.resultT = 0; G.stat = newStat();
   G.stat.leaksByWave = LV.waves.map(() => 0);
-  G.log = { t0: RT, events: [] };
+  G.stat.menuBlocks = S.menuBlocks; S.menuBlocks = 0;
+  G.log = { t0: RT, events: S.menuEvents.map(o => Object.assign({}, o)) }; // 關卡預覽頁被擋的事件排在最前面(t = null)
+  S.menuEvents = [];
   T.fx = null; T.view = null; T.lastView = null; T.cur = 0; T.pressed = {};
   ev('level_start', { level: n, attempt: S.attempts[n - 1] });
   zNeedRelease = true;
@@ -343,7 +350,9 @@ function toTitle(failIdx) {
   G.screen = 'title'; G.titleT = 0; G.popup = null; G.steal = null;
   let c = 0; for (let i = 0; i < 5; i++) if (S.unlocked[i]) c = i;
   if (failIdx !== undefined && failIdx !== null) c = failIdx;
+  if (c === 0 && tutLock1() && S.unlocked[1]) c = 1; // 第 1 關上教學鎖時游標不會落在它
   G.cursor = c;
+  G.tWarn = null;
   G.tt = { clear: null, adv: null };
   if (S.won[0] && S.won[1] && !S.tutClearShown) {
     S.tutClearShown = true; S.tutClearSt = r1(RT);
@@ -358,7 +367,8 @@ function endLevel(win) {
   const hp = Math.max(0, G.castleHp);
   const stars = win ? 1 + (hp >= 10 ? 1 : 0) + (hp === 20 ? 1 : 0) : 0;
   G.screen = 'result'; G.win = win; G.resultT = 0; G.stars = stars; G.starsPlayed = 0; G.resultCursor = 0;
-  G.options = win ? ['繼續', '重玩'] : ['重來', '關卡預覽'];
+  // 第 1 關勝利、而這次開網頁還沒在第 2 關勝利過: 只有 [繼續](「重玩」會繞過關卡預覽頁的第 1 關教學鎖)
+  G.options = win ? ((G.level === 1 && !S.won[1]) ? ['繼續'] : ['繼續', '重玩']) : ['重來', '關卡預覽'];
   G.popup = null; G.steal = null; G.guide = null; G.reveal = null; G.revealQ = []; G.paused = false; G.codex = false; muffle(false);
   G.sq = G.sq.filter(n => n !== 'castle_hit');
   if (win) {
@@ -375,7 +385,7 @@ function endLevel(win) {
     level: G.level, levelName: LV.name, attempt: S.attempts[G.level - 1], failsBefore: win ? S.fails[G.level - 1] : S.fails[G.level - 1] - 1,
     result: win ? 'win' : 'lose', durationSec: r1(RT - G.log.t0), gameSec: r1(st.gameSec), slowMoSec: r1(st.slowMoSec), hiddenSec: r1(st.hiddenSec),
     pauseSec: r1(st.pauseSec), pauses: st.pauses, codexSec: r1(st.codexSec), codexOpens: st.codexOpens, guideSec: r1(st.guideSec), revealSec: r1(st.revealSec), reveals: st.reveals,
-    gateSec: r1(st.gateSec), clearWaitSec: r1(st.clearWaitSec), tutorialBlocks: st.tutorialBlocks, tutorialSpawns: st.tutorialSpawns, tutorialGold: st.tutorialGold,
+    gateSec: r1(st.gateSec), clearWaitSec: r1(st.clearWaitSec), tutorialBlocks: st.tutorialBlocks, tutorialSpawns: st.tutorialSpawns, tutorialGold: st.tutorialGold, tutorialFloor: st.tutorialFloor, menuBlocks: st.menuBlocks,
     waveReached: G.wave, totalWaves: LV.waves.length, castleHp: hp, stars, leaks: st.leaks, leaksByWave: st.leaksByWave, leaksBySpawn: st.leaksBySpawn,
     kills: st.kills, playerKills: st.playerKills, playerHits: st.playerHits,
     goldEarned: st.goldEarned, goldRefund: st.goldRefund, goldSpent: st.goldSpent, goldEnd: G.gold, purchases: st.purchases,
@@ -386,7 +396,7 @@ function endLevel(win) {
     combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length, recipesOpenedTotal: S.recipes.filter(Boolean).length,
     stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialClearSt: S.tutClearSt
   };
-  downloadLog({ game: 'SoulSmithDefense', version: 'polish-5', summary, tutorial: tut, events: G.log.events });
+  downloadLog({ game: 'SoulSmithDefense', version: 'polish-6', summary, tutorial: tut, events: G.log.events });
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
@@ -589,7 +599,14 @@ function hurt(t, amt, o) {
   const src = o && o.src;
   if (t.cat !== 'enemy' && t.ev && t.ev.rooted) amt = Math.max(1, Math.round(amt * 0.5)); // 不動如山: 受傷減半
   t.hp -= amt; t.hitAge = 0;
-  G.sparks.push({ x: t.x, y: t.y, frost: !!(o && o.frost), age: 0 });
+  if (t.cat === 'soldier' && t.hp < 1 && tutLvl1()) { t.hp = 1; G.stat.tutorialFloor++; } // 第 1 關教學中步兵生命最低停在 1
+  if (o && o.slash) { // 近戰類單體命中: 醒目的斬擊(取代命中火花)
+    const sk = o.slash, enemySide = o.side === 'enemy';
+    G.slashes.push({
+      kind: sk, x: t.x, y: t.y, angle: o.ang || 0, team: enemySide ? 'enemy' : 'ally',
+      frost: !enemySide && sk === 'melee' && !!o.frost, shock: !enemySide && sk === 'melee' && (o.shock || 0) > 0, age: 0
+    });
+  } else G.sparks.push({ x: t.x, y: t.y, frost: !!(o && o.frost), age: 0 });
   if (t.cat === 'enemy' && src === 'player') G.stat.playerHits++;
   if (t.cat === 'enemy' && curSrc && isMobileAlly(curSrc) && t.slots.indexOf('march') < 0) G.strandedHit = true; // 階段 30: 步兵 / 石魔像打中呆站的敵人
   if (t.hp <= 0) {
@@ -685,9 +702,13 @@ function runAttacks(u, side, gdt, src) {
     if ((u.cd[ef.key] || 0) > 0) continue;
     u.cd[ef.key] = period;
     u.attackAge = 0;
+    const isMelee = ef.t === 'melee' || ef.t === 'frostSmash' || ef.t === 'thunderSlash';
+    const aim = Math.atan2(tgt.y - u.y, tgt.x - u.x);
+    u.attackKind = isMelee ? 'melee' : 'other'; u.attackAngle = isMelee ? aim : 0; // 近戰類出手: 朝目標撲過去
+    const hoM = isMelee ? Object.assign({}, ho, { slash: ef.t, ang: aim }) : ho;
     switch (ef.t) {
       case 'ranged': spawnProj(u, tgt, ice ? 'ice' : 'normal', 10 * ef.n, side, src, E.shockAttach); snd(side === 'ally' ? 'arrow_shot' : 'enemy_shot'); break;
-      case 'melee': dealHit(tgt, (u.swift ? 4 : 14) * ef.n, ho); if (side === 'ally') snd('melee_hit'); break; // 輕快小鬼打人只有 4
+      case 'melee': dealHit(tgt, (u.swift ? 1 : 14) * ef.n, hoM); if (side === 'ally') snd('melee_hit'); break; // 輕快小鬼打人只有 1
       case 'iceArrow': spawnProj(u, tgt, 'ice', 10, side, src, E.shockAttach); snd('arrow_shot'); break;
       case 'pierce': {
         const ang = Math.atan2(tgt.y - u.y, tgt.x - u.x);
@@ -704,13 +725,13 @@ function runAttacks(u, side, gdt, src) {
         break;
       case 'frostSmash':
         G.areas.push({ kind: 'frostSmash', x: tgt.x, y: tgt.y, radius: 60, angle: 0, frost: false, age: 0 });
-        hurt(tgt, 16, { src, frost: true });
+        hurt(tgt, 16, { src, frost: true, slash: 'frostSmash', ang: aim, side });
         if (E.shockAttach > 0) chainFrom(tgt, 16, E.shockAttach, ho, null, false);
         for (const h of hostiles) if (h === tgt || dist(h, tgt) <= 60) slowIt(h);
         snd('melee_hit');
         break;
       case 'thunderSlash':
-        hurt(tgt, 22, { src, frost: ice });
+        hurt(tgt, 22, { src, frost: ice, slash: 'thunderSlash', ang: aim, side });
         if (ice) slowIt(tgt);
         stun(tgt, 0.5);
         chainFrom(tgt, 22, 1, { src, side }, null, true);
@@ -969,7 +990,10 @@ function placeInfo(kit) {
   }
   let tutBlocked = false; // 教學鎖: 位置合規則但不合教學
   if (valid) {
-    if (kit === 'crossbowKit' && tutLvl1()) { const d = routeDist(cx, cy); tutBlocked = !(d >= 52 && d <= 100 && cx >= 216 && cx <= 984); }
+    if (kit === 'crossbowKit' && tutLvl1()) { // 路旁(離中線 52~100), 且投影到路線上的路程(從出怪點量)在 160~760
+      const d = routeDist(cx, cy), s = pathProject(LV.lanes[0], cx, cy).s;
+      tutBlocked = !(d >= 52 && d <= 100 && s >= 160 && s <= 760);
+    }
     else if (kit === 'pillarKit' && tutLvl2() && period(25)) tutBlocked = !hasFriendNear(cx, cy, 150);
   }
   return { x: cx, y: cy, valid, tutBlocked, kind: kit === 'crossbowKit' ? 'crossbow' : 'pillar' };
@@ -1052,11 +1076,12 @@ function shopHolder() {
 function shopItems() { return SHOP_ALL.filter(s => s[0] !== 'golemKit' || S.golemUnlocked); }
 
 // ───────── 更新 ─────────
+function atkDur(u) { return u.attackKind === 'melee' ? 0.25 : 0.15; } // 近戰類出手的撲擊 0.25 秒, 其他 0.15
 function tickAge(o, k, dur, dt) { if (o[k] < dur) o[k] = Math.min(dur, o[k] + dt); }
 function decCd(u, gdt) { for (const k in u.cd) if (u.cd[k] > 0) u.cd[k] = Math.max(0, u.cd[k] - gdt); }
 function tickUnit(u, gdt) {
   tickAge(u, 'hitAge', u.cat === 'castle' ? 0.3 : 0.2, gdt);
-  tickAge(u, 'attackAge', 0.15, gdt);
+  tickAge(u, 'attackAge', atkDur(u), gdt);
   if (u.slowT > 0) u.slowT = Math.max(0, u.slowT - gdt);
   decCd(u, gdt);
 }
@@ -1192,6 +1217,7 @@ function orbTick(gdt) {
 function updateTitle(dt) {
   const tt = G.tt;
   G.titleT += dt;
+  if (G.tWarn) { G.tWarn.age += dt; if (G.tWarn.age >= 1.2) G.tWarn = null; } // 真實時間
   if (tt.clear) {
     const c = tt.clear;
     if (!c.closing) c.age += dt;
@@ -1365,7 +1391,7 @@ function normalUpdate(dt) {
       P.moving = true;
     }
   }
-  tickAge(P, 'attackAge', 0.15, gdt);
+  tickAge(P, 'attackAge', atkDur(P), gdt);
   decCd(P, gdt);
   if (G.warn) { G.warn.age += gdt; if (G.warn.age >= 1.2) G.warn = null; }
 
@@ -1417,6 +1443,7 @@ function normalUpdate(dt) {
     tickUnit(g, gdt);
     g.moving = false;
     if (g.slots.indexOf('march') >= 0) {
+      g.marchT = (g.marchT || 0) + gdt; // 走向主堡已經過幾秒(階段 22 等待提示用)
       moveToward(g, CASTLE_POS.x, CASTLE_POS.y, 60, gdt);
       if (dist(g, CASTLE_POS) <= 66) g.recruited = true;
     } else {
@@ -1488,7 +1515,8 @@ function normalUpdate(dt) {
   orbTick(gdt);
 
   // 單次特效 / 金幣 / 倒下消散 / 地上魂件
-  for (const arr of [G.beams, G.areas, G.sparks, G.names, G.breaks, G.chains, G.hbeams, G.blinks]) arr.forEach(o => { o.age += gdt; });
+  for (const arr of [G.beams, G.areas, G.sparks, G.slashes, G.names, G.breaks, G.chains, G.hbeams, G.blinks]) arr.forEach(o => { o.age += gdt; });
+  G.slashes = G.slashes.filter(o => o.age < 0.25);
   G.beams = G.beams.filter(o => o.age < 0.15);
   G.areas = G.areas.filter(o => o.age < 0.3);
   G.sparks = G.sparks.filter(o => o.age < 0.25);
@@ -1557,6 +1585,9 @@ function normalUpdate(dt) {
   G.target = findTarget();
   if (G.popup) G.target = G.popup.target || null;
 
+  // 第 1 關第 2 波清空後的等待計時(階段 15 要再等 2.0 秒遊戲時間才出引導卡)
+  if (G.level === 1 && waveClear(2)) { if (G.w2ClearT === null) G.w2ClearT = G.time; } else G.w2ClearT = null;
+
   updateTutorial(dt);
 
   // 結束判定(批次尾端只判一次)
@@ -1621,6 +1652,7 @@ function shopLocked(kit) {
   const T = S.tut;
   if (tutLvl1()) {
     if (kit === 'pillarKit') return true;
+    if (kit === 'crossbowKit' && !T.done[4]) return true; // 方向鍵任務(階段 4)完成前, 弩塔上鎖
     const lifted = !!(T.done[13] || G.tapp[13]);
     if (kit === 'soldierKit' || kit === 'golemKit') return !lifted;
     if (kit === 'crossbowKit') return (G.stat.purchases.crossbow || 0) >= 1 && !lifted;
@@ -1636,7 +1668,10 @@ function installBlocked(t, h) { // 裝上 / 替換被教學擋下
   if (tutLvl1()) {
     let ok = false;
     if (!T.done[12] && (T.done[11] || G.tapp[12]) && h === 'ranged' && t.cat === 'tower') ok = true;
-    if (period(16) && (h === 'pierce' || h === 'melee' || h === 'seek') && (t.cat === 'tower' || t.cat === 'soldier')) ok = true;
+    if (period(16)) { // 只能把清單裡還沒打勾的那件裝到它的目的單位
+      const dd = done16Flags();
+      if ((h === 'pierce' && !dd[0] && t.cat === 'soldier') || (h === 'melee' && !dd[1] && t.cat === 'tower') || (h === 'seek' && !dd[2] && t.cat === 'tower')) ok = true;
+    }
     return !ok;
   }
   if (tutLvl2()) {
@@ -1647,7 +1682,9 @@ function installBlocked(t, h) { // 裝上 / 替換被教學擋下
   }
   return false;
 }
-function stealBlocked() { return tutLvl1() && !S.tut.done[10]; }
+function stealBlocked() { // 階段 10 前不能搶; 第 2 波清空起到階段 16 完成也不能搶(互換教學期間)
+  return tutLvl1() && (!S.tut.done[10] || (!!G.clearedW[2] && !S.tut.done[16]));
+}
 function stealPref() {
   const T = S.tut;
   if (G.level === 1 && T.done[10] && !T.done[11]) return 'ranged';
@@ -1688,7 +1725,7 @@ function buildCard(k) {
   switch (k) {
     case 1: text = '這是你'; spots = [circ(P.x, P.y, 40)]; break;
     case 2: text = '這是主堡'; sub = '保護它, 別讓它被攻破'; spots = [circ(1180, 424, 92)]; break;
-    case 3: text = '怪物要來了'; sub = '該做些準備了'; spots = [circ(40, 290, 56)]; break;
+    case 3: text = '怪物要來了'; sub = '該做些準備了'; spots = [circ(624, 90, 56)]; break;
     case 8: {
       const t = G.towers[0];
       text = '這是代表遠攻的「魂件」'; sub = '建築、敵人、步兵都有不同的魂件';
@@ -1796,7 +1833,7 @@ function cardReady(k) {
     case 8: return true;
     case 9: return !!G.firstKill && G.time - G.firstKill.t >= 0.4;
     case 10: return liveEnemies().some(e => e.type === 'archer' && G.time - e.spawnT >= 2.0);
-    case 15: return waveClear(2);
+    case 15: return G.w2ClearT !== null && G.time - G.w2ClearT >= 2.0;
     case 18: return liveEnemies().some(e => G.time - e.spawnT >= 2.0);
     case 19: return true;
     case 28: return true;
@@ -1853,6 +1890,41 @@ function done16Flags() {
     G.towers.some(t => t.slots.indexOf('seek') >= 0)
   ];
 }
+// 搬運箭頭(階段 16): 挑還沒搬好的一件 X, 由它所在的位置(單位魂件格 / 地上 / 手上)指向目的單位
+function pick16(dd) {
+  const P = G.player, h = G.hand;
+  const hi = ITEMS16.findIndex(it => it[0] === h);
+  if (hi >= 0 && !dd[hi]) return { i: hi, src: 'hand', fx: P.x + 28, fy: P.y, fr: 16, from: 'hand' };
+  for (let i = 0; i < 3; i++) {
+    if (dd[i]) continue;
+    const it = ITEMS16[i][0];
+    const holders = G.towers.filter(u => !u.removed).concat(visSoldiers()).filter(u => u.slots.indexOf(it) >= 0);
+    const u = nearestTo(holders);
+    if (u) {
+      const L = u.slots.length, gi = u.slots.indexOf(it), cy = u.cat === 'tower' ? u.y - 44 : u.y - 36;
+      return { i, src: 'unit', fx: u.x - (L - 1) * 10 + 20 * gi, fy: cy, fr: 14, from: u.cat === 'tower' ? 'crossbow' : 'soldier' };
+    }
+    const gp = nearestTo(partsWith(it));
+    if (gp) return { i, src: 'ground', fx: gp.x, fy: gp.y, fr: 20, from: 'ground' };
+  }
+  return null;
+}
+function arrow16(X) { // 算箭頭的座標; 終點 = 離起點最近的目的單位的尖端(弩塔 y−58、步兵 y−50)
+  const toKind = ITEMS16[X.i][1];
+  const dest = toKind === 'soldier' ? visSoldiers() : G.towers.filter(u => !u.removed);
+  let best = null, bd = 1e9;
+  for (const u of dest) { const d = Math.hypot(u.x - X.fx, u.y - X.fy); if (d < bd) { bd = d; best = u; } }
+  if (!best) return null;
+  const tx = best.x, ty = best.y - (toKind === 'soldier' ? 50 : 58);
+  const dd = Math.hypot(tx - X.fx, ty - X.fy), h = clamp(dd * 0.35, 40, 120);
+  const cy = Math.max(60, Math.min(X.fy, ty) - h);
+  const key = ITEMS16[X.i][0] + '|' + X.src;
+  if (G.arrowKey !== key) { // 換一件、或起點種類改變: 新箭頭從起點長出來, 並記埋點
+    G.arrowKey = key; G.arrowT0 = G.time;
+    ev('tutorial_arrow', { item: ITEMS16[X.i][0], from: X.from, to: toKind });
+  }
+  return { fromX: X.fx, fromY: X.fy, fromR: X.fr, toX: tx, toY: ty, ctrlX: (X.fx + tx) / 2, ctrlY: cy, item: ITEMS16[X.i][0] };
+}
 function view16(ign) {
   const p = ign ? null : G.popup;
   if (p) {
@@ -1861,23 +1933,14 @@ function view16(ign) {
   }
   const dd = done16Flags();
   const cl = ITEMS16.map((it, i) => ({ item: it[0], to: it[1], done: dd[i] }));
-  const P = G.player, h = G.hand;
-  const mk = (text, obj) => objView(16, text, [], obj, { checklist: cl });
-  let v = null;
-  if (h === 'pierce' && !dd[0]) v = mk('裝到步兵身上', nearestTo(visSoldiers()));
-  else if ((h === 'melee' && !dd[1]) || (h === 'seek' && !dd[2])) v = mk('裝到弩塔上', nearestTo(G.towers));
-  if (v) return v;
-  if (handEmpty()) {
-    const i = dd.findIndex(d => !d);
-    if (i >= 0) {
-      const it = ITEMS16[i][0], nm = ITEMS16[i][2];
-      const gp0 = partsWith(it);
-      if (gp0.length) return mk('撿起地上的' + nm, nearestTo(gp0));
-      const holders = G.towers.concat(visSoldiers()).filter(u => u.slots.indexOf(it) >= 0);
-      if (holders.length) return mk('拿下' + nm, nearestTo(holders));
-    }
-  }
-  return mk('走到空地按 Z 丟下', P);
+  const X = pick16(dd);
+  let text, arrow = null;
+  if (X && X.src === 'hand') text = '把' + ITEMS16[X.i][2] + (ITEMS16[X.i][1] === 'soldier' ? '裝到步兵身上' : '裝到弩塔上');
+  else if (X && handEmpty()) text = X.src === 'ground' ? '照箭頭, 撿起' + ITEMS16[X.i][2] : '照箭頭, 拿下' + ITEMS16[X.i][2];
+  else text = '走到空地按 Z 丟下';
+  if (X && text !== '走到空地按 Z 丟下' && !ign) arrow = arrow16(X);
+  // 泡泡固定在畫面左上、不帶箭頭(side "none"); 指引交給搬運箭頭
+  return { stage: 16, text, large: false, keys: [], pressedKeys: [], checklist: cl, tipX: 166, tipY: 160, side: 'none', bodyX: 166, bodyY: 160, late: false, arrow };
 }
 function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位(完成特效在原位置播用)
   const P = G.player, p = ign ? null : G.popup;
@@ -1917,7 +1980,13 @@ function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位
       if (handEmpty() && partsWith('march').length) return objView(k, '撿起地上的進攻主堡', ['z'], nearestTo(partsWith('march')));
       return objView(k, '再拔一個進攻主堡', ['z'], nearestTo(enemiesWith('march')));
     }
-    case 22: return open ? null : objView(k, '去主堡看看', ['space'], shopHolder());
+    case 22: {
+      if (open) return null;
+      if (recruited22()) return objView(k, '去主堡看看', ['space'], shopHolder());
+      // 還沒招募成功: 不擋操作的等待提示, 貼在走向主堡的那隻中立石魔像頭上
+      const g = G.golems.find(q => q.team === 'neutral' && !q.removed && q.slots.indexOf('march') >= 0);
+      return g ? objView(k, '石魔像正在朝著主堡移動,請等待', [], g) : null;
+    }
     case 23: return shop ? shopCellView(k, '之後就可以召喚石魔像了!', [], 'golemKit') : null;
     case 24:
       if (shop) return shopCellView(k, '選魂柱, 按 Z 買', ['left', 'right', 'z'], 'pillarKit');
@@ -1938,11 +2007,12 @@ function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位
       if (open) return null;
       const u = nearestTo(units31());
       if (!u) return null;
-      return objView(k, (u.cat === 'golem' ? '石魔像' : '步兵') + '身上要有攻擊魂件', ['z'], u);
+      return objView(k, (u.cat === 'golem' ? '石魔像' : '步兵') + '身上要有攻擊魂件\n例如近戰、遠攻、電擊等等', ['z'], u, { large: true });
     }
   }
   return null;
 }
+function recruited22() { return S.golemUnlocked || G.stat.recruits > 0; }
 function cl17() { return [{ item: 'crossbowKit', to: null, done: G.towers.length > 0 }, { item: 'soldierKit', to: null, done: G.soldiers.length > 0 }]; }
 // ── 階段 30 / 31(呆站的敵人) ──
 function near200Stranded(u) { return strandedList().some(e => Math.hypot(e.x - u.home.x, e.y - u.home.y) <= 200); }
@@ -1972,7 +2042,7 @@ function qCond(k) {
     case 11: return enemiesWith('ranged').length > 0 || qDone(11);
     case 14: return !!(G.flag && G.flag.reason === 'purchase') || qDone(14);
     case 17: return G.time >= 1.0;
-    case 22: return S.golemUnlocked || G.stat.recruits > 0;
+    case 22: return recruited22() || G.golems.some(g => g.team === 'neutral' && !g.removed && (g.marchT || 0) >= 3.0); // 走了 3 秒還沒到就先出等待提示
     case 23: return shopOpen();
     case 24: return waveClear(1);
     case 25: return G.hand === 'pillarKit' || qDone(25);
@@ -1986,7 +2056,8 @@ function qDone(k) {
   const pil = it => G.pillars.some(p => p.slots.indexOf(it) >= 0);
   switch (k) {
     case 4: return !!(T.pressed.left && T.pressed.right && T.pressed.up && T.pressed.down);
-    case 5: case 22: return shopOpen() || G.shopOpens > G.qBase;
+    case 5: return shopOpen() || G.shopOpens > G.qBase;
+    case 22: return recruited22() && (shopOpen() || G.shopOpens > G.qBase); // 招募前打開商店不算
     case 6: return (st.purchases.crossbow || 0) > 0;
     case 7: return G.run.placedTower;
     case 11: return G.hand === 'ranged' || G.towers.some(t => t.slots.indexOf('pierce') >= 0);
@@ -2042,7 +2113,13 @@ function updateTutorial(dt) {
       if (tutLvl2() && G.gold < PRICE.pillar) tutGold(24, PRICE.pillar - G.gold);
     }
   }
+  if (k === 22 && recruited22() && !G.rec22) { G.rec22 = true; G.qBase = G.shopOpens; } // 招募成功的這一刻起才算「打開商店」
   const view = qView(k, false);
+  if (k === 22 && view && !recruited22() && !G.waitLogged) { // 等待提示第一次出現
+    G.waitLogged = true;
+    const g = G.golems.find(q => q.team === 'neutral' && !q.removed && q.slots.indexOf('march') >= 0);
+    ev('tutorial_wait', { waitedSec: r1(g ? (g.marchT || 0) : 0) });
+  }
   if (qDone(k)) { completeQuest(k, view); return; }
   if (k === 30) { // 「先召喚一隻步兵」出現的那一刻, 金幣不到 12 補到 12
     const is4 = !!view && view.text === '先召喚一隻步兵';
@@ -2086,7 +2163,9 @@ function doInstall(t, mode, item, swappedOut) {
 }
 function menuCells(t) {
   const lockSlot = tutLvl1() && !S.tut.done[15]; // 第 1 關教學中, 階段 15 完成前魂件格上鎖
-  const cells = t.slots.map(k => ({ type: 'slot', item: k || null, locked: lockSlot }));
+  const lockShop = tutLvl1() && t.cat === 'castle'; // 第 1 關教學中主堡的購買格一直上鎖
+  const lockMarch = tutLvl2() && S.tut.done[21] && t.cat === 'golem' && t.team === 'neutral'; // 石魔像走回主堡期間, 它的進攻主堡上鎖
+  const cells = t.slots.map(k => ({ type: 'slot', item: k || null, locked: lockSlot || (lockShop && k === 'shop') || (lockMarch && k === 'march') }));
   if (t.cat === 'tower' || t.cat === 'pillar') cells.push({ type: 'demolish', refund: settleRefund(t, Math.floor(t.price * 0.6), false).refund, locked: tutLvl1() });
   else if (isMobileAlly(t)) cells.push({ type: 'rally', locked: false });
   return cells;
@@ -2289,7 +2368,11 @@ function onKey(k) {
     if (tt.adv) return; // 推進動畫播放期間只接受 M
     if (k === 'L' || k === 'R') {
       let c = G.cursor + (k === 'R' ? 1 : -1);
-      if (c >= 0 && c <= 4 && S.unlocked[c]) { G.cursor = c; snd('ui_move'); }
+      if (c === 0 && k === 'L' && tutLock1() && S.unlocked[0]) { // 第 1 關教學鎖: 游標不動, 跳提示
+        snd('ui_invalid');
+        G.tWarn = { age: 0 };
+        S.menuBlocks++; S.menuEvents.push({ type: 'menu_block', t: null, st: r1(RT), level: 1 });
+      } else if (c >= 0 && c <= 4 && S.unlocked[c]) { G.cursor = c; snd('ui_move'); }
     } else if (k === 'Z') { snd('ui_confirm'); startLevel(G.cursor + 1); }
     return;
   }
@@ -2374,8 +2457,9 @@ function titleState() {
   let maxU = 0; for (let i = 0; i < 5; i++) if (S.unlocked[i]) maxU = i;
   const unlocking = !!(adv && adv.unlocked);
   return {
-    levels: LEVELS.map((l, i) => ({ name: l.name, unlocked: S.unlocked[i], bestStars: S.unlocked[i] ? S.best[i] : 0, tutorial: i < 2 })),
-    cursorIndex: adv ? adv.from : G.cursor, muted: S.muted, blinkTime: G.titleT,
+    levels: LEVELS.map((l, i) => ({ name: l.name, unlocked: S.unlocked[i], bestStars: S.unlocked[i] ? S.best[i] : 0, tutorial: i < 2, tutorialLocked: i === 0 && S.unlocked[0] && tutLock1() })),
+    cursorIndex: (adv || G.tt.clear) ? -1 : G.cursor, // 大提示與推進動畫播完之前不畫游標
+    muted: S.muted, blinkTime: G.titleT,
     tokenIndex: adv ? adv.to : maxU, tokenFrom: adv ? adv.from : maxU, tokenAge: adv ? Math.min(0.8, adv.age) : 0.8, tokenDuration: 0.8,
     unlockIndex: unlocking ? adv.to : -1, unlockAge: unlocking ? Math.min(0.6, adv.age - 0.8) : 0.6, unlockDuration: 0.6
   };
@@ -2384,6 +2468,7 @@ function render() {
   ctx.clearRect(0, 0, W, H);
   if (G.screen === 'title') {
     Art.drawTitle(ctx, titleState());
+    if (G.tWarn) Art.drawTutorialWarn(ctx, { x: 640, y: 600, text: '教學期間不可這樣操作', age: G.tWarn.age, duration: 1.2 });
     const c = G.tt.clear;
     if (c) Art.drawTutorialClear(ctx, { age: c.age, ready: !c.closing && c.age >= 1.0, closing: c.closing, closeAge: c.closeAge, closeDuration: 0.3 });
     return;
@@ -2394,11 +2479,11 @@ function visibleMobile(u) { return (u.state === 'normal' || u.state === 'returni
 function entityDrawList() {
   const L = [];
   const T = G.target;
-  L.push({ y: G.castle.y, f: () => Art.drawCastle(ctx, { x: 1180, y: 434, hp: Math.max(0, G.castleHp), maxHp: 20, hitAge: G.castle.hitAge, hitDuration: 0.3, attackAge: G.castle.attackAge, attackDuration: 0.15, targeted: T === G.castle }) });
+  L.push({ y: G.castle.y, f: () => Art.drawCastle(ctx, { x: 1180, y: 434, hp: Math.max(0, G.castleHp), maxHp: 20, hitAge: G.castle.hitAge, hitDuration: 0.3, attackAge: Math.min(0.15, G.castle.attackAge), attackDuration: 0.15, targeted: T === G.castle }) });
   G.towers.forEach(u => {
     if (u.state !== 'normal') return;
     const ro = u.ev.rooted;
-    L.push({ y: u.y, f: () => Art.drawCrossbow(ctx, { x: u.x, y: u.y, attackAge: u.attackAge, attackDuration: 0.15, moving: !ro && u.moving, charging: !ro && u.charging, rooted: ro, resonating: u.ev.resonating, targeted: T === u }) });
+    L.push({ y: u.y, f: () => Art.drawCrossbow(ctx, { x: u.x, y: u.y, attackAge: u.attackAge, attackDuration: atkDur(u), attackKind: u.attackKind, attackAngle: u.attackAngle, moving: !ro && u.moving, charging: !ro && u.charging, rooted: ro, resonating: u.ev.resonating, targeted: T === u }) });
   });
   G.pillars.forEach(u => {
     if (u.state !== 'normal') return;
@@ -2409,7 +2494,7 @@ function entityDrawList() {
     const ret = u.state === 'returning';
     const ro = !ret && u.ev.rooted;
     return {
-      x: u.x, y: u.y, hp: ret ? u.maxHp : u.hp, maxHp: u.maxHp, hitAge: u.hitAge, hitDuration: 0.2, attackAge: u.attackAge, attackDuration: 0.15,
+      x: u.x, y: u.y, hp: ret ? u.maxHp : u.hp, maxHp: u.maxHp, hitAge: u.hitAge, hitDuration: 0.2, attackAge: u.attackAge, attackDuration: atkDur(u), attackKind: u.attackKind, attackAngle: u.attackAngle,
       moving: !ro && u.moving, charging: !ro && !ret && u.charging, rooted: ro, healing: !ret && u.healing && u.hp < u.maxHp,
       resonating: ret ? false : u.ev.resonating, returning: ret, targeted: T === u
     };
@@ -2427,7 +2512,7 @@ function entityDrawList() {
   });
   G.enemies.forEach(e => L.push({
     y: e.y, f: () => Art.drawEnemy(ctx, {
-      type: e.type, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, hitAge: e.hitAge, hitDuration: 0.2, attackAge: e.attackAge, attackDuration: 0.15,
+      type: e.type, x: e.x, y: e.y, hp: e.hp, maxHp: e.maxHp, hitAge: e.hitAge, hitDuration: 0.2, attackAge: e.attackAge, attackDuration: atkDur(e), attackKind: e.attackKind, attackAngle: e.attackAngle,
       moving: e.ev.singles.march > 0 || e.moving, slowed: e.slowT > 0 || e.auraSlow || stolenBy(e), stunAge: e.stunAge, stunDuration: e.stunDur,
       healing: !!e.healing && e.hp < e.maxHp, swift: !!e.swift, targeted: T === e
     })
@@ -2436,13 +2521,22 @@ function entityDrawList() {
   L.push({
     y: P.y, f: () => Art.drawPlayer(ctx, {
       x: P.x, y: P.y, moving: P.moving, handItem: G.hand, holdingFlag: !!G.flag, stealing: !!G.steal, stealProgress: G.steal ? Math.min(1, G.steal.t / 1.5) : 0,
-      resonating: P.ev.resonating, attackAge: P.attackAge, attackDuration: 0.15
+      resonating: P.ev.resonating, attackAge: P.attackAge, attackDuration: atkDur(P), attackKind: P.attackKind, attackAngle: P.attackAngle
     })
   });
   L.sort((a, b) => a.y - b.y);
   return L;
 }
 function virtOf(u) { return u.ev.virt.map(v => ({ kind: v.kind, used: v.used })); }
+function drawArrow16() {
+  const T = S.tut, v = T.view;
+  if (G.screen !== 'play' || G.guide || G.reveal || T.fx || !v || v.stage !== 16 || !v.arrow) return;
+  const a = v.arrow;
+  Art.drawTutorialArrow(ctx, {
+    fromX: a.fromX, fromY: a.fromY, fromR: a.fromR, toX: a.toX, toY: a.toY, ctrlX: a.ctrlX, ctrlY: a.ctrlY, item: a.item,
+    t: G.time, appearAge: Math.min(0.3, Math.max(0, G.time - G.arrowT0)), appearDuration: 0.3
+  });
+}
 function drawTut(late) {
   const T = S.tut;
   if (G.screen !== 'play' || G.guide || G.reveal) return;
@@ -2538,6 +2632,7 @@ function drawScene() {
   G.beams.forEach(b => Art.drawPierceBeam(ctx, { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2, frost: b.frost, age: b.age, duration: 0.15 }));
   G.hbeams.forEach(b => Art.drawHealBeam(ctx, { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2, age: b.age, duration: 0.3 }));
   G.areas.forEach(a => Art.drawAreaHit(ctx, { kind: a.kind, x: a.x, y: a.y, radius: a.radius, angle: a.angle, frost: a.frost, age: a.age, duration: 0.3 }));
+  G.slashes.forEach(s => Art.drawMeleeSlash(ctx, { kind: s.kind, x: s.x, y: s.y, angle: s.angle, team: s.team, frost: s.frost, shock: s.shock, age: s.age, duration: 0.25 }));
   G.chains.forEach(c => Art.drawShockChain(ctx, { segments: c.segs.map(s => s.slice()), owner: c.owner, age: c.age, duration: 0.2 }));
   G.sparks.forEach(s => Art.drawHitSpark(ctx, { x: s.x, y: s.y, frost: s.frost, age: s.age, duration: 0.25 }));
   G.blinks.forEach(b => Art.drawBlink(ctx, { x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2, age: b.age, duration: 0.3 }));
@@ -2559,7 +2654,7 @@ function drawScene() {
   }
   // 教學推進的波次之前, 出怪點「!」標示: 第 1 關階段 3 的卡片出現起到第 1 波預警開始; 第 2 關階段 17 出現起到第 1 波預警開始、階段 24 出現起到第 2 波預警開始
   if (playing && G.tutDriven) {
-    if (G.level === 1 && (G.tapp[3] || S.tut.done[3]) && !G.warned[0]) Art.drawSpawnMark(ctx, { x: 40, y: 290, t: G.time });
+    if (G.level === 1 && (G.tapp[3] || S.tut.done[3]) && !G.warned[0]) Art.drawSpawnMark(ctx, { x: 624, y: 90, t: G.time });
     else if (G.level === 2 && ((G.tapp[17] && !G.warned[0]) || (G.tapp[24] && !G.warned[1]))) Art.drawSpawnMark(ctx, { x: 40, y: 194, t: G.time });
   }
   if (playing && !G.popup) {
@@ -2567,6 +2662,7 @@ function drawScene() {
     if (lb) Art.drawActionHint(ctx, { x: P.x, y: P.y + 30, label: lb });
   }
   if (playing && G.warn) Art.drawTutorialWarn(ctx, { x: clamp(P.x, 120, 1160), y: Math.min(P.y + 60, 702), text: G.warn.text, age: G.warn.age, duration: 1.2 });
+  drawArrow16(); // 階段 16 的搬運箭頭: 在 drawTutorialWarn 之後、泡泡之前
   drawTut(false);
   Art.drawHud(ctx, { level: G.level, levelName: LV.name, gold: G.gold, muted: S.muted });
   if (playing) {
