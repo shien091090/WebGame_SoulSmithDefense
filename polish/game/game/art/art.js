@@ -2392,8 +2392,10 @@
   function drawTutorial(ctx, s) {
     s = s || {};
     var bx = num(s.bodyX, 640), by = num(s.bodyY, 360);
-    var side = s.side === 'none' ? 'none' : SIDES[s.side] === 1 ? s.side : 'up';
-    var dTy = bool(s.large) ? 70 : 56, dTx = bool(s.large) ? 220 : 170;
+    // 第 10 輪: compact = 一行小泡泡 150×34(階段 16 彈窗版), 箭頭長 42、底邊寬 16, 一律朝下指著彈窗格子; large 優先(兩者不會同時為 true)
+    var compact = s.compact === true && !bool(s.large);
+    var side = compact ? 'up' : s.side === 'none' ? 'none' : SIDES[s.side] === 1 ? s.side : 'up';
+    var dTy = compact ? 59 : bool(s.large) ? 70 : 56, dTx = bool(s.large) ? 220 : 170;
     var defTip = { up: [bx, by + dTy], down: [bx, by - dTy], left: [bx + dTx, by], right: [bx - dTx, by], none: [bx, by] }[side];
     var tx = num(s.tipX, defTip[0]), ty = num(s.tipY, defTip[1]);
     var text = str(s.text);
@@ -2401,10 +2403,12 @@
     var pressed = arr(s.pressedKeys);
     // 兩行大泡泡(階段 17 帶 2 項清單、階段 31 帶 [Z] 鍵帽, 都在 (0, +26) 那一列): 本體 400×100, 標籤中心 (−160, −50)
     var large = bool(s.large);
-    var hw = large ? 200 : 150, hh = large ? 50 : 36;
+    var hw = large ? 200 : compact ? 75 : 150, hh = large ? 50 : compact ? 17 : 36;
+    var abw = compact ? 8 : 10; // 箭頭底邊半寬(compact 細長: 16 寬)
     // checklist: 階段 16 = 3 項 {item, to, done}; 階段 17 = 2 項 {item: kit, to: null, done}; 有值時取代按鍵列
     var checklist = arr(s.checklist).filter(function (c) { return c && typeof c === 'object'; }).slice(0, 3);
     if (checklist.length) keys = [];
+    if (compact) { keys = []; checklist = []; } // 一行小泡泡: 不畫按鍵、不畫清單
     var dd = num(s.doneDuration, 0.6) || 0.6, da = num(s.doneAge, dd);
     var dp = (da >= 0 && da < dd) ? da / dd : -1;
     var sc = 1, alpha = 1;
@@ -2422,13 +2426,13 @@
       ctx.beginPath();
       // 尖端頂點往本體內縮 1.3(框線寬 2.5 的一半), 讓描邊的外緣正好落在 (tipX, tipY), 不超過尖端
       var bcx, bcy;
-      if (side === 'up' || side === 'down') { bcx = clamp(ltx0, -hw + 14, hw - 14); bcy = side === 'up' ? hh : -hh; }
+      if (side === 'up' || side === 'down') { bcx = clamp(ltx0, -hw + abw + 4, hw - abw - 4); bcy = side === 'up' ? hh : -hh; }
       else { bcx = side === 'left' ? hw : -hw; bcy = clamp(lty0, -hh + 12, hh - 12); }
       var dl = Math.hypot(ltx0 - bcx, lty0 - bcy) || 1, k = Math.min(1.3, dl) / dl;
       var ltx = ltx0 - (ltx0 - bcx) * k, lty = lty0 - (lty0 - bcy) * k;
       if (side === 'up' || side === 'down') {
         var edge = side === 'up' ? hh - inset : -hh + inset, lx = bcx;
-        ctx.moveTo(lx - 10, edge); ctx.lineTo(ltx, lty); ctx.lineTo(lx + 10, edge);
+        ctx.moveTo(lx - abw, edge); ctx.lineTo(ltx, lty); ctx.lineTo(lx + abw, edge);
       } else {
         var ex = side === 'left' ? hw - inset : -hw + inset, ly = bcy;
         ctx.moveTo(ex, ly - 10); ctx.lineTo(ltx, lty); ctx.lineTo(ex, ly + 10);
@@ -2439,17 +2443,22 @@
     // side "none"(階段 16 場上版): 固定版位、不畫箭頭三角, 指引交給搬運箭頭
     if (side !== 'none') { arrowPath(0); ctx.fill(); ctx.stroke(); }
     // 本體: 淺紙色底 + 深墨框(和全畫面所有深色面板明暗相反)
-    rr(ctx, -hw + 1.25, -hh + 1.25, hw * 2 - 2.5, hh * 2 - 2.5, 12); ctx.fill(); ctx.stroke();
+    rr(ctx, -hw + 1.25, -hh + 1.25, hw * 2 - 2.5, hh * 2 - 2.5, compact ? 9 : 12); ctx.fill(); ctx.stroke();
     if (side !== 'none') { ctx.fillStyle = C.tutorPaper; arrowPath(3); ctx.fill(); } // 蓋掉箭頭與本體交界的框線
-    // 原地呼吸的內框(不外擴、不放大)
+    // 原地呼吸的內框(不外擴、不放大); compact 本體只有 34 高, 內框貼近外框、線細一點, 不壓字
     var br = 0.35 + 0.35 * Math.sin(now() * 3.2);
     ctx.globalAlpha = clamp(alpha, 0, 1) * br;
-    ctx.strokeStyle = C.tutorAccent; ctx.lineWidth = 2;
-    rr(ctx, -hw + 6, -hh + 6, hw * 2 - 12, hh * 2 - 12, 9); ctx.stroke();
+    ctx.strokeStyle = C.tutorAccent; ctx.lineWidth = compact ? 1.5 : 2;
+    if (compact) rr(ctx, -hw + 4, -hh + 4, hw * 2 - 8, hh * 2 - 8, 6);
+    else rr(ctx, -hw + 6, -hh + 6, hw * 2 - 12, hh * 2 - 12, 9);
+    ctx.stroke();
     ctx.globalAlpha = clamp(alpha, 0, 1);
     // 文字 + 按鍵列 / 檢查清單
     var ci;
-    if (large) {
+    if (compact) {
+      // 一行字置中(「拔掉這個魂件」/「換掉這個魂件」, 6 字 ≈ 108 寬); 標籤下半蓋進本體到 y −8, 字中心下移 2px 讓字頂不碰標籤
+      txt(ctx, text.replace(/\n/g, ''), 0, 2, { size: 18, color: C.tutorInk, maxW: 130 });
+    } else if (large) {
       // 兩行: 第一行 (0, −30)、第二行 (0, −6), 約 18px; 清單列 (0, +26), 2 項 104×26 中心 ((k − 0.5) × 120)
       // 第 8 輪: sub 有值(階段 31)= 第二行改畫成灰色小字(和引導卡小字同色, 15px 不加粗); text 只畫在第一行
       var lines = text.split('\n'), sub = str(s.sub);
@@ -2484,15 +2493,19 @@
     // 完成: 紙色罩住內容 + 大綠勾
     if (dp >= 0) {
       var cq = Math.min(1, dp / 0.2);
-      ctx.fillStyle = 'rgba(255,244,214,' + (0.75 * cq) + ')'; rr(ctx, -hw + 4, -hh + 4, hw * 2 - 8, hh * 2 - 8, 10); ctx.fill();
+      ctx.fillStyle = 'rgba(255,244,214,' + (0.75 * cq) + ')'; rr(ctx, -hw + 4, -hh + 4, hw * 2 - 8, hh * 2 - 8, compact ? 6 : 10); ctx.fill();
+      // compact 本體只有 34 高: 勾縮成半徑 13(本體內), 筆畫同比例縮
+      var ck = compact ? 13 / 24 : 1;
+      ctx.save(); ctx.scale(ck, ck);
       ctx.fillStyle = C.tutorDone; ctx.beginPath(); ctx.arc(0, 0, 24 * (0.6 + 0.4 * cq), 0, TAU); ctx.fill();
       ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.beginPath(); ctx.moveTo(-10, 1); ctx.lineTo(-3, 9); ctx.lineTo(11, -8); ctx.stroke();
+      ctx.restore();
     }
     // 「新手任務」標籤: 本體左上角 72×18, 中心 (−110, −36), 一半露在本體上緣外; 琥珀底 + 深墨框字
     ctx.globalAlpha = clamp(alpha, 0, 1);
-    // 大泡泡時標籤中心 (−160, −50)
-    var tgx = large ? -160 : -110, tgy = -hh;
+    // 大泡泡時標籤中心 (−160, −50); 一行小泡泡時 (−35, −17)(本體左緣內縮 4)
+    var tgx = large ? -160 : compact ? -35 : -110, tgy = -hh;
     ctx.fillStyle = C.tutorAccent; rr(ctx, tgx - 36, tgy - 9, 72, 18, 5); ctx.fill();
     ctx.strokeStyle = C.tutorInk; ctx.lineWidth = 1.5; rr(ctx, tgx - 35.25, tgy - 8.25, 70.5, 16.5, 4.5); ctx.stroke();
     txt(ctx, '新手任務', tgx, tgy + 0.5, { size: 12, color: C.tutorInk, maxW: 64 });

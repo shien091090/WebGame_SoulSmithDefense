@@ -1,9 +1,10 @@
-# 魂匠守衛者 美術規格(打磨第 9 輪, 沿用打磨第 8 輪)
+# 魂匠守衛者 美術規格(打磨第 10 輪, 沿用打磨第 9 輪)
 
 > RD 只讀這份。`index.html` 必須宣告 `<meta charset="utf-8">`, 否則 art.js 的中文字會變亂碼。
 > art.js 是一般 script(不是 module), 載入後提供 `window.Art`。全部 Canvas 2D 幾何繪製, 沒有外部資源; 字型只用系統字型(微軟正黑體 → 蘋方 → sans-serif)。
 > 函式名、參數、state 欄位全部照 interface.json, 一個不多一個不少(共 56 個函式)。
-> **第 9 輪: art.js 與第 8 輪完全相同, 沒有新增、刪除或改內部畫法的函式, RD 不用改接法。** 本輪只改新手教學的文案(魂件名稱加「」), 字串由 RD 傳進 `drawTutorial`, 欄位不變; 最長的階段 11「靠近怪物按 Z 把「魂件」拔下來」共 16 個字元, 走既有「15 字以上縮 16px」規則, 寬約 234 ≤ 文字上限 280, 放得下;「」照一般全形字畫, 不另上色。
+> **第 10 輪: 沒有新增、刪除或改名的函式, RD 不用改接法; 只改 `drawTutorial` 內部畫法, 讀新欄位 `compact`(布林)。** compact = true(只有階段 16 開著單位選單 / 替換彈窗時)畫「一行小泡泡」: 本體 150×34、一行 18px 字置中、「新手任務」標籤中心 (bodyX − 35, bodyY − 17)、箭頭從本體下緣往下長 42 指到 (tipX, tipY)、底邊寬 16; 不畫按鍵與清單(RD 傳了也不畫)。**compact 只認 `=== true`**, 沒傳或傳錯名時會畫成 300×72 的一般泡泡、蓋住彈窗上半 — 看到大泡泡壓在彈窗上就是 compact 沒傳到。階段 11 的「正在拔除, 請稍候」(8 字, keys [])走既有一般泡泡置中畫法, 不改。
+> 第 9 輪: art.js 與第 8 輪完全相同, 沒有新增、刪除或改內部畫法的函式, RD 不用改接法。** 本輪只改新手教學的文案(魂件名稱加「」), 字串由 RD 傳進 `drawTutorial`, 欄位不變; 最長的階段 11「靠近怪物按 Z 把「魂件」拔下來」共 16 個字元, 走既有「15 字以上縮 16px」規則, 寬約 234 ≤ 文字上限 280, 放得下;「」照一般全形字畫, 不另上色。
 > 以下第 8 輪以前的紀錄保留。**第 8 輪新增 1 個函式: `drawPlaceHere`(第 1 關階段 7 / 14 的「放這裡」標示), 需要 RD 接**(畫在 drawGroundPart 之後、drawPlacePreview 之前)。改內部畫法: `drawTitle`(4 張卡片, 中心 x = 310 + 220i; 記號、小路、開鎖跟著移)、`drawTutorial`(新欄位 `sub`: 大泡泡第二行灰色小字)、`drawActionHint`(新 label「不能拔除」畫成紅)、`drawEnemy / drawCorpse / drawBossIntro / drawBossBar`(刪掉蠻角牛王 "bossBull" 的造型、倒下、出場演出與意象色; Boss 走路只往上晃)、`drawHud / drawResult`(level 夾在 1~4)。`drawTutorialWarn` 的新字「請放在「放這裡」的位置」(11 字約 165 寬 ≤ 196)、`drawSoulPopup` 的 rally / demolish 格 locked、`drawGuide` 的新文案、`drawSpawnWarning` 的新出怪點, 舊畫法已能照傳入值畫對, 不改。
 > 以下第 7 輪的紀錄保留; 其中提到蠻角牛王的部分本輪已刪除。**第 7 輪新增 2 個函式: `drawBossIntro`(Boss 出場演出)、`drawBossBar`(HUD 中間的 Boss 血條), 需要 RD 接**; 改內部畫法: `drawEnemy / drawCorpse`(3 種 Boss 72×72)、`drawSoulSlots`(4 格)、`drawWaveBanner`(新欄位 boss:「BOSS 來襲」)、`drawSoulPopup`(說明 17 字 15px、放不下縮 14px; 「教學期間不可操作」灰字)、`drawComboReveal`(效果 17px、最寬 289)、`drawCodex`(效果最寬 232)、`drawActionHint`(「暫不能拔除」紅)、`drawGuide`(「下一步」)。名稱改動(箭塔、小魔怪…)art.js 沒有寫死的字樣, 只有本文件與註解跟著改。
 > 第 6 輪新增 2 個函式: `drawMeleeSlash`(近戰類命中的斬擊)、`drawTutorialArrow`(階段 16 搬運箭頭)**; 改內部畫法: `drawCrossbow / drawSoldier / drawGolem / drawPlayer / drawEnemy`(新欄位 attackKind / attackAngle 近戰撲擊)、`drawTitle`(新欄位 tutorialLocked 教學鎖頭、cursorIndex −1 不畫游標)、`drawTutorial`(side "none"、階段 31 大泡泡帶 [Z] 鍵帽、15 字縮 16px)。drawResult options 長度 1、drawTutorialWarn 畫在預覽頁、第 1 關從上緣進來的路線 / 出怪點, 舊畫法已能照座標畫對, 不改。打磨沒有說明頁, 沒有 `drawGuidePage`。
@@ -75,6 +76,11 @@
 - P18 重要資訊不能只存在一瞬間: 第一次合成演出閃過後, 配方留在組合圖鑑(C 隨時查), 那一列從問號變成完整配方(本輪拿掉「已組過」章, 解鎖本身就是記號); 波次推進橫幅閃過後, 波數常駐在左上面板。
 - P19 資訊貼著物件: **(第 6 輪)階段 16 泡泡固定在左上角後, 「搬哪件、搬去哪」改由搬運箭頭直接從那一格魂件拉到目的單位的槽列頂上, 線中段附同一件魂件的小圖示; 教學鎖頭長在卡片上**; 血量牌在主堡身上、擋下提示在玩家腳下、教學泡泡箭頭尖端貼物件、引導卡聚光燈直接圈住物件 + 箭頭碰到圈、「!」標示立在出怪點上(第 1、2 關)。
 - P21 示意圖要選對錯理解會分岔的例子: 打磨沒有說明頁, 本作不適用。
+- **第 10 輪(一行小泡泡)**:
+  - P3: 小泡泡和一般 / 大泡泡同一套「教練提示」長相(紙色底 + 深墨框 + 琥珀呼吸內框 + 「新手任務」標籤 + 紙色箭頭), 只是縮小; 彈窗是深色面板, 小泡泡疊在它上緣仍是全畫面唯一的淺底, 一眼分得出是教學、不是彈窗的一部分。
+  - P7: 照使用者要求拿掉鍵帽與清單, 只剩一句「拔掉 / 換掉這個魂件」; 該按哪個鍵由彈窗自己的操作提示講, 不重述。
+  - P12: 本體放在彈窗上緣之上, 只有細長箭頭(底寬 16)穿過彈窗上緣與標題列; 規格驗算過箭頭在標題列只剩約 6 寬, 不壓標題字, 也不蓋任何魂件格。
+  - P19: 箭頭尖端停在那一格上緣上方 4px, 「是這一格」直接長在格子上, 取代上一版貼在彈窗旁邊、要玩家自己對位的泡泡。
 - **第 8 輪**:
   - P0: 「放這裡」是全畫面唯一「暖黃虛線地面 + 字牌 + 下指三角」的東西, 和放置預覽(綠 / 紅實線框 + 半透明單位)、購買區(大金圈)、魂柱範圍(大淡染圈)剪影都不同; 箭塔版是方格、插旗版是圓, 分別對應「蓋在這一格」與「站進這圈插旗」。
   - P1: 「放這裡」只在教學要玩家做這一步的時段出現, 完成當下消失; 彈跳只動牌子與三角, 地面只改亮度, 不搶放置預覽的位置。
@@ -99,7 +105,7 @@
 ## 繪製層級(照 interface.json drawOrder)
 
 開始畫面: drawTitle → drawTutorialWarn(第 1 關教學鎖擋下時)→ drawTutorialClear(大提示出現時)。
-關卡中: drawBackground → drawShopZone → drawHolyTrail → drawPillarRange → drawResonanceLine → drawFrostAura → drawHealAura → drawRallyFlag → drawCoin → drawCorpse → drawGroundPart → **drawPlaceHere(第 8 輪)** → drawPlacePreview → 單位與敵人與玩家(依 y)→ drawSoulSlots → drawRespawnQueue → drawShopHint → drawProjectile → drawThunderOrb → drawPierceBeam → drawHealBeam → drawAreaHit → **drawMeleeSlash** → drawShockChain → drawHitSpark → drawBlink → drawUnitBreak → drawStealLink → drawComboName → drawSpawnWarning → drawSpawnMark → drawActionHint → drawTutorialWarn → **drawTutorialArrow(階段 16)** → drawTutorial(指著場上物件 / 固定版位)→ drawHud → drawWavePanel → drawWaveBanner → **drawBossBar(第 7 輪)** → drawSlowMo → drawSoulPopup / drawShopPopup → drawTutorial(指著商店格 / 貼著彈窗)→ drawGuide → drawComboReveal → **drawBossIntro(第 7 輪)** → drawCodex → drawPause → drawResult。
+關卡中: drawBackground → drawShopZone → drawHolyTrail → drawPillarRange → drawResonanceLine → drawFrostAura → drawHealAura → drawRallyFlag → drawCoin → drawCorpse → drawGroundPart → **drawPlaceHere(第 8 輪)** → drawPlacePreview → 單位與敵人與玩家(依 y)→ drawSoulSlots → drawRespawnQueue → drawShopHint → drawProjectile → drawThunderOrb → drawPierceBeam → drawHealBeam → drawAreaHit → **drawMeleeSlash** → drawShockChain → drawHitSpark → drawBlink → drawUnitBreak → drawStealLink → drawComboName → drawSpawnWarning → drawSpawnMark → drawActionHint → drawTutorialWarn → **drawTutorialArrow(階段 16)** → drawTutorial(指著場上物件 / 固定版位)→ drawHud → drawWavePanel → drawWaveBanner → **drawBossBar(第 7 輪)** → drawSlowMo → drawSoulPopup / drawShopPopup → drawTutorial(指著商店格 / 貼著彈窗 / **指著彈窗格子(第 10 輪 compact)**)→ drawGuide → drawComboReveal → **drawBossIntro(第 7 輪)** → drawCodex → drawPause → drawResult。
 
 ## 判讀約定
 
@@ -121,7 +127,7 @@
 - **drawEnemy swift**: 只在 type = "imp" 時有效; 其他 type 傳 true 也照一般外觀。本輪: moving 為 true 時腳邊多兩道往後的速度線(x−15.5~−11, 框內); 血條照 hp / maxHp 畫, 沒有任何「血薄」的另外暗示。
 - **drawGroundPart frozen**: 不閃爍、剩餘細條不轉紅, 其他照一般外觀。
 - **drawActionHint**: 「不能蓋」「不能插」「不能裝」「暫不能拔除」(第 7 輪, 舊字「不能搶」也認)、**「不能拔除」(第 8 輪)**= 紅底紅框紅字 + Z 鍵變淡; 5 字的「暫不能拔除」整塊 96 寬剛好放得下, 4 字的「不能拔除」約 84 寬。
-- **drawTutorial**: `stage` 刻意不讀(外觀只由 text、large、keys / checklist、pressedKeys、side 決定)。checklist 有項目時 keys 一律不畫(即使 RD 傳了)。「新手任務」標籤和本體一起縮放、一起淡出。箭頭與完成特效沿用上一版。
+- **drawTutorial**: `stage` 刻意不讀(外觀只由 text、large、**compact**、keys / checklist、pressedKeys、side 決定)。compact 只認 === true(錯成一般泡泡會被看見, 錯成小泡泡則按鍵與清單無聲消失, 所以預設取一般泡泡); compact 時 side 不讀、一律朝下。checklist 有項目時 keys 一律不畫(即使 RD 傳了)。「新手任務」標籤和本體一起縮放、一起淡出。箭頭與完成特效沿用上一版。
   - **第 8 輪 sub**: 只在 large 時讀。sub 為非空字串(階段 31「例如近戰、遠攻、電擊等等」)→ text 整句畫在第一行(bodyY−30, 18px 粗深墨; 若 text 意外含 \n 就接成一行), sub 畫在第二行(bodyY−6, **15px 不加粗、灰褐 #6a5640 = 引導卡小字同色**, 超過 352 寬等比縮)。sub 為 "" 或缺漏 → 照舊以 text 的 \n 分兩行(階段 17)。一般泡泡一律不畫 sub。
   - **large 只認 true**(其他值當一般泡泡)。large: 本體 400×100; text 以第一個 \n 分兩行(第一行中心 bodyY−30、第二行 bodyY−6, 18px 粗, 每行超過 352 寬整行等比縮; 沒有 \n 且沒有 sub 時單行畫在 bodyY−18); 標籤中心 (bodyX−160, bodyY−50); 清單只取前 2 項, 第 k 項中心 (bodyX + (k−0.5)×120, bodyY+26)。箭頭底邊中點夾在本體寬度內(上下: x 在 bodyX ± 186; 左右: y 在 bodyY ± 38)。
   - 一般泡泡的 text 若含 \n, 去掉換行畫成一行。**第 6 輪: 一般泡泡的 text 達 15 字(含標點)時改 16px**(其他 17px), 最寬 280。
@@ -204,7 +210,7 @@
 | 出怪點「!」標示 | `drawSpawnMark(ctx, s)` | x, y, t | **新**: 暗紅圓牌 + 紅環 + 奶油色「!」符號 + 往下指路口的尖角; 隨 t 上下彈跳(≤ 7px)、外圈亮度脈動; 和出怪預警同一套配色 |
 | 出怪點預警 | `drawSpawnWarning(ctx, s)` | x, y, angle, remaining, total | 沿用(第 1 關 (624,90) 朝下 π/2 照 angle 畫) |
 | 搬運箭頭(階段 16) | `drawTutorialArrow(ctx, s)` | fromX, fromY, fromR, toX, toY, ctrlX, ctrlY, item, t, appearAge, appearDuration | **第 6 輪新增**: 起點暖黃提示環(外緣 fromR、寬 3、亮度脈動)→ 往上拱的暖黃粗線(6 + 深墨描邊)+ 流向終點的紙色虛線段 → 18×18 三角頭尖端貼在目的單位槽列頂上 4px; 線中段 14×14 魂件小圖示; 出現 / 換件時線 0.3 秒沿曲線長出、頭部最後出現 |
-| 新手任務泡泡 | `drawTutorial(ctx, s)` | stage, text, **sub**, large, keys, pressedKeys, checklist, tipX, tipY, side, bodyX, bodyY, doneAge, doneDuration | **第 8 輪 sub**: 大泡泡(large)有 sub 時第二行改畫 15px 灰褐細字(和引導卡小字同一款), text 只佔第一行; 一般泡泡不畫 sub。階段 7 / 14 的泡泡照 RD 傳的座標指著「放這裡」牌子上方, 畫法不變。**第 6 輪**: side "none" = 沒有箭頭三角的泡泡(階段 16 場上版, 本體 (166,160)); 階段 31 大泡泡的 [Z] 鍵帽在 bodyY+26; 15 字的單行縮 16px。本體左上角「新手任務」琥珀標籤 72×18(中心 (bodyX−110, bodyY−36)); checklist 3 項 88×26 小卡: [魂件] → [單位], done = 淺綠底綠框 + 右側白勾綠圓、未完成 = 米色底 50% 淡。**第 5 輪 large**: 本體 400×100、兩行 18px 字、標籤 (bodyX−160, bodyY−50); 單位清單 2 項 104×26: [箭塔 / 步兵木箱小圖 22] + 打勾位(done 綠圓白勾 + 淺綠底綠框; 未完成 虛線空圓 + 米色底、小圖 55% 淡); 完成特效同一般泡泡(放大 1.15 = 460×115)。其餘沿用 |
+| 新手任務泡泡 | `drawTutorial(ctx, s)` | stage, text, sub, large, **compact**, keys, pressedKeys, checklist, tipX, tipY, side, bodyX, bodyY, doneAge, doneDuration | **第 10 輪 compact**(只認 true; large 為 true 時忽略): 一行小泡泡 150×34, 同一套紙色底 + 深墨框 + 琥珀呼吸內框(內縮 4、線寬 1.5), 一行 18px 字置中(中心 y +2, 最寬 130); 標籤 (bodyX−35, bodyY−17); side 一律當 up, 箭頭底邊寬 16、從本體下緣直接連到 (tipX, tipY)(RD 傳長 42, 穿過彈窗上緣與標題列), 底邊中點 x = tipX 夾在本體 x ±67 內; keys / checklist / sub 一律不畫。完成: 紙色罩 + 綠圓白勾縮成半徑 13 蓋在字上, 整塊(本體 + 箭頭 + 標籤)以本體中心放大 1.15 倍後淡出。**第 8 輪 sub**: 大泡泡(large)有 sub 時第二行改畫 15px 灰褐細字(和引導卡小字同一款), text 只佔第一行; 一般泡泡不畫 sub。階段 7 / 14 的泡泡照 RD 傳的座標指著「放這裡」牌子上方, 畫法不變。**第 6 輪**: side "none" = 沒有箭頭三角的泡泡(階段 16 場上版, 本體 (166,160)); 階段 31 大泡泡的 [Z] 鍵帽在 bodyY+26; 15 字的單行縮 16px。本體左上角「新手任務」琥珀標籤 72×18(中心 (bodyX−110, bodyY−36)); checklist 3 項 88×26 小卡: [魂件] → [單位], done = 淺綠底綠框 + 右側白勾綠圓、未完成 = 米色底 50% 淡。**第 5 輪 large**: 本體 400×100、兩行 18px 字、標籤 (bodyX−160, bodyY−50); 單位清單 2 項 104×26: [箭塔 / 步兵木箱小圖 22] + 打勾位(done 綠圓白勾 + 淺綠底綠框; 未完成 虛線空圓 + 米色底、小圖 55% 淡); 完成特效同一般泡泡(放大 1.15 = 460×115)。其餘沿用 |
 | 暫停式引導卡 | `drawGuide(ctx, s)` | phase, phaseAge, phaseDuration, text, sub, index, total, last, spots, arrows, cardX, cardY, cardAge, cardDuration, readAge, readDuration, ready | **新**: 全畫面黑 0.6 壓暗, 聚光燈圓內挖空(柔邊往內); 描邊暖黃寬 3 亮度脈動; 粗箭頭(桿 8、三角 20×16)同色; 卡片 440×140 紙底深墨框 + 琥珀內框; 主句 23px、小字 16px; 右下 [Z] 26×26 + 進度環(琥珀 → 滿了綠), ready 前鍵帽與「下一步 / 繼續」35% 暗(第 7 輪「下一張」改「下一步」); 底部小圓點; intro: 壓暗淡入; outro: 卡片上飛 80 + 全部淡出 |
 | HUD | `drawHud(ctx, s)` | level, levelName, gold, muted | **本輪**: 「第 N 關」+ 關名(x 16)、金幣(x 340)、喇叭 (860,25)、右側「[Z] 互動  [C] 圖鑑  [Esc] 暫停  [M] 靜音」(總寬約 260, 左緣約 1004) |
 | 波次面板 | `drawWavePanel(ctx, s)` | x, y, wave, totalWaves, status, nextWaveIn, progress, bumpAge, bumpDuration | **新**: 220×58 深底淡金框; 第一行 22px「第 w / N 波」(w 金色)/「開戰前」; 第二行 14px: countdown「下一波 S 秒」+ 200×4 進度條(≤ 6 秒警示橘紅脈動)/ tutorial 沙漏 +「完成新手任務後開始」琥珀 / **第 5 輪 clear 小劍 +「打倒這波敵人後開始」淺灰白(一般色、不脈動)** / last「最後一波!」紅; bump: 面板亮一下 + 數字 1.3 倍彈 |
@@ -232,6 +238,7 @@
 | 教學擋下提示 | 240×30 | 彈入最大 264×33(允許); 禁止記號圓心 (x−102, y) 半徑 9; 文字中心 x+8、最寬 196 |
 | 出怪點「!」標示 | 48×64 | 牌身半徑 19、外圈外緣 23(中心 y−2); 尖角到 y+28; 彈跳 0~−7 → 全部在 x±24、y−32~+28 |
 | 新手任務泡泡 | 本體 300×72 / 標籤 72×18 | 標籤 x bodyX−146~−74、y bodyY−45~−27; 清單項 88×26 中心 (bodyX + (k−1)×96, bodyY+16): 魂件圖示 20 在 −30、箭頭 −17~−6、單位小圖 20 在 +6、完成勾直徑 14 在 +31; 完成特效 345×83(允許)。**第 5 輪大泡泡**: 本體 400×100 / 標籤 72×18 在 x bodyX−196~−124、y bodyY−59~−41; 兩行字中心 y −30 / −6、最寬 352; 單位清單項 104×26 中心 (bodyX ∓ 60, bodyY+26)(y +13~+39, 在本體下緣 +50 之內): 小圖 22 在 −14、打勾位直徑 14 在 +16; 完成特效 460×115(允許)。驗算位置 本體 (1080,274)、尖端 (1180,344): 全部繪製在 x 880~1280、y 215~344 |
+| **新手任務一行小泡泡(第 10 輪 compact)** | 本體 150×34 / 標籤 72×18 / 箭頭長 42 | 本體 x bodyX±75、y bodyY−17~+17(圓角 9, 框線 2.5 畫在框內); 標籤 x bodyX−71~+1、y bodyY−26~−8; 字中心 (bodyX, bodyY+2) 18px 最寬 130(6 字約 108); 箭頭底邊寬 16、底邊中點 x = tipX 夾在 bodyX±67、尖端外緣 = (tipX, tipY) → 範圍 x bodyX±75、y bodyY−26 ~ tipY(= bodyY+59); 完成勾半徑 13 置中; 完成特效 1.15 倍 172.5×39(允許)。驗算(彈窗中心 (640,360), 第 0 格): 本體 (520,247) x 445~595、y 230~264, 標籤上緣 221, 尖端 (520,306) = 格上緣 310 − 4; 箭頭在標題列 y 281~299 寬約 7~4, 標題「箭塔」x 622~658 不碰 |
 | 引導卡 | 壓暗 1280×720 / 卡片 440×140 | 卡片彈入最大 462×147(允許); 主句中心 y −16(有 sub)/ −6, 兩行時 ±15; sub 中心 +26、最寬 300; [Z] 26×26 中心 (+180, +44), 進度環外緣 20; 「下一步 / 繼續」右緣 +158; 小圓點 y +54、直徑 8(未選為 6.5 空心)、間距 14; 箭頭桿寬 8、三角 20×16; 聚光燈圓可伸出畫面(介面允許) |
 | HUD | 1280×50 | 右側提示鍵帽 22×22 / Esc 32×22, 總寬約 260, 右緣 1264、左緣約 1004 |
 | 波次面板 | 220×58 | 範圍 x 8~228、y 54~112; 第一行中心 y−12(數字彈到 1.3 倍上緣約 y−26, 未超出面板); 第二行中心 y+10; 進度條 x−100~+100、y+21~+25 |
@@ -255,6 +262,11 @@
 | 其他物件 | — | 與上一版相同(購買區 110、商店提示 88×24、聖光軌跡 40 寬、魂柱範圍 150、重生中 132×36、箭塔 48、魂柱 36、步兵 32、石魔像 56 + 中立牌、集結旗 24×40、潰散 96 / 120、地上魂件 28、玩家 32、Z 提示 96×22、放置預覽、槽列、冰霜圈 70、治癒領域 100、治癒光線 8 寬、投射物 10、雷電球 120、穿透 28、範圍 120、連鎖 ≤ 12 寬、火花 24、瞬閃 ≤ 12 寬、組合名稱 200×36 / 280×48、出怪預警 64) |
 
 ## 交付自查紀錄
+
+**第 10 輪**(只改 drawTutorial):
+- `node --check` 通過; 匯出表 56 個函式 = 介面 56 個, 不多不少; canvas 1280×720。
+- 用追蹤變換矩陣、照實際角度取樣弧線的假 ctx(Node vm, 系統暫存資料夾的專用子資料夾, 牆鐘可控)對**全部 56 個函式**各餵 5 組壞狀態(undefined / null / 空物件 / NaN 座標 / 表外列舉)× 3 個牆鐘相位, 再各餵一組「每個 state 欄位都有值」的狀態; drawTutorial compact 逐狀態: 彈窗中心 3 處 × 第 0 / 1 格 × 3 種文字(含空字串)× 完成進度 8 點(閒置、0、0.05、0.1、0.18、0.3、0.45、0.59)× 呼吸內框 10 個牆鐘相位, 加一組本體被夾到 bodyX 76 的; 一般 / 大泡泡 5 種 side × 完成進度 5 點回歸(含階段 11 新字「正在拔除, 請稍候」)。共 2387 次: 不拋錯、save/restore 成對、compact 超框 0 筆(框 = 本體 ±75、標籤上緣 −26 ~ 尖端 +59; 完成特效以 1.15 倍允許框比)。
+- 欄位讀取檢查: 介面每個 state 欄位在 art.js 都讀得到(新欄位 drawTutorial.compact), 只有 drawTutorial 的 `stage` 刻意不讀。
 
 **第 9 輪**(art.js 原樣沿用, 沒有改動):
 - `node --check` 通過; 匯出表 = 介面的 56 個函式, 沒有多出或缺少; `Art.canvas` = 介面 1280×720。

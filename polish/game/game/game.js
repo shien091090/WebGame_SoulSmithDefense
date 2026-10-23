@@ -241,7 +241,8 @@ function newStat() {
     steals: { started: 0, done: 0, diedDone: 0, canceled: 0 }, installs: { direct: 0, replace: 0 }, fuses: {}, drops: 0, groundExpired: 0,
     demolishes: 0, homeRefunds: {}, bundledBack: 0, flags: { purchase: 0, rally: 0 }, unitDowns: 0, maxRespawnQueue: 0, marchLoops: 0,
     blinks: 0, healed: 0, enemyHealed: 0, recruits: 0, combosNew: [],
-    pauseSec: 0, pauses: 0, codexSec: 0, codexOpens: 0, guideSec: 0, revealSec: 0, reveals: 0, gateSec: 0, clearWaitSec: 0, tutorialBlocks: {}, tutorialSpawns: 0, tutorialGold: 0, tutorialFloor: 0, menuBlocks: 0
+    pauseSec: 0, pauses: 0, codexSec: 0, codexOpens: 0, guideSec: 0, revealSec: 0, reveals: 0, gateSec: 0, clearWaitSec: 0, tutorialBlocks: {}, tutorialSpawns: 0, tutorialGold: 0, tutorialFloor: 0, menuBlocks: 0,
+    stealLock: { locks: 0, lockedSec: 0, ignoredZ: 0, ignoredMove: 0, ignoredOther: 0 }
   };
 }
 
@@ -394,6 +395,7 @@ function endLevel(win) {
     result: win ? 'win' : 'lose', durationSec: r1(RT - G.log.t0), gameSec: r1(st.gameSec), slowMoSec: r1(st.slowMoSec), hiddenSec: r1(st.hiddenSec),
     pauseSec: r1(st.pauseSec), pauses: st.pauses, codexSec: r1(st.codexSec), codexOpens: st.codexOpens, guideSec: r1(st.guideSec), revealSec: r1(st.revealSec), reveals: st.reveals,
     gateSec: r1(st.gateSec), clearWaitSec: r1(st.clearWaitSec), tutorialBlocks: st.tutorialBlocks, tutorialSpawns: st.tutorialSpawns, tutorialGold: st.tutorialGold, tutorialFloor: st.tutorialFloor, menuBlocks: st.menuBlocks,
+    stealLock: { locks: st.stealLock.locks, lockedSec: r1(st.stealLock.lockedSec), ignoredZ: st.stealLock.ignoredZ, ignoredMove: st.stealLock.ignoredMove, ignoredOther: st.stealLock.ignoredOther },
     waveReached: G.wave, totalWaves: LV.waves.length, castleHp: hp, stars, leaks: st.leaks, leaksByWave: st.leaksByWave, leaksBySpawn: st.leaksBySpawn,
     kills: st.kills, playerKills: st.playerKills, playerHits: st.playerHits,
     goldEarned: st.goldEarned, goldRefund: st.goldRefund, goldSpent: st.goldSpent, goldEnd: G.gold, purchases: st.purchases,
@@ -404,7 +406,7 @@ function endLevel(win) {
     combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length, recipesOpenedTotal: S.recipes.filter(Boolean).length,
     stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialClearSt: S.tutClearSt, boss: bossSum
   };
-  downloadLog({ game: 'SoulSmithDefense', version: 'polish-9', summary, tutorial: tut, events: G.log.events });
+  downloadLog({ game: 'SoulSmithDefense', version: 'polish-10', summary, tutorial: tut, events: G.log.events });
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
@@ -1099,7 +1101,7 @@ function findTarget() {
   return findInstallTarget();
 }
 function actionLabel() {
-  if (G.steal) return '取消搶奪';
+  if (G.steal) return G.steal.locked ? '' : '取消搶奪'; // 第一次搶奪鎖: 按 Z 沒有動作, 不顯示
   if (G.flag) return flagInfo().valid ? '插旗' : '不能插'; // 教學位置鎖不提前顯示, 按 Z 才擋
   if (KITS[G.hand]) return placeInfo(G.hand).valid ? '蓋下' : '不能蓋';
   const t = findTarget();
@@ -1438,7 +1440,7 @@ function normalUpdate(dt) {
 
   // 玩家移動
   P.moving = false;
-  if (!G.popup) {
+  if (!G.popup && !(G.steal && G.steal.locked)) {
     const dx = (keys.R ? 1 : 0) - (keys.L ? 1 : 0), dy = (keys.D ? 1 : 0) - (keys.U ? 1 : 0);
     if (dx || dy) {
       const l = Math.hypot(dx, dy);
@@ -1456,7 +1458,7 @@ function normalUpdate(dt) {
     const s = G.steal, e = s.enemy;
     if (e.dead) completeSteal('died');
     else if (e.removed || e.gone) cancelSteal('leak');
-    else if (dist(P, e) > e.half + 68) cancelSteal('far');
+    else if (!s.locked && dist(P, e) > e.half + 68) cancelSteal('far'); // 鎖住期間玩家不能動, 不因距離取消
     else {
       s.t += gdt;
       if (s.t >= 1.5) completeSteal('bar');
@@ -1974,7 +1976,7 @@ function pick16(dd) {
     const u = nearestTo(holders);
     if (u) {
       const L = u.slots.length, gi = u.slots.indexOf(it), cy = u.cat === 'tower' ? u.y - 44 : u.y - 36;
-      return { i, src: 'unit', fx: u.x - (L - 1) * 10 + 20 * gi, fy: cy, fr: 14, from: u.cat === 'tower' ? 'crossbow' : 'soldier' };
+      return { i, src: 'unit', u, gi, fx: u.x - (L - 1) * 10 + 20 * gi, fy: cy, fr: 14, from: u.cat === 'tower' ? 'crossbow' : 'soldier' };
     }
     const gp = nearestTo(partsWith(it));
     if (gp) return { i, src: 'ground', fx: gp.x, fy: gp.y, fr: 20, from: 'ground' };
@@ -1997,11 +1999,42 @@ function arrow16(X) { // 算箭頭的座標; 終點 = 離起點最近的目的�
   }
   return { fromX: X.fx, fromY: X.fy, fromR: X.fr, toX: tx, toY: ty, ctrlX: (X.fx + tx) / 2, ctrlY: cy, item: ITEMS16[X.i][0] };
 }
+// 階段 16 彈窗小泡泡(第 10 輪): 算要指的那一格
+function tip16(p) {
+  const t = p.target, unit = t.cat === 'tower' ? 'crossbow' : t.cat === 'soldier' ? 'soldier' : null;
+  let slot = null;
+  if (unit && p.mode === 'menu') {
+    const X = pick16(done16Flags());
+    if (X && X.src === 'unit' && X.u === t) slot = X.gi;
+  } else if (unit && p.mode === 'replace') {
+    const dd = done16Flags();
+    for (let i = 0; i < 3 && slot === null; i++) { // (1) 依清單順序第一件還沒打勾、且不屬於這種單位的魂件所在格
+      if (dd[i] || ITEMS16[i][1] === unit) continue;
+      const gi = t.slots.indexOf(ITEMS16[i][0]);
+      if (gi >= 0) slot = gi;
+    }
+    if (slot === null) { // (2) 編號最小、魂件不屬於這種單位的格
+      for (let j = 0; j < t.slots.length; j++) {
+        const it = t.slots[j];
+        if (!it) continue;
+        const own = unit === 'crossbow' ? (it === 'melee' || it === 'seek') : it === 'pierce';
+        if (!own) { slot = j; break; }
+      }
+    }
+  }
+  return { mode: p.mode, unit, slot, item: slot === null ? null : t.slots[slot] };
+}
+function slotTipView(p) {
+  const tp = tip16(p);
+  if (tp.slot === null || tp.slot >= p.cells.length) return null;
+  const cx = p.x - 120 + 48 * tp.slot;
+  return { stage: 16, text: p.mode === 'menu' ? '拔掉這個魂件' : '換掉這個魂件', sub: '', large: false, compact: true, keys: [], pressedKeys: [], checklist: [], tipX: cx, tipY: p.y - 54, side: 'up', bodyX: clamp(cx, 76, 1204), bodyY: p.y - 113, late: true };
+}
 function view16(ign) {
   const p = ign ? null : G.popup;
   if (p) {
     if (p.type !== 'soul') return null;
-    return popupView(16, p.mode === 'menu' ? '選魂件, 按 Z 拿' : '選要換的格, 按 Z', ['left', 'right', 'z']);
+    return slotTipView(p);
   }
   const dd = done16Flags();
   const cl = ITEMS16.map((it, i) => ({ item: it[0], to: it[1], done: dd[i] }));
@@ -2026,7 +2059,9 @@ function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位
       if (shop) return shopCellView(k, '選箭塔, 按 Z 買', ['left', 'right', 'z'], 'crossbowKit');
       return open ? null : objView(k, '到主堡按空白鍵', ['space'], shopHolder());
     case 7: return open ? null : placeView(k, '蓋在「放這裡」的位置', PLACE_TOWER.x, 288, 696, 232);
-    case 11: return open ? null : objView(k, '靠近怪物按 Z 把「魂件」拔下來', ['z'], nearestTo(enemiesWith('ranged')));
+    case 11:
+      if (!ign && G.steal && G.steal.locked) return objView(k, '正在拔除, 請稍候', [], G.steal.enemy);
+      return open ? null : objView(k, '靠近怪物按 Z 把「魂件」拔下來', ['z'], nearestTo(enemiesWith('ranged')));
     case 12: {
       if (open) return null;
       if (G.hand === 'ranged') return objView(k, '裝到箭塔上', ['z'], nearestTo(G.towers));
@@ -2192,6 +2227,13 @@ function updateTutorial(dt) {
     const g = G.golems.find(q => q.team === 'neutral' && !q.removed && q.slots.indexOf('march') >= 0);
     ev('tutorial_wait', { waitedSec: r1(g ? (g.marchT || 0) : 0) });
   }
+  if (k === 16 && G.popup && G.popup.type === 'soul') { // 彈窗小泡泡第一次畫出 / 改指另一格
+    const tp = tip16(G.popup);
+    if (G.popup.tipSlot === undefined || G.popup.tipSlot !== tp.slot) {
+      G.popup.tipSlot = tp.slot;
+      ev('tutorial_slot_tip', { mode: tp.mode, unit: tp.unit, item: tp.item, slot: tp.slot });
+    }
+  }
   if (qDone(k)) { completeQuest(k, view); return; }
   if (k === 17 && tutLvl2()) { // 階段 17 保險(第 7 輪): 金幣不夠買還缺的那幾樣時, 當下補到夠(例: 蓋了又拆把錢拆光)
     const need = (G.towers.length > 0 || G.hand === 'crossbowKit' ? 0 : PRICE.tower) + (G.soldiers.length > 0 || (G.flag && G.flag.reason === 'purchase' && G.flag.kind === 'soldier') ? 0 : PRICE.soldier);
@@ -2223,6 +2265,7 @@ function cancelSteal(reason) {
   G.steal = null;
   G.stat.steals.canceled++; snd('steal_cancel');
   ev('steal_cancel', { enemy: s.enemy.type, item: s.enemy.slots[s.index], reason });
+  endStealLock(s, 'leak');
 }
 function completeSteal(via) {
   const s = G.steal; if (!s) return;
@@ -2231,6 +2274,13 @@ function completeSteal(via) {
   G.stat.steals.done++; if (via === 'died') G.stat.steals.diedDone++;
   snd('steal_done');
   ev('steal_done', { enemy: e.type, item, via: via === 'died' ? 'died' : 'bar' });
+  endStealLock(s, via === 'died' ? 'died' : 'bar');
+}
+function endStealLock(s, result) { // 第一次搶奪鎖解鎖: 拔下 / 取消的同一幀
+  if (!s.locked) return;
+  const L = s.lock, sl = G.stat.stealLock, sec = r1(RT - L.t0);
+  sl.lockedSec += RT - L.t0;
+  ev('steal_lock', { action: 'end', enemy: s.enemy.type, result, sec, ignoredZ: L.z, ignoredMove: L.m, ignoredOther: L.o });
 }
 function doInstall(t, mode, item, swappedOut) {
   ev('install', { item, to: unitKind(t), mode, swappedOut: swappedOut || null });
@@ -2400,9 +2450,11 @@ function zPress() {
     const pref = stealPref();
     const pi = pref ? idxs.filter(i => t.slots[i] === pref) : [];
     const index = pi.length ? pi[0] : idxs[Math.floor(Math.random() * idxs.length)];
-    G.steal = { enemy: t, index, t: 0 };
+    const lock = tutLvl1() && period(11); // 第 1 關階段 11 期間開始的搶奪上「第一次搶奪鎖」
+    G.steal = { enemy: t, index, t: 0, locked: lock, lock: lock ? { t0: RT, z: 0, m: 0, o: 0 } : null };
     G.stat.steals.started++; snd('steal_start');
-    ev('steal_start', { enemy: t.type, item: t.slots[index] });
+    ev('steal_start', { enemy: t.type, item: t.slots[index], locked: lock });
+    if (lock) { G.stat.stealLock.locks++; ev('steal_lock', { action: 'start', enemy: t.type, result: null, sec: null, ignoredZ: null, ignoredMove: null, ignoredOther: null }); }
     return;
   }
   const cells = menuCells(t);
@@ -2485,6 +2537,13 @@ function onKey(k) {
   if (G.paused) { if (k === 'ESC') togglePause(); return; }
   if (k === 'ESC') { togglePause(); return; }
   if (k === 'C') { openCodex(); return; }
+  if (G.steal && G.steal.locked) { // 第一次搶奪鎖: 方向鍵、Z、X、空白鍵全部無效, 不播音效、不跳提示, 只計數
+    const L = G.steal.lock, sl = G.stat.stealLock;
+    if (k === 'Z') { L.z++; sl.ignoredZ++; }
+    else if (k === 'L' || k === 'R' || k === 'U' || k === 'D') { L.m++; sl.ignoredMove++; }
+    else { L.o++; sl.ignoredOther++; }
+    return;
+  }
   const T = S.tut;
   if (k === 'L' || k === 'R' || k === 'U' || k === 'D') {
     if (tutCur() === 4) T.pressed[{ L: 'left', R: 'right', U: 'up', D: 'down' }[k]] = true;
@@ -2635,7 +2694,7 @@ function drawTut(late) {
   else if (T.view) v = T.view;
   if (!v || !!v.late !== late) return;
   Art.drawTutorial(ctx, {
-    stage: v.stage, text: v.text, sub: v.sub || '', large: !!v.large, keys: v.keys, pressedKeys: v.pressedKeys, checklist: v.checklist.map(c => Object.assign({}, c)),
+    stage: v.stage, text: v.text, sub: v.sub || '', large: !!v.large, compact: !!v.compact, keys: v.keys, pressedKeys: v.pressedKeys, checklist: v.checklist.map(c => Object.assign({}, c)),
     tipX: v.tipX, tipY: v.tipY, side: v.side, bodyX: v.bodyX, bodyY: v.bodyY, doneAge, doneDuration: 0.6
   });
 }
