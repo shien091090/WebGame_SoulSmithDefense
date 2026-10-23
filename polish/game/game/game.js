@@ -404,7 +404,7 @@ function endLevel(win) {
     combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length, recipesOpenedTotal: S.recipes.filter(Boolean).length,
     stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialClearSt: S.tutClearSt, boss: bossSum
   };
-  downloadLog({ game: 'SoulSmithDefense', version: 'polish-8', summary, tutorial: tut, events: G.log.events });
+  downloadLog({ game: 'SoulSmithDefense', version: 'polish-9', summary, tutorial: tut, events: G.log.events });
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
@@ -1744,8 +1744,8 @@ function installBlocked(t, h) { // 裝上 / 替換被教學擋下
   }
   return false;
 }
-function stealBlocked() { // 階段 10 前不能搶; 第 2 波清空起到階段 16 完成也不能搶(互換教學期間)
-  return tutLvl1() && (!S.tut.done[10] || (!!G.clearedW[2] && !S.tut.done[16]));
+function stealBlocked() { // 階段 10 前不能搶; 階段 14 完成(步兵旗插下)起到階段 16 完成也不能搶(第 2 波與互換教學期間, 第 9 輪提前)
+  return tutLvl1() && (!S.tut.done[10] || (!!S.tut.done[14] && !S.tut.done[16]));
 }
 function stealPref() {
   const T = S.tut;
@@ -1764,7 +1764,7 @@ function tutBlock(action, item, text, dist) {
   snd('ui_invalid');
   if (text !== null) G.warn = { text: text || '教學期間不可這樣操作', age: 0 };
   const b = G.stat.tutorialBlocks; b[action] = (b[action] || 0) + 1;
-  ev('tutorial_block', { action, stage: S.tut.view ? S.tut.view.stage : null, item: item || null, dist: dist === undefined ? null : dist });
+  ev('tutorial_block', { action, stage: S.tut.view ? S.tut.view.stage : null, item: item || null, dist: dist === undefined ? null : dist, wave: G.wave });
 }
 // 離「放這裡」指定位置的距離(整數): 只有第 1 關階段 7 的蓋箭塔、階段 14 的插旗有值
 function placeDist() {
@@ -2026,12 +2026,12 @@ function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位
       if (shop) return shopCellView(k, '選箭塔, 按 Z 買', ['left', 'right', 'z'], 'crossbowKit');
       return open ? null : objView(k, '到主堡按空白鍵', ['space'], shopHolder());
     case 7: return open ? null : placeView(k, '蓋在「放這裡」的位置', PLACE_TOWER.x, 288, 696, 232);
-    case 11: return open ? null : objView(k, '靠近魔箭怪按 Z 拔下來', ['z'], nearestTo(enemiesWith('ranged')));
+    case 11: return open ? null : objView(k, '靠近怪物按 Z 把「魂件」拔下來', ['z'], nearestTo(enemiesWith('ranged')));
     case 12: {
       if (open) return null;
       if (G.hand === 'ranged') return objView(k, '裝到箭塔上', ['z'], nearestTo(G.towers));
-      if (handEmpty() && partsWith('ranged').length) return objView(k, '撿起地上的遠攻', ['z'], nearestTo(partsWith('ranged')));
-      return objView(k, '再拔一個遠攻', ['z'], nearestTo(enemiesWith('ranged')));
+      if (handEmpty() && partsWith('ranged').length) return objView(k, '撿起地上的「遠攻」', ['z'], nearestTo(partsWith('ranged')));
+      return objView(k, '再拔一個「遠攻」', ['z'], nearestTo(enemiesWith('ranged')));
     }
     case 13:
       if (shop) return shopCellView(k, '選步兵, 按 Z 買', ['left', 'right', 'z'], 'soldierKit');
@@ -2044,13 +2044,13 @@ function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位
     }
     case 20:
       if (open) return null;
-      if (handEmpty()) return objView(k, '拔下怪物的進攻主堡', ['z'], nearestTo(enemiesWith('march')));
+      if (handEmpty()) return objView(k, '拔下怪物的「進攻主堡」', ['z'], nearestTo(enemiesWith('march')));
       return objView(k, '走到空地按 Z 丟下', ['z'], P);
     case 21: {
       if (open) return null;
       if (G.hand === 'march') return objView(k, '裝在石魔像身上', ['z'], nearestTo(G.golems.filter(g => g.team === 'neutral' && !g.removed)));
-      if (handEmpty() && partsWith('march').length) return objView(k, '撿起地上的進攻主堡', ['z'], nearestTo(partsWith('march')));
-      return objView(k, '再拔一個進攻主堡', ['z'], nearestTo(enemiesWith('march')));
+      if (handEmpty() && partsWith('march').length) return objView(k, '撿起地上的「進攻主堡」', ['z'], nearestTo(partsWith('march')));
+      return objView(k, '再拔一個「進攻主堡」', ['z'], nearestTo(enemiesWith('march')));
     }
     case 22: {
       if (open) return null;
@@ -2066,13 +2066,13 @@ function qView(k, ign) { // ign: 不管彈窗開著與否, 算「場上」版位
     case 25: return open ? null : objView(k, '蓋在友軍旁邊', ['z'], P);
     case 26:
       if (open) return null;
-      if (handEmpty()) return objView(k, '拔下電電怪的電擊', ['z'], nearestTo(enemiesWith('shock')));
+      if (handEmpty()) return objView(k, '拔下電電怪的「電擊」', ['z'], nearestTo(enemiesWith('shock')));
       return objView(k, '走到空地按 Z 丟下', ['z'], P);
     case 27: {
       if (open) return null;
       if (G.hand === 'shock') return objView(k, '裝在魂柱上', ['z'], nearestTo(G.pillars));
-      if (handEmpty() && partsWith('shock').length) return objView(k, '撿起地上的電擊', ['z'], nearestTo(partsWith('shock')));
-      return objView(k, '再拔一個電擊', ['z'], nearestTo(enemiesWith('shock')));
+      if (handEmpty() && partsWith('shock').length) return objView(k, '撿起地上的「電擊」', ['z'], nearestTo(partsWith('shock')));
+      return objView(k, '再拔一個「電擊」', ['z'], nearestTo(enemiesWith('shock')));
     }
     case 30: return view30();
     case 31: {

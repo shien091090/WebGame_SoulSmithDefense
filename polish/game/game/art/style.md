@@ -1,9 +1,10 @@
-# 魂匠守衛者 美術規格(打磨第 8 輪, 沿用打磨第 7 輪)
+# 魂匠守衛者 美術規格(打磨第 9 輪, 沿用打磨第 8 輪)
 
 > RD 只讀這份。`index.html` 必須宣告 `<meta charset="utf-8">`, 否則 art.js 的中文字會變亂碼。
 > art.js 是一般 script(不是 module), 載入後提供 `window.Art`。全部 Canvas 2D 幾何繪製, 沒有外部資源; 字型只用系統字型(微軟正黑體 → 蘋方 → sans-serif)。
 > 函式名、參數、state 欄位全部照 interface.json, 一個不多一個不少(共 56 個函式)。
-> **第 8 輪新增 1 個函式: `drawPlaceHere`(第 1 關階段 7 / 14 的「放這裡」標示), 需要 RD 接**(畫在 drawGroundPart 之後、drawPlacePreview 之前)。改內部畫法: `drawTitle`(4 張卡片, 中心 x = 310 + 220i; 記號、小路、開鎖跟著移)、`drawTutorial`(新欄位 `sub`: 大泡泡第二行灰色小字)、`drawActionHint`(新 label「不能拔除」畫成紅)、`drawEnemy / drawCorpse / drawBossIntro / drawBossBar`(刪掉蠻角牛王 "bossBull" 的造型、倒下、出場演出與意象色; Boss 走路只往上晃)、`drawHud / drawResult`(level 夾在 1~4)。`drawTutorialWarn` 的新字「請放在「放這裡」的位置」(11 字約 165 寬 ≤ 196)、`drawSoulPopup` 的 rally / demolish 格 locked、`drawGuide` 的新文案、`drawSpawnWarning` 的新出怪點, 舊畫法已能照傳入值畫對, 不改。
+> **第 9 輪: art.js 與第 8 輪完全相同, 沒有新增、刪除或改內部畫法的函式, RD 不用改接法。** 本輪只改新手教學的文案(魂件名稱加「」), 字串由 RD 傳進 `drawTutorial`, 欄位不變; 最長的階段 11「靠近怪物按 Z 把「魂件」拔下來」共 16 個字元, 走既有「15 字以上縮 16px」規則, 寬約 234 ≤ 文字上限 280, 放得下;「」照一般全形字畫, 不另上色。
+> 以下第 8 輪以前的紀錄保留。**第 8 輪新增 1 個函式: `drawPlaceHere`(第 1 關階段 7 / 14 的「放這裡」標示), 需要 RD 接**(畫在 drawGroundPart 之後、drawPlacePreview 之前)。改內部畫法: `drawTitle`(4 張卡片, 中心 x = 310 + 220i; 記號、小路、開鎖跟著移)、`drawTutorial`(新欄位 `sub`: 大泡泡第二行灰色小字)、`drawActionHint`(新 label「不能拔除」畫成紅)、`drawEnemy / drawCorpse / drawBossIntro / drawBossBar`(刪掉蠻角牛王 "bossBull" 的造型、倒下、出場演出與意象色; Boss 走路只往上晃)、`drawHud / drawResult`(level 夾在 1~4)。`drawTutorialWarn` 的新字「請放在「放這裡」的位置」(11 字約 165 寬 ≤ 196)、`drawSoulPopup` 的 rally / demolish 格 locked、`drawGuide` 的新文案、`drawSpawnWarning` 的新出怪點, 舊畫法已能照傳入值畫對, 不改。
 > 以下第 7 輪的紀錄保留; 其中提到蠻角牛王的部分本輪已刪除。**第 7 輪新增 2 個函式: `drawBossIntro`(Boss 出場演出)、`drawBossBar`(HUD 中間的 Boss 血條), 需要 RD 接**; 改內部畫法: `drawEnemy / drawCorpse`(3 種 Boss 72×72)、`drawSoulSlots`(4 格)、`drawWaveBanner`(新欄位 boss:「BOSS 來襲」)、`drawSoulPopup`(說明 17 字 15px、放不下縮 14px; 「教學期間不可操作」灰字)、`drawComboReveal`(效果 17px、最寬 289)、`drawCodex`(效果最寬 232)、`drawActionHint`(「暫不能拔除」紅)、`drawGuide`(「下一步」)。名稱改動(箭塔、小魔怪…)art.js 沒有寫死的字樣, 只有本文件與註解跟著改。
 > 第 6 輪新增 2 個函式: `drawMeleeSlash`(近戰類命中的斬擊)、`drawTutorialArrow`(階段 16 搬運箭頭)**; 改內部畫法: `drawCrossbow / drawSoldier / drawGolem / drawPlayer / drawEnemy`(新欄位 attackKind / attackAngle 近戰撲擊)、`drawTitle`(新欄位 tutorialLocked 教學鎖頭、cursorIndex −1 不畫游標)、`drawTutorial`(side "none"、階段 31 大泡泡帶 [Z] 鍵帽、15 字縮 16px)。drawResult options 長度 1、drawTutorialWarn 畫在預覽頁、第 1 關從上緣進來的路線 / 出怪點, 舊畫法已能照座標畫對, 不改。打磨沒有說明頁, 沒有 `drawGuidePage`。
 
@@ -254,6 +255,10 @@
 | 其他物件 | — | 與上一版相同(購買區 110、商店提示 88×24、聖光軌跡 40 寬、魂柱範圍 150、重生中 132×36、箭塔 48、魂柱 36、步兵 32、石魔像 56 + 中立牌、集結旗 24×40、潰散 96 / 120、地上魂件 28、玩家 32、Z 提示 96×22、放置預覽、槽列、冰霜圈 70、治癒領域 100、治癒光線 8 寬、投射物 10、雷電球 120、穿透 28、範圍 120、連鎖 ≤ 12 寬、火花 24、瞬閃 ≤ 12 寬、組合名稱 200×36 / 280×48、出怪預警 64) |
 
 ## 交付自查紀錄
+
+**第 9 輪**(art.js 原樣沿用, 沒有改動):
+- `node --check` 通過; 匯出表 = 介面的 56 個函式, 沒有多出或缺少; `Art.canvas` = 介面 1280×720。
+- 假 ctx(Node vm, 暫存資料夾)對全部 56 個函式各餵 5 組時間點的介面欄位; 另逐狀態: 9 種敵人 × swift 的 drawEnemy / drawCorpse、drawTitle 4 張卡片 × 推進動畫 3 點; drawTutorial 全部 20 個任務階段(含本輪新文案: 階段 11 / 12 / 20 / 21 / 26 / 27)× 完成進度 6 點(閒置、0、0.1、0.3、0.45、0.59)。共 430 次: 不拋錯、save/restore 成對; 新文案寬度都在泡泡文字上限內。
 
 **第 8 輪**(新增 1 個函式、改 9 個函式內部, 其餘原樣搬過來):
 - `node --check` 通過; 匯出表 = 介面的 56 個函式, 沒有多出或缺少; `Art.canvas` = 介面 1280×720。
