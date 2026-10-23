@@ -7,14 +7,21 @@
 
 新手教學與介面(打磨第 4 輪)用同一批素材包的「紙、書、玻璃、撥弦」: 暫停 / 圖鑑是實體的收合與書本, 引導卡是紙牌, 新任務是玻璃「叮」, 畢業是勝利樂句的輕量版。
 
-Boss(打磨第 7 輪)是同一套實體聲的「大一號」: 真實錄音的冰裂、馬蹄、碎石、雷聲, 疊上既有的戰鼓(低音通鼓)與怪物吼聲; 雷霆魔王的電流沿用 faxcorp 電流包, 和電擊系同一種電。Boss 曲同樣是 Kevin MacLeod, 但換成有鐵砧與合唱的重打擊曲。
+Boss(打磨第 7 輪)是同一套實體聲的「大一號」: 真實錄音的冰裂、雷聲, 疊上既有的戰鼓(低音通鼓)與怪物吼聲; 雷霆魔王的電流沿用 faxcorp 電流包, 和電擊系同一種電。Boss 曲同樣是 Kevin MacLeod, 但換成有鐵砧與合唱的重打擊曲。
 
-## 本輪(打磨第 7 輪)變更
+## 本輪(打磨第 8 輪)變更
+- **刪除事件 `boss_intro_bull`**(蠻角牛王隨原第 4 關一起砍掉), 音檔 sfx_boss_intro_bull.mp3 一併刪除。RD 不要再呼叫它; 萬一呼叫了會被靜默忽略(不會切 Boss 音樂)
+- `boss_intro_thunder` 改由**新第 4 關**(原第 5 關)的雷霆魔王出場呼叫, 音檔、音量、自動切曲都不變
+- `ui_invalid` 多兩個呼叫時機(素材不變): 第 1 關沒放在「放這裡」被擋、選單的拆除 / 重設集結點格被教學鎖擋; 對 Boss 按 Z 想拔魂件被擋
+- 「放這裡」標示出現 / 消失都不呼叫音效(同時出現的新任務泡泡已有 `quest_new`)
+- 其他事件的素材、音量、opts 都沒變(沿用第 7 輪)
+
+## 上一輪(打磨第 7 輪)變更
 - **新增事件**(名稱照 interface.json): `boss_intro_frost`、`boss_intro_bull`、`boss_intro_thunder`、`boss_die`
 - **新增背景音樂** `boss`。**RD 不用自己切曲**: 呼叫 `boss_intro_*` 的那一刻, Sound 會自動讓 `battle` 在 0.3 秒內淡出, 2.0 秒時 `boss` 從頭淡入(0.5 秒)。RD 若在 2.0 秒照規格再呼叫 `Sound.playMusic('boss')` 也無害(不會重頭播)
 - 其他事件的素材、音量、opts 都沒變(沿用第 6 輪)
 
-## 上一輪(打磨第 6 輪)變更
+## 更早(打磨第 6 輪)變更
 - **不新增事件、不換音檔、音量不變**, sound.js 與 assets/ 沿用第 5 輪(檔案沒有改動)
 - `ui_invalid` 多一個呼叫時機: 關卡預覽頁上, 第 1 關卡片有教學鎖時按 ← 想移過去、被擋下的那一刻
 - 關卡預覽頁「操作鎖」期間(進頁面到推進動畫播完, 含新手教學完成大提示; 只接受 M)按 Z、←、→ **不呼叫任何音效**, 也不呼叫 `ui_invalid`
@@ -22,7 +29,7 @@ Boss(打磨第 7 輪)是同一套實體聲的「大一號」: 真實錄音的冰
 - 搬運箭頭出現 / 換下一件、檢查清單打勾都**不呼叫音效**(換件時本來就有 `take_part` / `install_part` / `swap_part`)
 - 階段 22 等待提示「石魔像正在朝著主堡移動,請等待」第一次出現時呼叫 `quest_new`; 招募成功呼叫 `recruit`, 泡泡換成「去主堡看看」**不再**呼叫 `quest_new`
 
-## 上上輪(打磨第 5 輪)變更
+## 更早(打磨第 5 輪)變更
 - **不新增事件、不換音檔、音量不變**, sound.js 與 assets/ 沿用第 4 輪
 - `coin_pickup` 多一個呼叫時機: 第 2 關教學補金幣(階段 24、30, 金幣補上的那一刻), 跟同時出現的新任務 `quest_new` 疊播
 - `ui_invalid` 的「被教學鎖擋下」改成「按 Z 放在教學不允許的位置、被擋下」那一刻(放置預覽階段不播, 只有真的按 Z 才播)
@@ -67,7 +74,7 @@ opts 欄位(全部可省略):
 |---|---|---|---|---|---|
 | ui_move | ui_move | 開始畫面、結算畫面、彈窗中 ← → 移動游標(游標真的有移動時) | — | sfx_ui_move.mp3(Kenney 滴答) | −22 |
 | ui_confirm | ui_confirm | 開始畫面 Z 進關、結算畫面 Z 執行按鈕、**引導卡最後一張按 Z、合成演出按 Z 關閉、新手教學完成大提示按 Z**。⚠ 引導卡與合成演出的音樂壓低靠這一聲解除, 結束時一定要呼叫 | — | sfx_ui_confirm.mp3 | −16 |
-| ui_invalid | ui_invalid | 任何無效操作: 彈窗抖一下、商店買不了、不能蓋 / 不能插旗的位置按 Z、按 Z 放在教學不允許的位置被擋下(第 5 輪起放置預覽不再提前擋, 只在按 Z 那一刻播)、**關卡預覽頁按 ← 想選上教學鎖的第 1 關被擋下**(第 6 輪新增)。關卡預覽頁操作鎖期間按 Z / ← / → 不播 | — | sfx_ui_invalid.mp3 | −18 |
+| ui_invalid | ui_invalid | 任何無效操作: 彈窗抖一下、商店買不了、不能蓋 / 不能插旗的位置按 Z、按 Z 放在教學不允許的位置被擋下(第 5 輪起放置預覽不再提前擋, 只在按 Z 那一刻播; **第 8 輪起含第 1 關沒放在「放這裡」**)、**選單拆除 / 重設集結點格被教學鎖擋下**(第 8 輪)、**對 Boss 按 Z 想拔魂件**(第 8 輪)、**關卡預覽頁按 ← 想選上教學鎖的第 1 關被擋下**(第 6 輪新增)。關卡預覽頁操作鎖期間按 Z / ← / → 不播 | — | sfx_ui_invalid.mp3 | −18 |
 | popup_open | popup_open | 任何彈窗打開(進入慢動作)的那一刻 | — | sfx_popup_open.mp3(音高下滑) | −17 |
 | popup_close | popup_close | 彈窗關閉(恢復正常速度)的那一刻; 不論是按 X 關、還是動作完成自動關 | — | sfx_popup_close.mp3(音高上揚) | −17 |
 | take_part | take_part | 從選單拿起魂件、撿起地上的魂件 | — | sfx_take_part.mp3(寶石聲) | −18 |
@@ -77,7 +84,7 @@ opts 欄位(全部可省略):
 | fuse | fuse(新) | 同一單位上兩件基本魂件合成一件組合魂件的那一刻(裝上、互換、搶奪後皆可能) | — | sfx_fuse.mp3(鍛造金屬敲擊 + 法術上揚, 0.56 秒) | −13 |
 | ground_expire | ground_expire(新) | 地上的魂件閃完消失的那一刻(「購買」不會消失, 不呼叫) | — | sfx_ground_expire.mp3(輕布料「噗」+ 降調小寶石, 0.3 秒; 每次音高隨機微變) | −24 |
 | purchase | purchase | 商店購買成功 | — | sfx_purchase.mp3(錢幣) | −19 |
-| place_unit | place_unit | 蓋下弩塔 / 魂柱 | — | sfx_place_unit.mp3(木頭重落地) | −14 |
+| place_unit | place_unit | 蓋下箭塔 / 魂柱 | — | sfx_place_unit.mp3(木頭重落地) | −14 |
 | flag_plant | flag_plant(新) | 插下旗幟(買兵後、或「重設集結點」後) | — | sfx_flag_plant.mp3(木樁插土 + 旗布一甩, 0.5 秒) | −15 |
 | demolish | demolish(新) | 單位選單「拆除」執行、建築消失的那一刻 | — | sfx_demolish.mp3(木板碎裂 + 碎石 + 尾端少量錢幣, 0.8 秒) | −13 |
 | home_refund | home_refund | 我方單位(建築或兵)走回主堡、消失並退款的那一刻 | — | sfx_home_refund.mp3(一把錢幣 + 皮袋收口, 0.8 秒) | −19 |
@@ -92,12 +99,12 @@ opts 欄位(全部可省略):
 | melee_hit | melee_hit | 我方(含玩家)近戰、冰霜重擊命中(和第 6 輪新增的斬擊特效同一幀) | — | sfx_melee_hit.mp3(鈍擊) | −20 |
 | whirl | whirl | 旋風斬發動 | — | sfx_whirl.mp3(揮砍風聲) | −18 |
 | charge_hit | charge_hit | 衝鋒 / 神聖之路撞到敵人(撞退 + 暈眩) | — | sfx_charge_hit.mp3(重拳 + 木板) | −13 |
-| shock_zap | shock_zap(新) | 電擊單獨放電、附電的連鎖、雷電球每次放電(每 0.5 秒)、雷鬼放電、瞬閃落地放電。**雷霆斬的連鎖不呼叫**。玩家、單位、敵人都用同一個事件名 | — | sfx_shock_zap.mp3(短促放電「啪」+ 低一點的電嗡, 0.27 秒; 每次音高隨機微變) | −24 |
+| shock_zap | shock_zap(新) | 電擊單獨放電、附電的連鎖、雷電球每次放電(每 0.5 秒)、電電怪放電、瞬閃落地放電。**雷霆斬的連鎖不呼叫**。玩家、單位、敵人都用同一個事件名 | — | sfx_shock_zap.mp3(短促放電「啪」+ 低一點的電嗡, 0.27 秒; 每次音高隨機微變) | −24 |
 | thunder_slash | thunder_slash(新) | 雷霆斬命中(每一擊一次, 和斬擊特效同一幀; 它的連鎖不另播 shock_zap) | — | sfx_thunder_slash.mp3(重拳 + 放電 + 真實雷聲炸裂, 1.0 秒) | −13 |
 | thunder_orb | thunder_orb(新) | 雷電球發射的那一刻(球之後每 0.5 秒的放電另呼叫 shock_zap) | — | sfx_thunder_orb.mp3(0.26 秒電嗡漸強 → 揮出風聲 + 放電, 0.65 秒) | −18 |
 | blink | blink(新) | 瞬閃發動: 瞬移到敵人面前、或瞬移回集結點, 都呼叫(魂柱自己瞬移也是) | — | sfx_blink.mp3(電光瞬移聲 + 輕揮風「咻」, 0.7 秒) | −17 |
 | heal_ray | heal_ray(新) | 治癒光線射出(每道一次) | — | sfx_heal_ray.mp3(柔和的合成鈴, 穩定在 A 音, 0.8 秒; 每次音高隨機微變) | −20 |
-| enemy_shot | enemy_shot | 弓鬼射我方兵 | — | sfx_enemy_shot.mp3(降調弓弦) | −23 |
+| enemy_shot | enemy_shot | 魔箭怪射我方兵 | — | sfx_enemy_shot.mp3(降調弓弦) | −23 |
 | enemy_die | enemy_die | 敵人生命歸 0 | — | sfx_enemy_die.mp3(鬼魂嘶聲 + 寶石閃) | −18 |
 | unit_down | unit_down | 我方兵生命歸 0、化成魂光 | — | sfx_unit_down.mp3(撥弦兩音下行) | −18 |
 | unit_return | unit_return | 兵從主堡門走出(重生完、買的兵出發、行軍 / 衝鋒繞回) | — | sfx_unit_return.mp3(撥弦兩音上行) | −18 |
@@ -121,20 +128,19 @@ opts 欄位(全部可省略):
 | level_lose | level_lose | 結算失敗出現 | — | sfx_level_lose.mp3(撥弦下行 + 薩克斯) | −13 |
 | star | star | 結算時每顆星跳出(第 1、2、3 顆各呼叫一次) | `index`: 0 / 1 / 2 | sfx_star.mp3(金屬鈴, 逐顆升高) | −15 |
 | boss_intro_frost | boss_intro_frost(第 7 輪新增) | 第 3 關霜角巨怪出場演出開始那一刻(遊戲暫停的同一幀)。**同時自動切音樂**(battle 淡出 → 2.0 秒 boss 淡入) | — | sfx_boss_intro_frost.mp3(2.75 秒。0.30 秒冰裂聲起、越裂越大聲 → **1.50 秒冰塊爆碎**(全檔最響)→ 1.7 秒巨獸咆哮, 2.5 秒後淡出) | −10 |
-| boss_intro_bull | boss_intro_bull(第 7 輪新增) | 第 4 關蠻角牛王出場演出開始那一刻。**同時自動切音樂** | — | sfx_boss_intro_bull.mp3(2.7 秒。0.30 秒低沉轟隆 + 一記重鼓 → 1.0 秒蹄聲由遠而近 → **1.40 秒煞車刮地**(碎石)→ 1.8 / 2.05 秒兩聲噴鼻息) | −10(峰值限制, 實際約 −13) |
-| boss_intro_thunder | boss_intro_thunder(第 7 輪新增) | 第 5 關雷霆魔王出場演出開始那一刻。**同時自動切音樂** | — | sfx_boss_intro_thunder.mp3(2.8 秒。0.1 秒遠雷醞釀 → **0.60 / 0.85 / 1.10 秒三聲落雷**(峰值 −12 / −7 / −1.5 dB, 一聲比一聲大)→ 1.10 秒落地爆裂 → 1.3 秒起電流嗡鳴到淡出。三段裡最響) | −9 |
+| boss_intro_thunder | boss_intro_thunder(第 7 輪新增) | 第 4 關(第 8 輪起; 原第 5 關)雷霆魔王出場演出開始那一刻。**同時自動切音樂** | — | sfx_boss_intro_thunder.mp3(2.8 秒。0.1 秒遠雷醞釀 → **0.60 / 0.85 / 1.10 秒三聲落雷**(峰值 −12 / −7 / −1.5 dB, 一聲比一聲大)→ 1.10 秒落地爆裂 → 1.3 秒起電流嗡鳴到淡出。三段裡最響) | −9 |
 | boss_die | boss_die(第 7 輪新增) | Boss 生命歸 0 那一刻, **取代** enemy_die(這一下不呼叫 enemy_die) | — | sfx_boss_die.mp3(1.3 秒。重擊 + 巨獸哀嚎 → 0.35 秒轟然倒地(重鼓)→ 0.5 秒起金幣嘩啦三把 + 上揚鋼鼓短句) | −11 |
 
 全部素材都是現成的線上素材加工, 沒有程式產生的音效。
 
-治癒領域、聖光軌跡、醫鬼補血是持續效果, 規格不配音效, 沒有對應事件(不要呼叫)。
+治癒領域、聖光軌跡、治癒怪補血是持續效果, 規格不配音效, 沒有對應事件(不要呼叫)。
 
 ## 背景音樂
 | 曲名 | 何時 | 素材 | 備註 |
 |---|---|---|---|
 | title | 開始畫面: `Sound.playMusic('title')` | music_title.mp3(Kevin MacLeod〈Village Consort〉, 3 分 35 秒整首) | 循環, 首尾交叉淡化 1.2 秒 |
 | battle | 進入關卡: `Sound.playMusic('battle')`(重玩、下一關也呼叫; 已在播就不會重頭) | music_battle.mp3(Kevin MacLeod〈Heroic Age〉, 1 分 37 秒整首) | 循環, 首尾交叉淡化 1.2 秒 |
-| boss | 第 3~5 關 Boss 出場: **由 `boss_intro_*` 音效自動帶動**, RD 不用呼叫 | music_boss.mp3(Kevin MacLeod〈Burnt Spirit〉, 1 分 55 秒整首, 140 BPM, 打擊 + 鐵砧 + 合唱 + 低音銅管) | 循環, 首尾交叉淡化 1.2 秒; 音量設得比 battle 約大 1 dB |
+| boss | 第 3、4 關 Boss 出場: **由 `boss_intro_*` 音效自動帶動**, RD 不用呼叫 | music_boss.mp3(Kevin MacLeod〈Burnt Spirit〉, 1 分 55 秒整首, 140 BPM, 打擊 + 鐵砧 + 合唱 + 低音銅管) | 循環, 首尾交叉淡化 1.2 秒; 音量設得比 battle 約大 1 dB |
 
 - Boss 音樂的時間軸(全部由 Sound 處理): 呼叫 `boss_intro_*` → `battle` 0.3 秒內淡出 → 出場音效獨佔前段 → 2.0 秒 `boss` 從頭淡入 0.5 秒 → 一直循環到結算(Boss 倒下後也不切回)
   - 重來這關: 照舊呼叫 `Sound.playMusic('battle')`, 會從 boss 切回 battle
@@ -160,7 +166,7 @@ opts 欄位(全部可省略):
 ## 同時觸發的處理
 Sound 內建的保險(RD 照規格做了也不衝突):
 - 同一個事件 25 毫秒內只播一次(等於同一幀只播一次); `shock_zap` 150 毫秒(規格: 每 0.15 秒最多一次, 玩家、單位、敵人共用)、`arrow_shot` 100 毫秒、`thunder_slash` / `thunder_orb` 60 毫秒、`blink` 50 毫秒、`heal_ray` 80 毫秒、`enemy_shot` / `pierce_shot` / `whirl` 60 毫秒、`melee_hit` / `charge_hit` 50 毫秒、`coin_pickup` / `enemy_die` 40 毫秒、`ground_expire` 80 毫秒內只播一次(arrow_shot 的 100 毫秒是玩家與單位共用)
-- 同一個事件最多同時 4 聲(弓聲、`shock_zap`、`thunder_slash`、`heal_ray` 3 聲; `level_unlock` 2 聲; `level_win`、`level_lose`、`wave_start`、`wave_warning`、`combo_reveal`、`tutorial_clear`、`guide_pause`、三個 `boss_intro_*` 各 1 聲; `boss_die` 2 聲), 超過時切掉最舊的
+- 同一個事件最多同時 4 聲(弓聲、`shock_zap`、`thunder_slash`、`heal_ray` 3 聲; `level_unlock` 2 聲; `level_win`、`level_lose`、`wave_start`、`wave_warning`、`combo_reveal`、`tutorial_clear`、`guide_pause`、兩個 `boss_intro_*` 各 1 聲; `boss_die` 2 聲), 超過時切掉最舊的
 - 不同事件之間互不打斷, 全部疊播
 
 要 RD 決定的(照規格):
@@ -173,7 +179,7 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - 買兵插旗: 插下時播 `flag_plant`; 兵從主堡門走出時再播 `unit_return`(兩個時間點, 不同幀)
 - `steal_done` 不帶組合音; 讀條中的敵人倒下而完成搶奪時, `enemy_die` 與 `steal_done` 同一幀都呼叫(疊播)
 - 雷霆斬命中: 只呼叫 `thunder_slash`, 它的連鎖不呼叫 `shock_zap`
-- 其他攻擊帶附電(例: 弩塔遠攻 + 電擊、玩家近戰 + 電擊): 該攻擊自己的音(`arrow_shot`、`melee_hit`…)與 `shock_zap` 同一幀都呼叫(疊播)
+- 其他攻擊帶附電(例: 箭塔遠攻 + 電擊、玩家近戰 + 電擊): 該攻擊自己的音(`arrow_shot`、`melee_hit`…)與 `shock_zap` 同一幀都呼叫(疊播)
 - 瞬閃到敵人面前: `blink` 與落地放電的 `shock_zap` 同一幀都呼叫; 瞬移回集結點只呼叫 `blink`
 - 雷電球: 發射時 `thunder_orb`, 之後每次放電 `shock_zap`
 - 神聖之路撞到敵人: 照衝鋒呼叫 `charge_hit`
@@ -195,10 +201,12 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - (第 6 輪)階段 22: 等待提示第一次出現 `quest_new`; 招募成功 `recruit`, 泡泡換字不再呼叫 `quest_new`
 - (第 6 輪)關卡預覽頁: 操作鎖期間按 Z / ← / → 什麼都不呼叫; 操作鎖結束後, 按 ← 被第 1 關教學鎖擋下才呼叫 `ui_invalid`(游標有移動才呼叫 `ui_move`, 被擋下時不呼叫 `ui_move`)
 - (第 7 輪)Boss 出場: 演出開始那一幀只呼叫該 Boss 的一個 `boss_intro_*`(遊戲已暫停, 不會有戰鬥音效疊上), 不另外呼叫 `wave_start` 或其他音效。音樂由這一聲自動處理, RD 不用呼叫 `stopMusic` / `playMusic`。同一幀若同時觸發第一次合成演出: 先照規則演合成(`combo_reveal` … 按 Z 的 `ui_confirm`), **合成關掉、Boss 演出真正開始時**才呼叫 `boss_intro_*`
-- (第 7 輪)Boss 倒下: 只呼叫 `boss_die`, 不呼叫 `enemy_die`; 牠是最後一隻敵人時 `level_win` 照常疊著呼叫(Sound 會同時淡出音樂); 讀條中的 Boss 倒下 → `boss_die` 與 `steal_done` 同一幀都呼叫
+- (第 7 輪)Boss 倒下: 只呼叫 `boss_die`, 不呼叫 `enemy_die`; 牠是最後一隻敵人時 `level_win` 照常疊著呼叫(Sound 會同時淡出音樂)(第 8 輪起 Boss 不能被拔魂件, 不會有讀條中的 Boss 倒下)
 - (第 7 輪)Boss 進主堡: 照一般呼叫 `castle_hit`; 讓主堡生命歸 0 時只呼叫 `level_lose`
-- (第 7 輪)Boss 的放電照一般呼叫 `shock_zap`(同樣 0.15 秒限頻); 近戰不配音; 被搶奪照一般 `steal_start` / `steal_done` / `steal_cancel`
+- (第 7 輪)Boss 的放電照一般呼叫 `shock_zap`(同樣 0.15 秒限頻); 近戰不配音
 - (第 7 輪)最後一波橫幅多一行「BOSS 來襲」: 不另加音效, `wave_start` 照舊
+- (第 8 輪)對 Boss 按 Z 想拔魂件被擋: 只呼叫 `ui_invalid`, 不呼叫 `steal_start` 或其他音效
+- (第 8 輪)第 1 關沒放在「放這裡」被擋: 只呼叫 `ui_invalid`; 放對時 `place_unit` / `flag_plant` 與 `tutorial_done` 同一幀都呼叫(疊播)。「放這裡」標示出現 / 消失都不呼叫音效
 
 ## 理念或經驗落實
 - 「即時回饋音聽起來延遲」: 按鍵直接回饋的音(ui_*、take/install/swap/drop、steal_*, 本輪新增的 fuse、flag_plant、demolish 也是)都量過出到峰值一成的時間, 全部在 0.025 秒內(新增的三個量得 0.000 秒); 音效以 mp3 base64 內嵌、頁面載入時就離線解碼, init 後用 Web Audio 播, 不受 HTMLAudio 首次載入延遲影響
@@ -227,11 +235,14 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - (第 6 輪)「成對事件 / 不加多餘聲音」: 搬運箭頭換件一定伴隨拿起 / 裝上 / 互換音, 不再加提示音, 避免同一幀兩聲搶辨識
 
 - (第 7 輪)「規格指定演出音的撞擊點時間」: 三段出場音都以「時間軸固定、不裁開頭」建置, 每層照規格重點拍擺放; 驗收用解碼器扣掉執行時的起播位置量峰值 — 冰塊爆碎全檔最響、峰值在 1.55 秒(起音 1.50); 煞車 1.41 秒起; 三聲落雷 0.61 / 0.86 / 1.12 秒, 峰值 −12 / −7 / −1.5 dB(一聲比一聲大); Boss 倒下 0.02 秒就出聲
-- (第 7 輪)「小眾聲音改搜近義大類詞 / BigSoundBank 補寫實錄音」: 牛的蹄聲與噴鼻息 CC0 找不到牛(BigSoundBank 搜 bull 0 筆), 改用馬奔跑與馬噴氣錄音降速 0.75~0.85 倍(音高變低、體型變大); 煞車刮地用踩碎石錄音降速 0.7 倍; 冰裂用 BigSoundBank 的真實冰裂錄音(Cracking ice), 不用合成玻璃
+- (第 7 輪)「小眾聲音改搜近義大類詞 / BigSoundBank 補寫實錄音」: 冰裂用 BigSoundBank 的真實冰裂錄音(Cracking ice), 不用合成玻璃
 - (第 7 輪)「要戰鼓重擊單響」: 三段出場與 Boss 倒下的「重」都沿用開戰音同一記低音通鼓(降速 0.5~0.7 倍), 跟 `wave_start` 的戰鼓同一個聲音, 玩家聽得出是同一場戰鬥的大事件
 - (第 7 輪)「電擊系出自同一包」: 雷霆魔王的落雷「啪」、落地爆裂與之後的電流嗡鳴都取自 faxcorp 電流包, 跟 `shock_zap` / `thunder_slash` 同一種電; 雷聲另取 BigSoundBank 三支起音最陡的雷(+26~+41 dB), 跟 `thunder_slash` 用的那支錯開
 - (第 7 輪)「一把金幣噴出來」: Boss 倒下掉 10 枚金幣, 用 Coin Splash 錯開疊三層(0.5 / 0.62 / 0.77 秒、速度 1.0 / 1.18 / 0.9), 收尾的上揚鋼鼓選 Kenney 同一個鋼鼓包裡音高一路往上(267→353 Hz)、前幾輪沒用過的一支, 不跟 `combo` / `level_win` 混淆
 - (第 7 輪)「背景音樂優先找現成整首」: Boss 曲用 incompetech 整首 1 分 55 秒, 不截短循環; 從曲庫篩 135~180 BPM、Action / Driving / Dark、有打擊樂的管弦曲, 量三首候選後選低頻打擊密度最高(9.3 次/秒, battle 為 8.6)、整首響度平穩(每 5 秒都在 −13~−15 dB, 沒有安靜前奏, 2.0 秒淡入就是全力)的〈Burnt Spirit〉; 128 kbps 重新編碼後 1.84 MB
 - (第 7 輪)「壓低音樂狀態不能漏」: battle → boss 換曲時保留壓低原因(出場時開著的彈窗演完還在), 冒煙測試驗過「彈窗中出場 → boss 淡入仍一半音量 + 放慢 → popup_close 恢復」、出場後 2 秒內換曲 / 結算 / 重來不會再接 boss、靜音中出場照樣換曲
+
+- (第 8 輪)「沿用任務保留上一版素材與音量」: 本輪只刪 `boss_intro_bull` 與它的音檔(連同只為它下載的馬蹄、碎石、馬噴氣、雷聲 #5 的授權紀錄), 其餘音檔一個沒動; 新的被擋情境(放這裡、Boss 不能拔、選單鎖)全部沿用 `ui_invalid`, 跟其他「不行」同一聲, 玩家一聽就知道是同一類回饋
+- (第 8 輪)「壓低音樂狀態不能漏」: 切 Boss 曲的掛勾只剩 `boss_intro_frost` / `boss_intro_thunder` 兩個; 冒煙測試確認呼叫已刪除的 `boss_intro_bull` 會被靜默忽略、不會誤切音樂
 
 聲音的輕重與辨識度都待試玩確認(音效 agent 聽不到聲音, 全部是用量測選的)。
