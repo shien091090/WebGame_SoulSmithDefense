@@ -2,10 +2,13 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>魂匠守衛者</title>
 <style>
 html,body{margin:0;height:100%;background:#111;overflow:hidden}
-canvas{display:block;margin:0 auto;width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9}
+body{display:flex;align-items:center;justify-content:center}
+/* 畫布顯示比例 21:9; 實際尺寸由 game.js 依視窗等比算出(留黑邊, 不裁切不拉伸) */
+canvas{display:block;width:min(100vw,233.33vh);height:auto;aspect-ratio:21/9}
 </style>
 </head>
 <body>
