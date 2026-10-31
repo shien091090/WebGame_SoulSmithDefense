@@ -1,12 +1,15 @@
-// 魂匠守衛者(打磨第 12 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
+// 魂匠守衛者(打磨第 13 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
 // 全域物件 window.Art; 每個函式自己 save/restore。
-// 第 12 輪: 畫布 1680×720, 但所有函式照設計座標 1344×576 畫(RD 每幀先整體放大 1.25 倍), 不自己乘 1.25。
+// 第 13 輪: 畫布 1280×720(16:9, 發布加寬上限 1680), 所有函式照設計座標 1024×576 畫(RD 每幀先整體放大 1.25 倍), 不自己乘 1.25。
+// 全畫面底 / 壓暗層畫滿 x −160~1184(FX0 ~ FX0+FW), 發布兩側加寬時不斷掉; 內容都在 0~1024。
 (function () {
   'use strict';
   var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
   var PI = Math.PI, TAU = Math.PI * 2;
   // 設計座標: 全畫面寬高、中心; HUD 高 48; 主堡中心
-  var W = 1344, H = 576, CX = 672, CY = 288, HUD_H = 48, CASTLE_X = 1236, CASTLE_Y = 336;
+  var W = 1024, H = 576, CX = 512, CY = 288, HUD_H = 48, CASTLE_X = 900, CASTLE_Y = 336;
+  // 全畫面層的實際繪製範圍(設計座標 x −160 ~ 1184 = 畫布 1680 寬時的範圍)
+  var FX0 = -160, FW = 1344;
 
   var C = {
     bg: '#2e4733', grass: '#2e4733', grassDark: '#27402c', grid: 'rgba(255,255,255,0.05)',
@@ -312,12 +315,14 @@
     }
     ctx.restore();
   }
-  // 喇叭圖示, 外接框 size × size
+  // 喇叭圖示, 外接框 size × size(第 13 輪: 只由 drawMuteIcon 使用)
+  // 底板用 HUD 深色 0.85 + 淡亮邊: 壓在草地、路面、開始畫面背景上都讀得到(P10), 一看就是 HUD 的一部分
   function speaker(ctx, cx, cy, size, muted) {
     ctx.save(); ctx.translate(cx, cy);
     var u = size / 28;
     ctx.scale(u, u);
-    ctx.fillStyle = 'rgba(0,0,0,0.35)'; rr(ctx, -14, -14, 28, 28, 6); ctx.fill();
+    ctx.fillStyle = 'rgba(22,27,38,0.85)'; rr(ctx, -14, -14, 28, 28, 6); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1 / u; rr(ctx, -13.5, -13.5, 27, 27, 5.5); ctx.stroke();
     ctx.fillStyle = muted ? '#8a909e' : '#e8ecf4';
     ctx.beginPath(); ctx.moveTo(-9, -4); ctx.lineTo(-5, -4); ctx.lineTo(1, -9); ctx.lineTo(1, 9); ctx.lineTo(-5, 4); ctx.lineTo(-9, 4); ctx.closePath(); ctx.fill();
     ctx.lineCap = 'round';
@@ -909,7 +914,7 @@
   }
 
   // ---------- 背景 ----------
-  var DEFAULT_PATHS = [[[0, 144], [720, 144], [720, 336], [1236, 336]]];
+  var DEFAULT_PATHS = [[[288, 48], [288, 336], [900, 336]]];
   function strokeRoute(ctx, pts) { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.stroke(); }
   function normPaths(p) {
     var out = [];
@@ -920,10 +925,11 @@
     });
     return out.length ? out : DEFAULT_PATHS;
   }
-  // 起點往畫面外延伸 40(路從畫面外進來); 最後一段水平線收在主堡左緣 x = 1180(第 12 輪)
+  // 起點往畫面外延伸(路從畫面外進來): 從左緣進來的延伸到 x −160(第 13 輪, 發布加寬不斷掉), 其他 40; 最後一段水平線收在主堡左緣 x = 844
   function routePts(pts) {
     var a = pts[0], b = pts[1], dx = a[0] - b[0], dy = a[1] - b[1], L = Math.hypot(dx, dy) || 1;
-    var out = [[a[0] + dx / L * 40, a[1] + dy / L * 40]];
+    var ext = (a[0] <= 0 && dx < 0) ? 160 + a[0] : 40;
+    var out = [[a[0] + dx / L * ext, a[1] + dy / L * ext]];
     for (var i = 0; i < pts.length; i++) out.push([pts[i][0], pts[i][1]]);
     var n = out.length, last = out[n - 1], prev = out[n - 2], gate = CASTLE_X - 56;
     if (last[1] === prev[1] && last[0] > gate && prev[0] < gate) out[n - 1] = [gate, last[1]];
@@ -941,16 +947,16 @@
     ctx.restore();
   }
   function grassAndGrid(ctx) {
-    ctx.fillStyle = C.grass; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = C.grass; ctx.fillRect(FX0, 0, FW, H);
     ctx.fillStyle = C.grassDark;
     for (var i = 0; i < 56; i++) {
-      var gx = (i * 211) % W, gy = 58 + (i * 137) % (H - 58);
+      var gx = FX0 + (i * 211) % FW, gy = 58 + (i * 137) % (H - 58);
       ctx.beginPath(); ctx.ellipse(gx, gy, 18, 8, 0, 0, TAU); ctx.fill();
     }
-    // 蓋塔格線(第 12 輪): 28 欄 × 11 列, 格線在 x = 48k、y = 48 + 48k
+    // 蓋塔格線(第 13 輪): 21 欄 × 11 列, 格線在 x = 48k(0~1008)、y = 48 + 48k; x > 1008 那條 16 寬草地與 x < 0 不畫
     ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.beginPath();
-    for (var c = 0; c <= 28; c++) { ctx.moveTo(c * 48 + 0.5, HUD_H); ctx.lineTo(c * 48 + 0.5, HUD_H + 11 * 48); }
-    for (var r = 0; r <= 11; r++) { ctx.moveTo(0, HUD_H + r * 48 + 0.5); ctx.lineTo(W, HUD_H + r * 48 + 0.5); }
+    for (var c = 0; c <= 21; c++) { ctx.moveTo(c * 48 + 0.5, HUD_H); ctx.lineTo(c * 48 + 0.5, HUD_H + 11 * 48); }
+    for (var r = 0; r <= 11; r++) { ctx.moveTo(0, HUD_H + r * 48 + 0.5); ctx.lineTo(21 * 48, HUD_H + r * 48 + 0.5); }
     ctx.stroke();
   }
   // 多條路線: 每一層都是不透明色, 先畫完所有路的邊、再畫所有路面 → 重疊處同色、無接縫
@@ -1416,7 +1422,7 @@
     ctx.fillStyle = C.allyDark; rr(ctx, -11, -8, 22, 28, 3); ctx.fill();
     ctx.fillStyle = C.ally; ctx.beginPath(); ctx.moveTo(-9, -6); ctx.lineTo(9, -6); ctx.lineTo(9, 16); ctx.lineTo(0, 11); ctx.lineTo(-9, 16); ctx.closePath(); ctx.fill();
     ctx.fillStyle = C.allyRim; ctx.beginPath(); ctx.moveTo(0, -2); ctx.lineTo(4.5, 2.5); ctx.lineTo(0, 7); ctx.lineTo(-4.5, 2.5); ctx.closePath(); ctx.fill();
-    // 左側城門: 兵從這裡走出 (1180,336)(第 12 輪)
+    // 左側城門: 兵從這裡走出 (844,336)(第 13 輪)
     var door = function () { ctx.beginPath(); ctx.moveTo(-55, 20); ctx.lineTo(-55, -4); ctx.arc(-46.5, -4, 8.5, PI, 0); ctx.lineTo(-38, 20); ctx.closePath(); };
     ctx.fillStyle = C.stoneDark; door(); ctx.fill();
     ctx.save(); door(); ctx.clip();
@@ -1425,7 +1431,7 @@
     ctx.beginPath(); ctx.moveTo(-50.5, -12); ctx.lineTo(-50.5, 20); ctx.moveTo(-43.5, -12); ctx.lineTo(-43.5, 20); ctx.moveTo(-54, 6); ctx.lineTo(-40, 6); ctx.stroke();
     ctx.restore();
     ctx.strokeStyle = '#2a2d36'; ctx.lineWidth = 1.5; door(); ctx.stroke();
-    // 血量牌: 中心 (0, 38) = 畫面 (1236,374), 100×20, 常駐
+    // 血量牌: 中心 (0, 38) = 畫面 (900,374), 100×20, 常駐
     var mhp = Math.max(1, Math.floor(num(s.maxHp, 20))), hp = clamp(Math.ceil(num(s.hp, mhp)), 0, mhp);
     var low = hp <= 5;
     var lb = low ? 0.5 + 0.5 * Math.sin(now() * TAU) : 0; // 低血量: 約 1 秒一次的顏色閃爍
@@ -1436,7 +1442,7 @@
     // 小愛心 14×14 中心 (−38, 38)
     ctx.fillStyle = '#ff5a6a';
     ctx.beginPath(); ctx.moveTo(-38, 44); ctx.bezierCurveTo(-45.5, 39, -45, 31.5, -38, 34.5); ctx.bezierCurveTo(-31, 31.5, -30.5, 39, -38, 44); ctx.fill();
-    // 生命條 x −28~20(畫面 1208~1256), 高 8
+    // 生命條 x −28~20(畫面 872~920), 高 8
     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(-28, 34, 48, 8);
     var hr = hp / mhp;
     ctx.fillStyle = low ? (lb > 0.5 ? '#ff6a5a' : '#d83a3a') : hr > 0.5 ? C.hp : '#f0c040';
@@ -1453,7 +1459,7 @@
   // 重生中: 132×36 半透明底板; 左圓盤(中心 x−48, 半徑 15 外緣, 環寬 4)+「重生中」+「×N」
   function drawRespawnQueue(ctx, s) {
     s = s || {};
-    var x = num(s.x, 1116), y = num(s.y, 282);
+    var x = num(s.x, 780), y = num(s.y, 282);
     var kind = s.kind === 'golem' ? 'golem' : 'soldier';
     var p = clamp(num(s.progress, 0), 0, 1);
     var n = Math.max(1, Math.floor(num(s.count, 1)));
@@ -2280,20 +2286,28 @@
   function drawHud(ctx, s) {
     s = s || {};
     ctx.save();
-    // 第 12 輪: 1344×48(設計座標), 垂直置中 y = 24
-    ctx.fillStyle = C.hud; ctx.fillRect(0, 0, W, HUD_H);
-    ctx.fillStyle = '#2c3446'; ctx.fillRect(0, HUD_H - 2, W, 2);
-    // 關卡(x = 16)
+    // 第 13 輪: 內容 1024×48(設計座標), 垂直置中 y = 24; 底條畫滿 x −160~1184(發布加寬不斷掉)
+    ctx.fillStyle = C.hud; ctx.fillRect(FX0, 0, FW, HUD_H);
+    ctx.fillStyle = '#2c3446'; ctx.fillRect(FX0, HUD_H - 2, FW, 2);
+    // 關卡(x = 16, 到約 316)
     var lv = clamp(Math.floor(num(s.level, 1)), 1, 4);
     txt(ctx, '第 ' + lv + ' 關', 16, 24, { size: 13, align: 'left', color: C.textDim, weight: 'normal' });
-    txt(ctx, str(s.levelName), 70, 24, { size: 17, align: 'left', color: C.text, maxW: 250 });
-    // 金幣(x = 340)
-    goldChip(ctx, 340, 24, Math.max(0, Math.floor(num(s.gold, 0))));
-    // 主堡生命 → drawCastle 血量牌; 波次 / 倒數 → drawWavePanel
-    // 喇叭(900,24) 28×28(第 12 輪右移, 讓出 Boss 血條 x 500~860)
-    speaker(ctx, 900, 24, 28, bool(s.muted));
-    // 操作提示: 右緣 1328, 鍵帽 22×22(Esc 32×22), 鍵帽與字隔 4、組間隔 14
-    hintRow(ctx, [{ keys: ['z'], label: '互動' }, { keys: ['c'], label: '圖鑑' }, { keys: ['esc'], label: '暫停' }, { keys: ['m'], label: '靜音' }], 1328, 24, { align: 'right', size: 13, gap: 14 });
+    txt(ctx, str(s.levelName), 70, 24, { size: 17, align: 'left', color: C.text, maxW: 246 });
+    // 金幣(左緣 x = 330, 到約 450)
+    goldChip(ctx, 330, 24, Math.max(0, Math.floor(num(s.gold, 0))));
+    // 主堡生命 → drawCastle 血量牌; 波次 / 倒數 → drawWavePanel; 中間 x 470~710 留給 drawBossBar
+    // 第 13 輪: 喇叭移出 HUD → drawMuteIcon(遊玩區右上角), 本函式不再讀 muted
+    // 操作提示: 右緣 1008, 鍵帽 22×22(Esc 32×22), 鍵帽與字隔 4、組間隔 14
+    hintRow(ctx, [{ keys: ['z'], label: '互動' }, { keys: ['c'], label: '圖鑑' }, { keys: ['esc'], label: '暫停' }, { keys: ['m'], label: '靜音' }], 1008, 24, { align: 'right', size: 13, gap: 14 });
+    ctx.restore();
+  }
+  // 聲音開關圖示(第 13 輪新函式): 關卡中 (992,74) size 32、開始畫面 (974,40) size 36; 整個圖示畫在 size×size 內
+  // muted: 灰喇叭 + 紅叉; 否則白喇叭 + 2 道聲波(顏色 + 形狀兩條通道)
+  function drawMuteIcon(ctx, s) {
+    s = s || {};
+    var size = clamp(num(s.size, 32), 12, 64);
+    ctx.save();
+    speaker(ctx, num(s.x, 992), num(s.y, 74), size, bool(s.muted));
     ctx.restore();
   }
   // Z 情境提示: 玩家腳下, 本體 96×22
@@ -2775,7 +2789,7 @@
   function drawShopPopup(ctx, s) {
     s = s || {};
     var items = arr(s.items).slice(0, 4), cur = Math.floor(num(s.cursorIndex, 0));
-    var x = CX + shakeOff(s.shakeAge, num(s.shakeDuration, 0.25)), y = 320; // 第 12 輪: 中心 (672,320)
+    var x = CX + shakeOff(s.shakeAge, num(s.shakeDuration, 0.25)), y = 320; // 第 13 輪: 中心 (512,320)
     ctx.save(); ctx.translate(x, y);
     ctx.fillStyle = C.panel; rr(ctx, -240, -75, 480, 150, 12); ctx.fill();
     ctx.strokeStyle = '#6a5a3a'; ctx.lineWidth = 2; rr(ctx, -239, -74, 478, 148, 11); ctx.stroke();
@@ -2804,8 +2818,8 @@
     s = s || {};
     var win = bool(s.win), all = win && bool(s.allClear);
     ctx.save();
-    // 第 12 輪: 面板 680×440 中心 (672,288)(x 332~1012、y 68~508)
-    ctx.fillStyle = 'rgba(8,10,18,0.72)'; ctx.fillRect(0, 0, W, H);
+    // 第 13 輪: 面板 680×440 中心 (512,288)(x 172~852、y 68~508); 半透明底畫滿 x −160~1184
+    ctx.fillStyle = 'rgba(8,10,18,0.72)'; ctx.fillRect(FX0, 0, FW, H);
     ctx.fillStyle = C.panel; rr(ctx, CX - 340, 68, 680, 440, 18); ctx.fill();
     ctx.strokeStyle = win ? C.gold : '#ff5a5a'; ctx.lineWidth = 3; rr(ctx, CX - 338.5, 69.5, 677, 437, 17); ctx.stroke();
     var title = all ? '全部通關!' : win ? '勝利' : '主堡被攻陷';
@@ -2841,10 +2855,14 @@
   }
 
   // ---------- 開始畫面(關卡預覽頁) ----------
-  // 第 12 輪: 背景用第 4 關三叉路線(設計座標)
-  var TITLE_PATHS = [[[0, 144], [720, 144], [720, 336], [1236, 336]], [[0, 336], [1236, 336]], [[0, 528], [720, 528], [720, 336], [1236, 336]]];
-  // 第 12 輪: 4 張卡片, 中心 x = 312 + 240i(整排 x 212~1132)、y 330; 記號 y 227
-  var TITLE_N = 4, TITLE_X0 = 312, TITLE_DX = 240, TITLE_CY = 330, TITLE_TY = 227;
+  // 第 13 輪: 背景用第 4 關三叉路線(1024×576 新版; 主堡 (900,336), 末段畫到 x 1184 讓背景右側不斷)
+  var TITLE_PATHS = [
+    [[0, 144], [432, 144], [432, 336], [576, 336], [576, 528], [720, 528], [720, 336], [900, 336], [1184, 336]],
+    [[0, 336], [576, 336]],
+    [[0, 528], [432, 528], [432, 336]]
+  ];
+  // 第 13 輪: 4 張卡片, 中心 x = 152 + 240i(整排 x 52~972)、y 330; 記號 y 227
+  var TITLE_N = 4, TITLE_X0 = 152, TITLE_DX = 240, TITLE_CY = 330, TITLE_TY = 227;
   // 新芽小圖示(教學關卡片), 外接框約 18×21
   function sprout(ctx, cx, cy, a) {
     ctx.save(); ctx.globalAlpha *= a; ctx.translate(cx, cy);
@@ -2938,12 +2956,12 @@
     ctx.save();
     grassAndGrid(ctx);
     roads(ctx, TITLE_PATHS);
-    ctx.fillStyle = 'rgba(8,12,20,0.55)'; ctx.fillRect(0, 0, W, H);
-    // 兩側裝飾: 遊戲內的魂柱(合法狀態: 裝著遠攻 / 冰霜); 第 12 輪縮到 1.4 倍、貼著標題兩側(y 79~129, 不碰記號跳躍頂點 143)
+    ctx.fillStyle = 'rgba(8,12,20,0.55)'; ctx.fillRect(FX0, 0, FW, H);
+    // 兩側裝飾: 遊戲內的魂柱(合法狀態: 裝著遠攻 / 冰霜); 1.4 倍、貼著標題兩側 x 316 / 708(y 79~129, 不碰記號跳躍頂點 143, 不碰右上聲音圖示 x 956~992)
     ctx.save(); ctx.translate(CX - 196, 104); ctx.scale(1.4, 1.4); pillarBody(ctx, 'ranged'); ctx.restore();
     ctx.save(); ctx.translate(CX + 196, 104); ctx.scale(1.4, 1.4); pillarBody(ctx, 'frost'); ctx.restore();
     var wob = Math.sin(t * 1.6) * 1.5;
-    // 大標題 (672,110) 48px(第 12 輪; 字下緣約 134, 在記號跳躍頂點 143 之上)
+    // 大標題 (512,110) 48px(第 13 輪; 字下緣約 134, 在記號跳躍頂點 143 之上)
     txt(ctx, '魂匠守衛者', CX, 110 + wob, { size: 48, color: C.gold, stroke: '#2a1a00', sw: 6 });
     // 卡片之間的小路(卡片蓋在上面, 只在間隔 40 露出)
     var roadW = TITLE_DX * (TITLE_N - 1);
@@ -2956,7 +2974,7 @@
     var up = (ui >= 0 && ui < TITLE_N && ua >= 0 && ua < ud) ? ua / ud : -1;
     for (var i = 0; i < TITLE_N; i++) if (i !== cur) levelCard(ctx, i, lvls[i], false, i === ui ? up : -1);
     if (cur >= 0 && cur < TITLE_N) levelCard(ctx, cur, lvls[cur], true, cur === ui ? up : -1);
-    // 玩家記號: 靜止中心 (312 + 240 × tokenIndex, 227); 推進時弧線跳(最高點高 60)+ 落地壓扁
+    // 玩家記號: 靜止中心 (152 + 240 × tokenIndex, 227); 推進時弧線跳(最高點高 60)+ 落地壓扁
     var ti = clamp(Math.floor(num(s.tokenIndex, 0)), 0, TITLE_N - 1), tf = clamp(Math.floor(num(s.tokenFrom, ti)), 0, TITLE_N - 1);
     var td = num(s.tokenDuration, 0.8) || 0.8, ta = num(s.tokenAge, td);
     var tp = (ta >= 0 && ta < td) ? ta / td : -1;
@@ -2979,7 +2997,7 @@
       { keys: ['z'], label: '開始', alpha: 0.55 + 0.45 * Math.cos(t * 5), color: '#ffffff' },
       { keys: ['m'], label: '靜音' }
     ], CX, 530, { align: 'center', size: 20, gap: 32, weight: 'bold', stroke: 'rgba(0,0,0,0.6)', sw: 3 });
-    speaker(ctx, 1294, 40, 36, bool(s.muted));
+    // 第 13 輪: 喇叭拆到 drawMuteIcon((974,40) 由 RD 另外呼叫), 本函式不再讀 muted、右上角不畫東西
     ctx.restore();
   }
 
@@ -2993,10 +3011,10 @@
     if (fade <= 0) return;
     ctx.save();
     ctx.globalAlpha = fade;
-    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(FX0, 0, FW, H);
     ctx.save();
-    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
-    // 面板背後的放射光芒, 緩慢轉動(第 12 輪: 中心 (672,288))
+    ctx.beginPath(); ctx.rect(FX0, 0, FW, H); ctx.clip();
+    // 面板背後的放射光芒, 緩慢轉動(第 13 輪: 中心 (512,288), 光芒長 760 蓋得到 x −160~1184 的四角)
     ctx.save(); ctx.translate(CX, CY); ctx.rotate(age * 0.25);
     ctx.fillStyle = 'rgba(255,210,74,0.12)';
     for (var i = 0; i < 12; i++) {
@@ -3005,10 +3023,10 @@
     }
     ctx.restore();
     // 彩帶紙花: 0~1.0 秒陸續灑出, 每片落 1.1~1.5 秒, 2.5 秒前全部落完
-    for (var k = 0; k < 70; k++) {
+    for (var k = 0; k < 92; k++) { // 第 13 輪: 灑在 x −160~1184, 片數照寬度比例加, 可見區密度不變
       var dl = hash(k, 1, 2) * 1.0, fall = 1.1 + hash(k, 2, 3) * 0.4;
       var lp = (age - dl) / fall; if (lp < 0 || lp >= 1) continue;
-      var cx = 30 + hash(k, 3, 4) * (W - 60) + Math.sin(age * 3 + k) * 14, cy = -10 + lp * (H + 20);
+      var cx = FX0 + 30 + hash(k, 3, 4) * (FW - 60) + Math.sin(age * 3 + k) * 14, cy = -10 + lp * (H + 20);
       ctx.save(); ctx.translate(cx, cy); ctx.rotate(age * 5 + k);
       ctx.fillStyle = CONFETTI_COLS[k % CONFETTI_COLS.length];
       ctx.fillRect(-4, -2, 8, 4);
@@ -3032,11 +3050,11 @@
   }
 
   // ---------- 教學種類詢問視窗(第 11 輪新增, 第 12 輪改成示意圖; 關卡預覽頁之上) ----------
-  // 紙底面板 840×460 中心 (672,300); 選項卡 340×300, 中心 (482,290) / (862,290)
+  // 紙底面板 840×460 中心 (512,300); 選項卡 340×300, 中心 (322,290) / (702,290)(第 13 輪)
   // 卡內(相對卡片中心): 示意圖 300×170 畫在 y −135~+25 內; 主句 (0, +62) 26px; 小字 (0, +100) 16px
   var CHOICE_OPTS = [
-    { cx: 482, vet: false, main: '從來沒有', sub: '讓我從最基礎的教學開始' },
-    { cx: 862, vet: true, main: '有', sub: '只給我必要教學即可' }
+    { cx: 322, vet: false, main: '從來沒有', sub: '讓我從最基礎的教學開始' },
+    { cx: 702, vet: true, main: '有', sub: '只給我必要教學即可' }
   ];
   var CHOICE_CY = 290, CHOICE_HW = 170, CHOICE_HH = 150;
   // 示意圖的魂匠: 沿用 drawPlayer 的玩家魂匠(奶白圓身 + 金邊 + 兜帽 + 方眼 + 鍛錘徽記), 放大 3.2 倍, 只換裝備與表情
@@ -3248,11 +3266,11 @@
     ctx.save();
     ctx.globalAlpha = 1;
     // 壓暗: 0 → 0.55(和 drawTutorialClear 同一種)
-    ctx.fillStyle = 'rgba(0,0,0,' + (0.55 * op) + ')'; ctx.fillRect(0, 0, W, H);
-    // 面板彈入: 0.9 → 1.03(前 70%)→ 1.0, 以面板中心 (672,300) 為軸
+    ctx.fillStyle = 'rgba(0,0,0,' + (0.55 * op) + ')'; ctx.fillRect(FX0, 0, FW, H);
+    // 面板彈入: 0.9 → 1.03(前 70%)→ 1.0, 以面板中心 (512,300) 為軸
     var sc = op >= 1 ? 1 : op < 0.7 ? 0.9 + 0.13 * (op / 0.7) : 1.03 - 0.03 * ((op - 0.7) / 0.3);
     ctx.translate(CX, 300); ctx.scale(sc, sc); ctx.translate(-CX, -300);
-    // 面板 840×460(x 252~1092、y 70~530): 教學紙底 + 深墨框 + 琥珀內框(同引導卡; 無金色、無放射光)
+    // 面板 840×460(x 92~932、y 70~530): 教學紙底 + 深墨框 + 琥珀內框(同引導卡; 無金色、無放射光)
     ctx.fillStyle = C.tutorPaper; rr(ctx, CX - 420, 70, 840, 460, 18); ctx.fill();
     ctx.strokeStyle = C.tutorInk; ctx.lineWidth = 3; rr(ctx, CX - 418.5, 71.5, 837, 457, 17); ctx.stroke();
     ctx.strokeStyle = rgba(C.tutorAccent, 0.55); ctx.lineWidth = 2; rr(ctx, CX - 411, 79, 822, 442, 12); ctx.stroke();
@@ -3290,7 +3308,7 @@
     ctx.closePath(); ctx.fill();
   }
   function clipOutside(ctx, sp) {
-    ctx.beginPath(); ctx.rect(-10, -10, W + 20, H + 20); ctx.moveTo(sp.x + sp.r, sp.y); ctx.arc(sp.x, sp.y, sp.r, 0, TAU); ctx.clip('evenodd');
+    ctx.beginPath(); ctx.rect(FX0 - 10, -10, FW + 20, H + 20); ctx.moveTo(sp.x + sp.r, sp.y); ctx.arc(sp.x, sp.y, sp.r, 0, TAU); ctx.clip('evenodd');
   }
   function drawGuide(ctx, s) {
     s = s || {};
@@ -3308,7 +3326,7 @@
       // 壓暗 0.6, 聚光燈圓內挖空(傳入 r = 挖空外緣, 柔邊往內)
       ctx.save();
       spots.forEach(function (sp) { clipOutside(ctx, sp); });
-      ctx.fillStyle = 'rgba(0,0,0,' + dimA + ')'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(0,0,0,' + dimA + ')'; ctx.fillRect(FX0, 0, FW, H);
       ctx.restore();
       spots.forEach(function (sp, i) {
         var soft = Math.min(12, sp.r * 0.3);
@@ -3475,7 +3493,7 @@
     if (!(a >= 0 && a < d)) return;
     var tw = Math.max(1, Math.floor(num(s.totalWaves, 3))), w = Math.max(1, Math.floor(num(s.wave, 1))), last = bool(s.last) || bool(s.boss);
     var t = a * 1.6 / d; // 換算回規格時間軸
-    // 第 12 輪: 停在 (672,170), 縮進波次面板 (118,81)
+    // 第 13 輪: 停在 (512,170), 縮進波次面板 (118,81)
     var cx = CX, cy = 170, sc = 1, al = 1, e = 1;
     if (t < 0.3) { e = 1 - Math.pow(1 - t / 0.3, 3); cx = -280 + (CX + 280) * e; }
     else if (t >= 1.1) { var f = (t - 1.1) / 0.5, fe = f * f; cx = CX + (118 - CX) * fe; cy = 170 + (81 - 170) * fe; sc = 1 - 0.61 * fe; al = 1 - 0.4 * fe; }
@@ -3529,7 +3547,7 @@
   var BOSS_RED = '#ff3a4a';
   function drawBossBar(ctx, s) {
     s = s || {};
-    var x = num(s.x, 680), y = num(s.y, 24);
+    var x = num(s.x, 590), y = num(s.y, 24);
     var type = isBoss(s.type) ? s.type : 'bossFrost';
     var mh = Math.max(1, num(s.maxHp, 1)), hp = clamp(num(s.hp, mh), 0, mh), r = hp / mh;
     var sd = num(s.showDuration, 0.4) || 0.4, sa = clamp(num(s.showAge, sd), 0, sd), sp = sa / sd, se = 1 - (1 - sp) * (1 - sp);
@@ -3538,38 +3556,38 @@
     if (!(al > 0)) return;
     ctx.save();
     ctx.globalAlpha = al; ctx.translate(x, y); ctx.scale(0.9 + 0.1 * se, 0.9 + 0.1 * se);
-    ctx.fillStyle = 'rgba(32,8,14,0.9)'; rr(ctx, -180, -20, 360, 40, 8); ctx.fill();
-    ctx.strokeStyle = BOSS_RED; ctx.lineWidth = 1.5; rr(ctx, -179.25, -19.25, 357.5, 37.5, 7.5); ctx.stroke();
-    // 「BOSS」小標 40×16 中心 (−158, −9)
-    ctx.fillStyle = '#c8283a'; rr(ctx, -178, -17, 40, 16, 4); ctx.fill();
-    txt(ctx, 'BOSS', -158, -8.5, { size: 11, color: '#ffffff' });
+    ctx.fillStyle = 'rgba(32,8,14,0.9)'; rr(ctx, -120, -20, 240, 40, 8); ctx.fill();
+    ctx.strokeStyle = BOSS_RED; ctx.lineWidth = 1.5; rr(ctx, -119.25, -19.25, 237.5, 37.5, 7.5); ctx.stroke();
+    // 第 13 輪: 240×40。「BOSS」小標 40×16 中心 (−98, −9)
+    ctx.fillStyle = '#c8283a'; rr(ctx, -118, -17, 40, 16, 4); ctx.fill();
+    txt(ctx, 'BOSS', -98, -8.5, { size: 11, color: '#ffffff' });
     var hs = Math.ceil(hp) + ' / ' + Math.round(mh), hw = textW(ctx, hs, 12);
-    txt(ctx, hs, 172, -8.5, { size: 12, align: 'right', color: '#ffd0d4' });
-    txt(ctx, str(s.name), -132, -8.5, { size: 15, align: 'left', color: '#ffffff', maxW: Math.max(40, 300 - hw - 8) });
-    // 生命條 348×10, 中心 (0, 10)
-    ctx.fillStyle = 'rgba(0,0,0,0.65)'; rr(ctx, -174, 5, 348, 10, 3); ctx.fill();
+    txt(ctx, hs, 112, -8.5, { size: 12, align: 'right', color: '#ffd0d4' });
+    txt(ctx, str(s.name), -72, -8.5, { size: 15, align: 'left', color: '#ffffff', maxW: Math.max(40, 184 - hw - 8) });
+    // 生命條 228×10, 中心 (0, 10)
+    ctx.fillStyle = 'rgba(0,0,0,0.65)'; rr(ctx, -114, 5, 228, 10, 3); ctx.fill();
     if (r > 0) {
-      ctx.save(); rr(ctx, -174, 5, 348, 10, 3); ctx.clip();
-      ctx.fillStyle = '#e0303e'; ctx.fillRect(-174, 5, 348 * r, 10);
-      ctx.fillStyle = BOSS_TINT[type]; ctx.fillRect(-174, 5, 348 * r, 2);
+      ctx.save(); rr(ctx, -114, 5, 228, 10, 3); ctx.clip();
+      ctx.fillStyle = '#e0303e'; ctx.fillRect(-114, 5, 228 * r, 10);
+      ctx.fillStyle = BOSS_TINT[type]; ctx.fillRect(-114, 5, 228 * r, 2);
       ctx.restore();
     }
     var ph = prog(s.hitAge, num(s.hitDuration, 0.15));
-    if (ph >= 0) { ctx.save(); ctx.globalAlpha *= 0.85 * (1 - ph); ctx.fillStyle = '#ffffff'; rr(ctx, -174, 5, 348, 10, 3); ctx.fill(); ctx.restore(); }
+    if (ph >= 0) { ctx.save(); ctx.globalAlpha *= 0.85 * (1 - ph); ctx.fillStyle = '#ffffff'; rr(ctx, -114, 5, 228, 10, 3); ctx.fill(); ctx.restore(); }
     if (bool(s.healing)) {
       // 治癒中: 條上薄荷綠斜紋往右流 + 白綠小十字(治癒意象)
-      ctx.save(); rr(ctx, -174, 5, 348, 10, 3); ctx.clip();
+      ctx.save(); rr(ctx, -114, 5, 228, 10, 3); ctx.clip();
       var off = (now() * 40) % 24;
       ctx.fillStyle = rgba(C.heal, 0.5);
-      for (var i = -1; i < 16; i++) { var sx = -174 + i * 24 + off; if (sx < -174 || sx + 14 > 174) continue; ctx.beginPath(); ctx.moveTo(sx, 15); ctx.lineTo(sx + 8, 5); ctx.lineTo(sx + 14, 5); ctx.lineTo(sx + 6, 15); ctx.closePath(); ctx.fill(); }
-      for (var j = 0; j < 3; j++) { var px = -169 + ((now() * 60 + j * 113) % 338); ctx.fillStyle = '#0f3a26'; plusPath(ctx, px, 10, 4.2); ctx.fill(); ctx.fillStyle = '#c8ffe0'; plusPath(ctx, px, 10, 3); ctx.fill(); }
+      for (var i = -1; i < 11; i++) { var sx = -114 + i * 24 + off; if (sx < -114 || sx + 14 > 114) continue; ctx.beginPath(); ctx.moveTo(sx, 15); ctx.lineTo(sx + 8, 5); ctx.lineTo(sx + 14, 5); ctx.lineTo(sx + 6, 15); ctx.closePath(); ctx.fill(); }
+      for (var j = 0; j < 3; j++) { var px = -109 + ((now() * 60 + j * 73) % 218); ctx.fillStyle = '#0f3a26'; plusPath(ctx, px, 10, 4.2); ctx.fill(); ctx.fillStyle = '#c8ffe0'; plusPath(ctx, px, 10, 3); ctx.fill(); }
       ctx.restore();
     }
     ctx.restore();
   }
 
   // ---------- Boss 出場演出(第 7 輪, 2.9 秒真實時間) ----------
-  var BOSS_POS = { bossFrost: [40, 144], bossThunder: [40, 336] }; // 第 12 輪出場點
+  var BOSS_POS = { bossFrost: [40, 144], bossThunder: [40, 336] }; // 第 13 輪出場點(預設值; RD 傳 x, y)
   function seg(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
   function eOut(u) { return 1 - (1 - u) * (1 - u); }
   // 全畫面壓暗 a, 在 (x, y) 挖半徑 R 的聚光圈(往內柔化 soft); 圈內另壓 inner(雷霆魔王的烏雲)
@@ -3577,7 +3595,7 @@
     if (!(a > 0) && !(inner > 0)) return;
     ctx.save();
     ctx.fillStyle = 'rgba(0,0,0,' + a + ')';
-    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(x, y, R, 0, TAU, true); ctx.fill();
+    ctx.beginPath(); ctx.rect(FX0, 0, FW, H); ctx.arc(x, y, R, 0, TAU, true); ctx.fill();
     var g = ctx.createRadialGradient(x, y, R - soft, x, y, R);
     g.addColorStop(0, 'rgba(0,0,0,' + inner + ')'); g.addColorStop(1, 'rgba(0,0,0,' + a + ')');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.fill();
@@ -3725,9 +3743,9 @@
         }
       }
       // 1.1~1.3 全畫面白閃(0.6 → 0), 蓋在壓暗與 Boss 之上、名牌之下
-      if (t >= 1.1 && t < 1.3) { ctx.fillStyle = 'rgba(255,255,255,' + (0.6 * (1 - seg(t, 1.1, 1.3))) + ')'; ctx.fillRect(0, 0, W, H); }
+      if (t >= 1.1 && t < 1.3) { ctx.fillStyle = 'rgba(255,255,255,' + (0.6 * (1 - seg(t, 1.1, 1.3))) + ')'; ctx.fillRect(FX0, 0, FW, H); }
     }
-    // 名牌 520×110: 1.6~2.0 從 (672,300) 滑到 (672,260) 並淡入, 2.0~2.6 停住, 2.6~2.9 淡出(第 12 輪)
+    // 名牌 520×110: 1.6~2.0 從 (512,300) 滑到 (512,260) 並淡入, 2.0~2.6 停住, 2.6~2.9 淡出(第 13 輪)
     if (t >= 1.6) {
       var pu = seg(t, 1.6, 2.0), py = 300 - 40 * eOut(pu);
       ctx.save(); ctx.globalAlpha = pu * out; ctx.translate(CX, py);
@@ -3759,8 +3777,8 @@
     if (fade <= 0) return;
     var A = isBasic(s.a) ? s.a : '', B = isBasic(s.b) ? s.b : '', R = isCombo(s.result) ? s.result : '';
     ctx.save(); ctx.globalAlpha = fade;
-    ctx.fillStyle = 'rgba(0,0,0,' + (0.7 * clamp(age / 0.3, 0, 1)) + ')'; ctx.fillRect(0, 0, W, H);
-    // 第 12 輪版位: 撞擊中心 (672,200); 面板停在 (672,400)
+    ctx.fillStyle = 'rgba(0,0,0,' + (0.7 * clamp(age / 0.3, 0, 1)) + ')'; ctx.fillRect(FX0, 0, FW, H);
+    // 第 13 輪版位: 撞擊中心 (512,200); 面板停在 (512,400)
     var MX = CX, MY = 200;
     // 0.3~0.9 材料滑入; 0.9~1.05 撞向中央
     if (age >= 0.3 && age < 1.05) {
@@ -3860,17 +3878,17 @@
     var entries = arr(s.entries);
     var found = clamp(Math.floor(num(s.foundCount, 0)), 0, 10);
     ctx.save();
-    // 第 12 輪: 面板 1100×528 中心 (672,302)(x 122~1222、y 38~566); 列 480×68, 中心 x 402 / 942、y 116 + 72i
-    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = C.panel; rr(ctx, CX - 550, 38, 1100, 528, 18); ctx.fill();
-    ctx.strokeStyle = '#6a5a3a'; ctx.lineWidth = 2; rr(ctx, CX - 549, 39, 1098, 526, 17); ctx.stroke();
+    // 第 13 輪: 面板 1000×528 中心 (512,302)(x 12~1012、y 38~566); 列 480×68, 中心 x 262 / 762、y 116 + 72i
+    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(FX0, 0, FW, H);
+    ctx.fillStyle = C.panel; rr(ctx, CX - 500, 38, 1000, 528, 18); ctx.fill();
+    ctx.strokeStyle = '#6a5a3a'; ctx.lineWidth = 2; rr(ctx, CX - 499, 39, 998, 526, 17); ctx.stroke();
     txt(ctx, '組合圖鑑', CX, 70, { size: 28, color: C.gold });
-    txt(ctx, '已發現 ' + found + ' / 10', 1202, 70, { size: 16, align: 'right', color: '#ffd28a' });
+    txt(ctx, '已發現 ' + found + ' / 10', 992, 70, { size: 16, align: 'right', color: '#ffd28a' });
     ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(CX + 0.5, 88); ctx.lineTo(CX + 0.5, 514); ctx.stroke();
     for (var i = 0; i < 11; i++) {
       var col = i < 6 ? 0 : 1, row = i < 6 ? i : i - 6;
-      codexRow(ctx, col ? 942 : 402, 116 + 72 * row, entries[i]);
+      codexRow(ctx, col ? 762 : 262, 116 + 72 * row, entries[i]);
     }
     richLine(ctx, '[C] 關閉', CX, 542, { size: 16, kh: 22, color: C.textDim, weight: 'normal' });
     ctx.restore();
@@ -3880,8 +3898,8 @@
   function drawPause(ctx) {
     ctx.save();
     // 完全停住: 中性黑壓暗 + 灰框面板(慢動作是冷藍去色 + 冰藍邊框, 兩者不同)
-    // 第 12 輪: 面板 360×160 中心 (672,288); 「暫停」(672,263)、「[Esc] 繼續」(672,323)
-    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, W, H);
+    // 第 13 輪: 面板 360×160 中心 (512,288); 「暫停」(512,263)、「[Esc] 繼續」(512,323); 壓暗畫滿 x −160~1184
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(FX0, 0, FW, H);
     ctx.fillStyle = C.panel; rr(ctx, CX - 180, CY - 80, 360, 160, 16); ctx.fill();
     ctx.strokeStyle = '#c8cedb'; ctx.lineWidth = 2; rr(ctx, CX - 179, CY - 79, 358, 158, 15); ctx.stroke();
     ctx.fillStyle = '#e8ecf4'; rr(ctx, CX - 78, CY - 40, 9, 30, 2); ctx.fill(); rr(ctx, CX - 63, CY - 40, 9, 30, 2); ctx.fill();
@@ -3891,7 +3909,8 @@
   }
 
   window.Art = {
-    canvas: { width: 1680, height: 720 },
+    // 第 13 輪: 設計畫布 1280×720(16:9); 發布時依裝置加寬, 上限 1680(screen-width 規範), 本輪不做加寬
+    canvas: { width: 1280, height: 720 },
     palette: C,
     drawTitle: drawTitle,
     drawTutorialClear: drawTutorialClear,
@@ -3942,6 +3961,7 @@
     drawWavePanel: drawWavePanel,
     drawWaveBanner: drawWaveBanner,
     drawBossBar: drawBossBar,
+    drawMuteIcon: drawMuteIcon,
     drawSlowMo: drawSlowMo,
     drawSoulPopup: drawSoulPopup,
     drawShopPopup: drawShopPopup,
