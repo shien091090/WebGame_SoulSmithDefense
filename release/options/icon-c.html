@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>魂匠守衛者 圖示 C — 霜角魔王</title>
+<style>body{margin:0;overflow:hidden;background:#14070d}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="512" height="512"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 圖示 C: 霜角 Boss 正面特寫(冰晶巨角 + 雙冰刃), 暗紅底 + 頭後冰藍光暈。無文字
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art, P = A.palette;
+  var W = 512, H = 512, TAU = Math.PI * 2;
+  function at(x, y, k, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); fn(); ctx.restore(); }
+
+  // 底: 敵方暗紅(和 Boss 的藍紫身體拉開對比)
+  var g = ctx.createRadialGradient(256, 230, 10, 256, 256, 380);
+  g.addColorStop(0, '#6e2038'); g.addColorStop(0.5, '#34101e'); g.addColorStop(1, '#14070d');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // 頭後冰藍光暈(勾出巨角輪廓)
+  var g2 = ctx.createRadialGradient(256, 150, 10, 256, 170, 210);
+  g2.addColorStop(0, 'rgba(190,235,255,0.55)'); g2.addColorStop(1, 'rgba(143,216,255,0)');
+  ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(256, 170, 210, 0, TAU); ctx.fill();
+
+  // 飄落冰屑(菱形)
+  ctx.fillStyle = 'rgba(220,245,255,0.75)';
+  [[90, 120, 0.4, 9], [420, 110, -0.5, 8], [80, 330, 0.9, 7], [440, 320, 0.2, 9], [150, 60, 1.2, 6], [370, 60, -1.0, 6], [120, 420, 0.5, 6], [400, 420, -0.3, 6]].forEach(function (q) {
+    ctx.save(); ctx.translate(q[0], q[1]); ctx.rotate(q[2]);
+    ctx.beginPath(); ctx.moveTo(q[3], 0); ctx.lineTo(0, -q[3] * 0.5); ctx.lineTo(-q[3], 0); ctx.lineTo(0, q[3] * 0.5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  });
+
+  // 落地影
+  var K = 5.6, BX = 256, BY = 250;
+  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(BX, BY + 35 * K, 30 * K, 5 * K, 0, 0, TAU); ctx.fill();
+  // Boss: 72×72 放大 5.6 倍(約 400 px), 走路中(不出現呆站問號)、滿血(不畫血條)
+  at(BX, BY, K, function () {
+    A.drawEnemy(ctx, { x: 0, y: 0, type: 'bossFrost', moving: true, hp: 1, maxHp: 1, slowed: false, healing: false });
+  });
+})();
+</script>
+</body>
+</html>

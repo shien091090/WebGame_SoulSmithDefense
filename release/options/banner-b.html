@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>魂匠守衛者 橫幅 B — 守衛者們在主堡前排排站</title>
+<style>body{margin:0;overflow:hidden;background:#141a2a}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1680" height="720"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 橫幅 B: 黃昏的主堡前, 五位守衛者站上土路當舞台: 兵、箭塔、魂匠(中央、最大、捧著冰箭魂件)、魂柱、石像; 頂上聚光燈
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art, P = A.palette;
+  var W = 1680, H = 720, TAU = Math.PI * 2;
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  function at(x, y, k, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); fn(); ctx.restore(); }
+
+  function title(cx, cy, size) {
+    var s = '魂匠守衛者';
+    ctx.save();
+    ctx.font = '900 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var w = ctx.measureText(s).width, pw = w + size * 0.9, ph = size * 1.42, r = ph * 0.32;
+    var x0 = cx - pw / 2, y0 = cy - ph / 2;
+    ctx.beginPath();
+    ctx.moveTo(x0 + r, y0); ctx.lineTo(x0 + pw - r, y0); ctx.arcTo(x0 + pw, y0, x0 + pw, y0 + r, r);
+    ctx.lineTo(x0 + pw, y0 + ph - r); ctx.arcTo(x0 + pw, y0 + ph, x0 + pw - r, y0 + ph, r);
+    ctx.lineTo(x0 + r, y0 + ph); ctx.arcTo(x0, y0 + ph, x0, y0 + ph - r, r);
+    ctx.lineTo(x0, y0 + r); ctx.arcTo(x0, y0, x0 + r, y0, r); ctx.closePath();
+    ctx.fillStyle = 'rgba(16,20,30,0.82)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,210,74,0.85)'; ctx.lineWidth = 4; ctx.stroke();
+    ctx.lineJoin = 'round'; ctx.strokeStyle = '#2a1a00'; ctx.lineWidth = size * 0.13;
+    ctx.strokeText(s, cx, cy + size * 0.04);
+    var g = ctx.createLinearGradient(0, cy - size / 2, 0, cy + size / 2);
+    g.addColorStop(0, '#fff3b8'); g.addColorStop(0.5, '#ffd24a'); g.addColorStop(1, '#e8962a');
+    ctx.fillStyle = g; ctx.fillText(s, cx, cy + size * 0.04);
+    ctx.restore();
+  }
+
+  // ---- 天空: 深藍 → 地平線暖紫 ----
+  var sky = ctx.createLinearGradient(0, 0, 0, 470);
+  sky.addColorStop(0, '#11172a'); sky.addColorStop(0.7, '#2a2f52'); sky.addColorStop(1, '#5a4060');
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, 470);
+  // 星點
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  for (var i = 0; i < 46; i++) {
+    var sx = (i * 367) % W, sy = 12 + (i * 151) % 300;
+    ctx.beginPath(); ctx.arc(sx, sy, i % 4 === 0 ? 2.2 : 1.3, 0, TAU); ctx.fill();
+  }
+
+  // ---- 地面: 遊戲同色草地 + 一條橫貫的土路當舞台 ----
+  ctx.fillStyle = P.grass; ctx.fillRect(0, 460, W, H - 460);
+  ctx.fillStyle = P.grassDark;
+  [[120, 500], [380, 690], [700, 480], [1100, 495], [1500, 485], [1620, 690], [60, 660]].forEach(function (q) {
+    ctx.beginPath(); ctx.ellipse(q[0], q[1], 70, 20, 0, 0, TAU); ctx.fill();
+  });
+  var RY = 630;
+  ctx.fillStyle = P.pathEdge; ctx.fillRect(0, RY - 62, W, 124);
+  ctx.fillStyle = P.path; ctx.fillRect(0, RY - 55, W, 110);
+  ctx.fillStyle = P.pathLight; ctx.fillRect(0, RY - 18, W, 36);
+
+  // ---- 左側背景: 主堡(只取城體, 剪掉血量牌), 在左下角禁區之上 ----
+  at(240, 420, 2.8, function () {
+    ctx.beginPath(); ctx.rect(-70, -80, 140, 106); ctx.clip();
+    A.drawCastle(ctx, { x: 0, y: 0, hp: 20, maxHp: 20 });
+  });
+
+  // ---- 聚光燈 ----
+  function beam(x, topW, botW, a) {
+    var g = ctx.createLinearGradient(0, 0, 0, 640);
+    g.addColorStop(0, 'rgba(255,240,200,' + a + ')'); g.addColorStop(1, 'rgba(255,240,200,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(x - topW / 2, 0); ctx.lineTo(x + topW / 2, 0); ctx.lineTo(x + botW / 2, 640); ctx.lineTo(x - botW / 2, 640); ctx.closePath(); ctx.fill();
+  }
+  beam(535, 40, 220, 0.10); beam(732, 40, 240, 0.10); beam(1300, 40, 220, 0.10); beam(1475, 40, 240, 0.10);
+  beam(1010, 70, 420, 0.20);
+
+  // ---- 排排站(腳底對齊 y 630) ----
+  var FEET = 630;
+  function shadow(x, w) { ctx.fillStyle = 'rgba(0,0,0,0.32)'; ctx.beginPath(); ctx.ellipse(x, FEET + 4, w, w * 0.18, 0, 0, TAU); ctx.fill(); }
+  // 兵
+  shadow(535, 80);
+  at(535, FEET - 15 * 5.7, 5.7, function () { A.drawSoldier(ctx, { x: 0, y: 0, hp: 1, maxHp: 1 }); });
+  // 箭塔
+  shadow(732, 96);
+  at(732, FEET - 22 * 4.2, 4.2, function () { A.drawCrossbow(ctx, { x: 0, y: 0 }); });
+  // 魂匠(中央, 最大): 腳下金色光圈 + 捧著冰箭魂件
+  ctx.save();
+  var hg = ctx.createRadialGradient(940, FEET, 10, 940, FEET, 170);
+  hg.addColorStop(0, 'rgba(255,210,74,0.55)'); hg.addColorStop(1, 'rgba(255,210,74,0)');
+  ctx.fillStyle = hg; ctx.beginPath(); ctx.ellipse(940, FEET, 170, 40, 0, 0, TAU); ctx.fill();
+  ctx.restore();
+  var ix = 940 + 28 * 7, iy = FEET - 15.5 * 7 - 7;
+  var ig = ctx.createRadialGradient(ix, iy, 6, ix, iy, 90);
+  ig.addColorStop(0, 'rgba(230,240,255,0.7)'); ig.addColorStop(1, 'rgba(207,224,255,0)');
+  ctx.fillStyle = ig; ctx.beginPath(); ctx.arc(ix, iy, 90, 0, TAU); ctx.fill();
+  at(940, FEET - 15.5 * 7, 7, function () { A.drawPlayer(ctx, { x: 0, y: 0, handItem: 'iceArrow' }); });
+  // 魂柱(裝著雷電球, 晶石金框)
+  shadow(1300, 76);
+  at(1300, FEET - 18 * 5, 5, function () { A.drawPillar(ctx, { x: 0, y: 0, kinds: ['thunderOrb'] }); });
+  // 石像(我方)
+  shadow(1475, 86);
+  at(1475, FEET - 24 * 3.3, 3.3, function () { A.drawGolem(ctx, { x: 0, y: 0, team: 'ally', hp: 1, maxHp: 1 }); });
+
+  // ---- 標題(對齊隊伍中心) ----
+  title(1000, 170, 128);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>魂匠守衛者 橫幅 C — 拔走魔王的招式</title>
+<style>body{margin:0;overflow:hidden;background:#2e4733}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1680" height="720"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 橫幅 C: 對決構圖 — 左邊魂匠(放大)帶著箭塔與魂柱, 右邊兩隻 Boss 壓境; 一條金色搶奪連線從魂匠拉到霜角頭上的冰霜魂件
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art, P = A.palette;
+  var W = 1680, H = 720, TAU = Math.PI * 2;
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  function at(x, y, k, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); fn(); ctx.restore(); }
+
+  function title(cx, cy, size) {
+    var s = '魂匠守衛者';
+    ctx.save();
+    ctx.font = '900 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var w = ctx.measureText(s).width, pw = w + size * 0.9, ph = size * 1.42, r = ph * 0.32;
+    var x0 = cx - pw / 2, y0 = cy - ph / 2;
+    ctx.beginPath();
+    ctx.moveTo(x0 + r, y0); ctx.lineTo(x0 + pw - r, y0); ctx.arcTo(x0 + pw, y0, x0 + pw, y0 + r, r);
+    ctx.lineTo(x0 + pw, y0 + ph - r); ctx.arcTo(x0 + pw, y0 + ph, x0 + pw - r, y0 + ph, r);
+    ctx.lineTo(x0 + r, y0 + ph); ctx.arcTo(x0, y0 + ph, x0, y0 + ph - r, r);
+    ctx.lineTo(x0, y0 + r); ctx.arcTo(x0, y0, x0 + r, y0, r); ctx.closePath();
+    ctx.fillStyle = 'rgba(16,20,30,0.82)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,210,74,0.85)'; ctx.lineWidth = 4; ctx.stroke();
+    ctx.lineJoin = 'round'; ctx.strokeStyle = '#2a1a00'; ctx.lineWidth = size * 0.13;
+    ctx.strokeText(s, cx, cy + size * 0.04);
+    var g = ctx.createLinearGradient(0, cy - size / 2, 0, cy + size / 2);
+    g.addColorStop(0, '#fff3b8'); g.addColorStop(0.5, '#ffd24a'); g.addColorStop(1, '#e8962a');
+    ctx.fillStyle = g; ctx.fillText(s, cx, cy + size * 0.04);
+    ctx.restore();
+  }
+
+  // ---- 地面: 遊戲同色草地 + 蓋塔格線 + 橫貫土路 ----
+  ctx.fillStyle = P.grass; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = P.grassDark;
+  for (var i = 0; i < 30; i++) {
+    ctx.beginPath(); ctx.ellipse((i * 331) % W, 30 + (i * 173) % 680, 44, 18, 0, 0, TAU); ctx.fill();
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2; ctx.beginPath();
+  for (var gx = 0; gx <= W; gx += 120) { ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, H); }
+  for (var gy = 0; gy <= H; gy += 120) { ctx.moveTo(0, gy + 0.5); ctx.lineTo(W, gy + 0.5); }
+  ctx.stroke();
+  var RY = 520;
+  ctx.fillStyle = P.pathEdge; ctx.fillRect(0, RY - 70, W, 140);
+  ctx.fillStyle = P.path; ctx.fillRect(0, RY - 63, W, 126);
+  ctx.fillStyle = P.pathLight; ctx.fillRect(0, RY - 25, W, 50);
+
+  // ---- 兩邊氣氛: 左暖金(我方)、右暗紅(敵方) ----
+  var lg = ctx.createLinearGradient(0, 0, 900, 0);
+  lg.addColorStop(0, 'rgba(255,190,80,0.16)'); lg.addColorStop(1, 'rgba(255,190,80,0)');
+  ctx.fillStyle = lg; ctx.fillRect(0, 0, 900, H);
+  var rg = ctx.createLinearGradient(820, 0, W, 0);
+  rg.addColorStop(0, 'rgba(40,0,20,0)'); rg.addColorStop(1, 'rgba(40,0,20,0.62)');
+  ctx.fillStyle = rg; ctx.fillRect(820, 0, W - 820, H);
+
+  // ---- 我方後援(左上, 不進左下角禁區): 魂柱 + 共鳴中的箭塔 ----
+  at(0, 0, 3.6, function () {
+    A.drawResonanceLine(ctx, { x1: 190 / 3.6, y1: 330 / 3.6, x2: 330 / 3.6, y2: 320 / 3.6, kind: 'ranged', active: true });
+    A.drawPillar(ctx, { x: 190 / 3.6, y: 340 / 3.6, kinds: ['ranged'] });
+    A.drawCrossbow(ctx, { x: 330 / 3.6, y: 320 / 3.6, resonating: true });
+    // 箭塔射向 Boss 的兩支箭
+    A.drawProjectile(ctx, { x: 800 / 3.6, y: 330 / 3.6, angle: 0.05, owner: 'ally', kind: 'arrow' });
+    A.drawProjectile(ctx, { x: 905 / 3.6, y: 300 / 3.6, angle: 0.0, owner: 'ally', kind: 'arrow' });
+  });
+
+  // ---- 右側: 兩隻 Boss(雷霆魔王在後) ----
+  var BT = { x: 1420, y: 372, k: 3.6 }, BF = { x: 1170, y: 490, k: 4.2 };
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.ellipse(BT.x, BT.y + 34 * BT.k, 30 * BT.k, 5 * BT.k, 0, 0, TAU); ctx.fill();
+  at(BT.x, BT.y, BT.k, function () { A.drawEnemy(ctx, { x: 0, y: 0, type: 'bossThunder', moving: true, hp: 1, maxHp: 1 }); });
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.ellipse(BF.x, BF.y + 34 * BF.k, 30 * BF.k, 5 * BF.k, 0, 0, TAU); ctx.fill();
+  at(BF.x, BF.y, BF.k, function () {
+    A.drawEnemy(ctx, { x: 0, y: 0, type: 'bossFrost', moving: true, hp: 1, maxHp: 1 });
+    A.drawSoulSlots(ctx, { x: 0, y: -36 - 20, slots: ['frost', 'melee', 'melee'] });
+  });
+
+  // ---- 魂匠(左中, 放大): 搶奪中; 金色連線拉到霜角槽列第 1 格(冰霜) ----
+  var PL = { x: 590, y: 430, k: 6.5 };
+  var slot = { x: BF.x + (-30 + 10) * BF.k, y: BF.y + (-56) * BF.k };
+  at(0, 0, 3, function () {
+    A.drawStealLink(ctx, { x1: PL.x / 3, y1: PL.y / 3, x2: slot.x / 3, y2: slot.y / 3, progress: 0.7 });
+  });
+  var pg = ctx.createRadialGradient(PL.x, PL.y, 20, PL.x, PL.y, 180);
+  pg.addColorStop(0, 'rgba(255,220,120,0.45)'); pg.addColorStop(1, 'rgba(255,210,74,0)');
+  ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(PL.x, PL.y, 180, 0, TAU); ctx.fill();
+  at(PL.x, PL.y, PL.k, function () { A.drawPlayer(ctx, { x: 0, y: 0, stealing: true, stealProgress: 0.7 }); });
+
+  // ---- 標題: 頂端壓暗 + 名牌 ----
+  var tg = ctx.createLinearGradient(0, 0, 0, 240);
+  tg.addColorStop(0, 'rgba(10,14,22,0.7)'); tg.addColorStop(1, 'rgba(10,14,22,0)');
+  ctx.fillStyle = tg; ctx.fillRect(0, 0, W, 240);
+  title(840, 112, 118);
+})();
+</script>
+</body>
+</html>

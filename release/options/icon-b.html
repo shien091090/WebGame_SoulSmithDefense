@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>魂匠守衛者 圖示 B — 衝上前砍怪的箭塔</title>
+<style>body{margin:0;overflow:hidden;background:#2e4733}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="512" height="512"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 圖示 B: 裝了「衝鋒 + 近戰」的箭塔長出輪子衝上前, 左前方一道金色刀光。草地 + 土路, 無文字
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art, P = A.palette;
+  var W = 512, H = 512, TAU = Math.PI * 2;
+  function at(x, y, k, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); fn(); ctx.restore(); }
+
+  // 草地(遊戲同色)+ 深色草叢
+  ctx.fillStyle = P.grass; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = P.grassDark;
+  [[40, 60], [190, 30], [430, 70], [470, 200], [30, 430], [210, 470], [460, 460], [330, 120]].forEach(function (q) {
+    ctx.beginPath(); ctx.ellipse(q[0], q[1], 46, 18, 0, 0, TAU); ctx.fill();
+  });
+
+  // 土路: 水平穿過中央(遊戲裡的三層路面)
+  var RY = 262;
+  ctx.fillStyle = P.pathEdge; ctx.fillRect(0, RY - 92, W, 184);
+  ctx.fillStyle = P.path; ctx.fillRect(0, RY - 84, W, 168);
+  ctx.fillStyle = P.pathLight; ctx.fillRect(0, RY - 30, W, 60);
+
+  // 衝鋒捲起的塵土(身後右側)
+  ctx.fillStyle = 'rgba(217,195,154,0.45)';
+  [[440, 330, 26], [470, 300, 18], [412, 352, 16]].forEach(function (d) { ctx.beginPath(); ctx.arc(d[0], d[1], d[2], 0, TAU); ctx.fill(); });
+
+  // 箭塔(衝鋒中)+ 刀光; 合計設計寬約 −59~35, 放大 4.4 倍後落在中間 80%
+  var K = 4.4, TX = 304, TY = 256;
+  // 落地影
+  ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(TX, TY + 24 * K, 24 * K, 5 * K, 0, 0, TAU); ctx.fill();
+  at(TX, TY, K, function () {
+    A.drawCrossbow(ctx, { x: 0, y: 0, charging: true, moving: true, rooted: false, resonating: false });
+    A.drawMeleeSlash(ctx, { x: -30, y: 0, angle: Math.PI, age: 0.12, duration: 0.25, kind: 'melee', team: 'ally' });
+  });
+})();
+</script>
+</body>
+</html>

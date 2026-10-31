@@ -5,6 +5,26 @@
 (function () {
   'use strict';
   var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  // 畫布寬度依裝置(PVD計畫網站): 電腦 1280; 觸控裝置照螢幕長寬比, 夾在 1280~1680。高固定 720。判斷與 touch.js 一致
+  function pickWidth() {
+    var w = 1280;
+    try {
+      var q = /[?&]w=([0-9]+)/.exec(location.search);   // 截圖檢查用
+      var mm = function (s) { return !!(window.matchMedia && matchMedia(s).matches); };
+      var touch = /[?&]touch=1(&|$)/.test(location.search) || mm('(pointer: coarse)') ||
+        (((navigator.maxTouchPoints || 0) > 0 || 'ontouchstart' in window) && !mm('(hover: hover)'));
+      if (q) w = +q[1];
+      else if (touch) {
+        var a = window.screen || {}, sw = a.width || 0, sh = a.height || 0, iw = window.innerWidth || 0, ih = window.innerHeight || 0;
+        var r = sw > 0 && sh > 0 ? Math.max(sw, sh) / Math.min(sw, sh) : 0;
+        if (iw > ih && ih > 0) r = Math.max(r, iw / ih);
+        if (r > 0) w = 720 * r;
+      }
+    } catch (e) { /* 取不到就用 1280 */ }
+    return Math.round(Math.max(1280, Math.min(1680, w || 1280)) / 2) * 2;
+  }
+  var VW = pickWidth();
+  try { document.documentElement.style.setProperty('--cw', String(VW)); } catch (e) { }
   var PI = Math.PI, TAU = Math.PI * 2;
   // 設計座標: 全畫面寬高、中心; HUD 高 48; 主堡中心
   var W = 1024, H = 576, CX = 512, CY = 288, HUD_H = 48, CASTLE_X = 900, CASTLE_Y = 336;
@@ -3910,7 +3930,7 @@
 
   window.Art = {
     // 第 13 輪: 設計畫布 1280×720(16:9); 發布時依裝置加寬, 上限 1680(screen-width 規範), 本輪不做加寬
-    canvas: { width: 1280, height: 720 },
+    canvas: { width: VW, height: 720 },
     palette: C,
     drawTitle: drawTitle,
     drawTutorialClear: drawTutorialClear,

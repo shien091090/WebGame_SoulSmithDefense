@@ -8,6 +8,8 @@ const SC = 1.25;
 const W = 1024, H = 576; // 設計座標(邏輯 / 夾值用)
 const CW = (typeof Art !== 'undefined' && Art.canvas && Art.canvas.width) || 1280; // 畫布邏輯尺寸(Art.canvas, 發布加寬時才會變)
 const CH = (typeof Art !== 'undefined' && Art.canvas && Art.canvas.height) || 720;
+const OX = (CW - 1280) / 2; // 畫布像素寬比 1280 多出來的一半(邏輯畫布座標); 設計區平移量
+const EDGE = OX / SC;       // 設計座標下, 畫面左右兩側各多出來的寬度(貼邊用)
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 let DPR = window.devicePixelRatio || 1;
@@ -446,6 +448,7 @@ function endLevel(win) {
     stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialMode: S.tutMode, tutorialClearSt: S.tutClearSt, boss: bossSum
   };
   downloadLog({ game: 'SoulSmithDefense', version: 'polish-13', summary, tutorial: tut, events: G.log.events });
+  if (window.PVDX) PVDX.finish(); // 一局結束(通知網站)
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
@@ -2653,24 +2656,33 @@ function onKey(k) {
   }
 }
 const KEYMAP = { ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D', KeyZ: 'Z', KeyX: 'X', Space: 'S', KeyM: 'M', KeyC: 'C', Escape: 'ESC' };
+// 輸入入口(鍵盤與觸控層共用): 鍵名 L R U D Z X S M C ESC
+function inputDown(k) {
+  if (window.PVDX && PVDX.paused) return;
+  if (!G.inited) { G.inited = true; try { if (typeof Sound !== 'undefined' && Sound.init) Sound.init(); } catch (err) { console.error(err); } setMusic(G.music); }
+  if (k === 'L' || k === 'R' || k === 'U' || k === 'D') keys[k] = true;
+  try { onKey(k); } catch (err) { console.error(err); }
+  flushSnd();
+}
+function inputUp(k) {
+  if (k === 'Z') zNeedRelease = false;
+  if (k === 'L' || k === 'R' || k === 'U' || k === 'D') keys[k] = false;
+}
+function inputReset() { keys.L = keys.R = keys.U = keys.D = false; zNeedRelease = false; }
 window.addEventListener('keydown', e => {
   const k = KEYMAP[e.code];
   if (!k) return;
   e.preventDefault();
   if (e.repeat) return;
-  if (!G.inited) { G.inited = true; try { if (typeof Sound !== 'undefined' && Sound.init) Sound.init(); } catch (err) { console.error(err); } setMusic(G.music); }
-  if (k === 'L' || k === 'R' || k === 'U' || k === 'D') keys[k] = true;
-  try { onKey(k); } catch (err) { console.error(err); }
-  flushSnd();
+  inputDown(k);
 });
 window.addEventListener('keyup', e => {
   const k = KEYMAP[e.code];
   if (!k) return;
   e.preventDefault();
-  if (k === 'Z') zNeedRelease = false;
-  if (k === 'L' || k === 'R' || k === 'U' || k === 'D') keys[k] = false;
+  inputUp(k);
 });
-window.addEventListener('blur', () => { keys.L = keys.R = keys.U = keys.D = false; zNeedRelease = false; });
+window.addEventListener('blur', inputReset);
 if (document.addEventListener) {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) hideAt = Date.now();
@@ -2699,12 +2711,13 @@ function titleState() {
 function touchOn() { return !!(window.PVDX && window.PVDX.on); }
 function render() {
   // 每幀開頭: 實際像素 = DPR, 再整體放大 1.25 倍(設計座標 1024×576 → 邏輯畫布 1280×720)
-  ctx.setTransform(DPR * SC, 0, 0, DPR * SC, 0, 0);
-  ctx.clearRect(-200, -4, W + 400, H + 8);
+  // 畫面比 1280 寬時, 1024×576 設計區置中(最外層平移一次); 畫滿整面的東西由美術畫到 x −160~1184
+  ctx.setTransform(DPR * SC, 0, 0, DPR * SC, DPR * OX, 0);
+  ctx.clearRect(-OX / SC - 4, -4, CW / SC + 8, H + 8);
   if (G.screen === 'title') {
     Art.drawTitle(ctx, titleState());
     // 聲音開關圖示(第 13 輪從 drawTitle 拆出): 詢問視窗 / 大提示開著與觸控模式不畫
-    if (!G.tc && !G.tt.clear && !touchOn()) Art.drawMuteIcon(ctx, { x: 974, y: 40, size: 36, muted: S.muted });
+    if (!G.tc && !G.tt.clear && !touchOn()) Art.drawMuteIcon(ctx, { x: 974 + EDGE, y: 40, size: 36, muted: S.muted });
     if (G.tWarn) Art.drawTutorialWarn(ctx, { x: G.tWarn.x, y: 450, text: G.tWarn.text, age: G.tWarn.age, duration: 1.2 });
     const c = G.tt.clear;
     if (c) Art.drawTutorialClear(ctx, { age: c.age, ready: !c.closing && c.age >= 1.0, closing: c.closing, closeAge: c.closeAge, closeDuration: 0.3 });
@@ -2924,7 +2937,7 @@ function drawScene() {
     }
   }
   // 聲音開關圖示(第 13 輪): 關卡中右上角, 引導卡開著與觸控模式不畫
-  if (playing && !G.guide && !touchOn()) Art.drawMuteIcon(ctx, { x: 992, y: 74, size: 32, muted: S.muted });
+  if (playing && !G.guide && !touchOn()) Art.drawMuteIcon(ctx, { x: 992 + EDGE, y: 74, size: 32, muted: S.muted });
   if (G.popup) {
     Art.drawSlowMo(ctx);
     drawPopup();
@@ -2989,7 +3002,11 @@ function frame(ts) {
   lastTs = ts;
   RT += Math.max(0, raw);
   const dt = clamp(raw, 0, 1 / 30);
-  try { update(dt); render(); } catch (err) { console.error(err); }
+  try {
+    if (!(window.PVDX && PVDX.paused)) update(dt);
+    render();
+    if (window.PVDX) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); PVDX.draw(ctx); } // 觸控層用邏輯畫布座標
+  } catch (err) { console.error(err); }
 }
 toTitle();
 requestAnimationFrame(frame);

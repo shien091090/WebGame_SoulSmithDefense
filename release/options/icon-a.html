@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>魂匠守衛者 圖示 A — 魂匠捧著魂件</title>
+<style>body{margin:0;overflow:hidden;background:#11141d}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="512" height="512"></canvas>
+<script src="../game/art/art.js"></script>
+<script>
+// 圖示 A: 主角魂匠放大置中, 右手捧著一顆組合魂件(雷霆斬); 背後是鍛爐暖光 + 魂光環。無文字
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
+  var W = 512, H = 512, TAU = Math.PI * 2;
+  function at(x, y, k, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); fn(); ctx.restore(); }
+
+  // 底: 鍛爐暖光(中心暖褐 → 外圍深藍黑), 四角只有底色
+  var g = ctx.createRadialGradient(256, 236, 10, 256, 256, 380);
+  g.addColorStop(0, '#6a4416'); g.addColorStop(0.45, '#2e2014'); g.addColorStop(1, '#11141d');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // 魂光環(在中間 80% 內)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,210,74,0.12)'; ctx.lineWidth = 20;
+  ctx.beginPath(); ctx.arc(256, 252, 186, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,210,74,0.32)'; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(256, 252, 204, 0, TAU); ctx.stroke();
+  // 環上的鍛造火星
+  ctx.fillStyle = '#ffd24a';
+  [0.3, 1.1, 2.0, 2.6, 3.5, 4.3, 5.0, 5.8].forEach(function (a, i) {
+    var r = 204 + (i % 2 ? 9 : -9), s = i % 3 === 0 ? 5 : 3.5;
+    ctx.globalAlpha = i % 2 ? 0.55 : 0.85;
+    ctx.beginPath(); ctx.arc(256 + Math.cos(a) * r, 252 + Math.sin(a) * r, s, 0, TAU); ctx.fill();
+  });
+  ctx.restore();
+
+  // 主角: drawPlayer 放大 7.2 倍; 本體圓心在 (170, 248), 手上魂件在 (+28, −1)
+  var K = 7.2, PX = 170, PY = 248;
+  var ix = PX + 28 * K, iy = PY - 1 * K;
+  // 魂件背後的魂光(冷白藍, 和暖色主角分開)
+  var g2 = ctx.createRadialGradient(ix, iy, 8, ix, iy, 118);
+  g2.addColorStop(0, 'rgba(230,240,255,0.85)'); g2.addColorStop(0.5, 'rgba(207,224,255,0.35)'); g2.addColorStop(1, 'rgba(207,224,255,0)');
+  ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(ix, iy, 118, 0, TAU); ctx.fill();
+
+  at(PX, PY, K, function () {
+    A.drawPlayer(ctx, { x: 0, y: 0, moving: false, handItem: 'thunderSlash', stealing: false, resonating: false });
+  });
+})();
+</script>
+</body>
+</html>
