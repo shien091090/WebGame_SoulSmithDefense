@@ -677,7 +677,7 @@
 - 勝利時解鎖下一關, 並更新該關的最佳星數。
 
 ## 埋點
-每一關結束(勝或敗、結算畫面出現的當下)自動下載一個 JSON, 檔名 `gamelog-SoulSmithDefense-<YYYYMMDD-HHMMSS>.json`(本機時間, 結算出現的時刻)。
+每一關結束(勝或敗、結算畫面出現的當下)自動下載一個 JSON, 檔名 `gamelog-WebGame_SoulSmithDefense-<YYYYMMDD-HHMMSS>.json`(本機時間, 結算出現的時刻)。
 
 時間欄位:
 - `t`: 這關開始後經過的**真實秒數**(含慢動作、暫停、圖鑑、引導卡、合成演出期間的真實時間), 小數 1 位

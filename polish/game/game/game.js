@@ -225,7 +225,7 @@ function pad2(n) { return (n < 10 ? '0' : '') + n; }
 function downloadLog(obj) {
   try {
     const d = new Date();
-    const name = 'gamelog-SoulSmithDefense-' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '-' + pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()) + '.json';
+    const name = 'gamelog-WebGame_SoulSmithDefense-' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '-' + pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds()) + '.json';
     const blob = new Blob([JSON.stringify(obj, null, 1)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
