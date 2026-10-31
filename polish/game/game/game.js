@@ -166,18 +166,37 @@ let curSrc = null; // 目前正在出手的我方單位(階段 30 判斷「步�
 const S = {
   unlocked: [true, false, false, false], best: [0, 0, 0, 0], attempts: [0, 0, 0, 0], fails: [0, 0, 0, 0],
   combos: zeros(NCOMBO).map(() => false), recipes: zeros(11).map(() => false), golemUnlocked: false, pillarUnlocked: false, muted: false,
-  won: [false, false, false, false], pendingUnlock: -1, tutClearShown: false, tutClearSt: null,
+  won: [false, false, false, false], tutMode: null, pendingUnlock: -1, tutClearShown: false, tutClearSt: null,
   tut: { done: [], shownSt: [], doneSt: [], pressed: {}, fx: null, cur: 0, view: null, lastView: null },
   menuBlocks: 0, menuEvents: [] // 關卡預覽頁想選被教學鎖住的第 1 關: 次數與事件, 記進下一局的檔案
 };
 const G = {
   screen: 'title', cursor: 0, titleT: 0, tt: { clear: null, adv: null }, sq: [], music: null, inited: false, level: 1, popup: null, steal: null, hand: null, flag: null,
   fuseSnd: 0, comboSnd: 0, paused: false, codex: false, guide: null, reveal: null, revealQ: [], banner: null, panelWave: 0, bumpAge: 0.4,
-  tapp: {}, run: {}, warn: null, resp: {}, waveAt: [], queue: [], firstKill: null, firstEnemyT: null, sawArcher: false, shopOpens: 0, qCur: 0, qBase: 0, q23seen: false, clearedW: [], strandedHit: false, vshown: {}, t30was4: false
+  tc: null, tapp: {}, run: {}, warn: null, resp: {}, waveAt: [], queue: [], firstKill: null, firstEnemyT: null, sawArcher: false, shopOpens: 0, qCur: 0, qBase: 0, q23seen: false, clearedW: [], strandedHit: false, vshown: {}, t30was4: false
 };
 
 // 關卡預覽頁的第 1 關教學鎖: 第 1 關勝利過、而且這次開網頁還沒在第 2 關勝利過
 function tutLock1() { return !!S.won[0] && !S.won[1]; }
+// 第 11 輪: 精簡教學(第 1 關拿掉階段 1~4、9)
+const BRIEF_SKIP = [1, 2, 3, 4, 9];
+function briefMode() { return S.tutMode === 'brief'; }
+function openTutChoice() {
+  G.tc = { cursor: 0, age: 0, picked: -1, pickAge: 0.35 };
+  zNeedRelease = true; // 開視窗的那一下 Z 要先放開
+  snd('guide_card');
+  S.menuEvents.push({ type: 'tutorial_choice', t: null, st: r1(RT), action: 'open' });
+}
+function confirmTutChoice() {
+  const c = G.tc;
+  c.picked = c.cursor; c.pickAge = 0;
+  snd('ui_confirm');
+  S.menuEvents.push({ type: 'tutorial_choice', t: null, st: r1(RT), action: 'confirm', choice: c.cursor === 0 ? 'A' : 'B', mode: c.cursor === 0 ? 'full' : 'brief', openSec: r1(c.age) });
+}
+function applyTutChoice(cur) {
+  S.tutMode = cur === 0 ? 'full' : 'brief';
+  if (S.tutMode === 'brief') for (const k of BRIEF_SKIP) S.tut.done[k] = true; // 不記 shownSt / doneSt, 埋點標 skipped
+}
 
 function emptyEv() {
   return {
@@ -376,7 +395,7 @@ function endLevel(win) {
   ev('level_end', { result: win ? 'win' : 'lose', wave: G.wave, castleHp: hp, stars });
   const st = G.stat;
   const tut = {};
-  for (let k = 1; k <= 31; k++) tut[String(k)] = { shownSt: T.shownSt[k] === undefined ? null : T.shownSt[k], doneSt: T.doneSt[k] === undefined ? null : T.doneSt[k], kind: CARD[k] ? 'card' : 'quest' };
+  for (let k = 1; k <= 31; k++) tut[String(k)] = { shownSt: T.shownSt[k] === undefined ? null : T.shownSt[k], doneSt: T.doneSt[k] === undefined ? null : T.doneSt[k], kind: CARD[k] ? 'card' : 'quest', skipped: briefMode() && BRIEF_SKIP.indexOf(k) >= 0 };
   let bossSum = null;
   if (G.bossStat) {
     const bs = G.bossStat, be = G.boss && G.boss.e;
@@ -404,9 +423,9 @@ function endLevel(win) {
     unitDowns: st.unitDowns, maxRespawnQueue: st.maxRespawnQueue, marchLoops: st.marchLoops, blinks: st.blinks,
     healed: Math.round(st.healed), enemyHealed: Math.round(st.enemyHealed), recruits: st.recruits,
     combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length, recipesOpenedTotal: S.recipes.filter(Boolean).length,
-    stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialClearSt: S.tutClearSt, boss: bossSum
+    stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialMode: S.tutMode, tutorialClearSt: S.tutClearSt, boss: bossSum
   };
-  downloadLog({ game: 'SoulSmithDefense', version: 'polish-10', summary, tutorial: tut, events: G.log.events });
+  downloadLog({ game: 'SoulSmithDefense', version: 'polish-11', summary, tutorial: tut, events: G.log.events });
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
@@ -1270,6 +1289,16 @@ function orbTick(gdt) {
 function updateTitle(dt) {
   const tt = G.tt;
   G.titleT += dt;
+  if (G.tc) { // 教學種類詢問視窗: 其他東西停住
+    const c = G.tc;
+    c.age += dt;
+    if (c.picked >= 0) {
+      c.pickAge = Math.min(0.35, c.pickAge + dt);
+      if (c.pickAge >= 0.35) { G.tc = null; applyTutChoice(c.picked); startLevel(1); }
+    }
+    flushSnd();
+    return;
+  }
   if (G.tWarn) { G.tWarn.age += dt; if (G.tWarn.age >= 1.2) G.tWarn = null; } // 真實時間
   if (tt.clear) {
     const c = tt.clear;
@@ -1408,7 +1437,7 @@ function tutRespawnTick(gdt) {
   const partHas = it => G.parts.some(p => !p.removed && p.item === it);
   if (tutLvl1()) {
     if (!T.done[9] && !G.firstKill && G.waveStarted >= 1 && !G.queue.some(q => q.type === 'imp' && q.wave === 0) && live.length === 0) want.imp = ['imp', respLane()];
-    const arch = T.done[10] ? !T.done[12] : (T.done[9] && G.sawArcher && !G.queue.some(q => q.type === 'archer')); // 後者: 階段 10 前弓鬼就沒了的保險
+    const arch = T.done[10] ? !T.done[12] : ((briefMode() ? T.done[8] : T.done[9]) && G.sawArcher && !G.queue.some(q => q.type === 'archer')); // 後者: 階段 10 前弓鬼就沒了的保險
     if (arch && !eHas('ranged') && G.hand !== 'ranged' && !partHas('ranged') && !G.towers.some(t => t.slots.indexOf('pierce') >= 0)) want.archer = ['archer', respLane()];
   }
   if (tutLvl2()) {
@@ -2148,6 +2177,7 @@ function qCond(k) {
     case 7: return G.hand === 'crossbowKit' || G.run.placedTower;
     case 11: return enemiesWith('ranged').length > 0 || qDone(11);
     case 14: return !!(G.flag && G.flag.reason === 'purchase') || qDone(14);
+    case 5: return !briefMode() || G.time >= 1.0; // 精簡教學: 進關 1.0 秒出現
     case 17: return G.time >= 1.0;
     case 22: return recruited22() || G.golems.some(g => g.team === 'neutral' && !g.removed && (g.marchT || 0) >= 3.0); // 走了 3 秒還沒到就先出等待提示
     case 23: return shopOpen();
@@ -2507,6 +2537,20 @@ function onKey(k) {
       return;
     }
     if (tt.adv) return; // 推進動畫播放期間只接受 M
+    if (G.tc) { // 教學種類詢問視窗
+      const c = G.tc;
+      if (c.picked >= 0) return; // 確定後閃一下, 期間只接受 M
+      if (k === 'L' || k === 'R') {
+        const n = clamp(c.cursor + (k === 'R' ? 1 : -1), 0, 1);
+        if (n !== c.cursor) { c.cursor = n; snd('ui_move'); }
+      } else if (k === 'Z') { if (zNeedRelease) return; confirmTutChoice(); }
+      else if (k === 'X') {
+        snd('ui_move');
+        S.menuEvents.push({ type: 'tutorial_choice', t: null, st: r1(RT), action: 'cancel', openSec: r1(c.age) });
+        G.tc = null;
+      }
+      return;
+    }
     if (k === 'L' || k === 'R') {
       let c = G.cursor + (k === 'R' ? 1 : -1);
       if (c === 0 && k === 'L' && tutLock1() && S.unlocked[0]) { // 第 1 關教學鎖: 游標不動, 跳提示
@@ -2514,7 +2558,10 @@ function onKey(k) {
         G.tWarn = { age: 0 };
         S.menuBlocks++; S.menuEvents.push({ type: 'menu_block', t: null, st: r1(RT), level: 1 });
       } else if (c >= 0 && c <= 3 && S.unlocked[c]) { G.cursor = c; snd('ui_move'); }
-    } else if (k === 'Z') { snd('ui_confirm'); startLevel(G.cursor + 1); }
+    } else if (k === 'Z') {
+      if (G.cursor === 0 && S.tutMode === null && !S.tut.done[16]) { openTutChoice(); return; }
+      snd('ui_confirm'); startLevel(G.cursor + 1);
+    }
     return;
   }
   if (G.screen === 'result') {
@@ -2620,6 +2667,8 @@ function render() {
     if (G.tWarn) Art.drawTutorialWarn(ctx, { x: 640, y: 600, text: '教學期間不可這樣操作', age: G.tWarn.age, duration: 1.2 });
     const c = G.tt.clear;
     if (c) Art.drawTutorialClear(ctx, { age: c.age, ready: !c.closing && c.age >= 1.0, closing: c.closing, closeAge: c.closeAge, closeDuration: 0.3 });
+    const tc = G.tc;
+    if (tc) Art.drawTutorialChoice(ctx, { cursor: tc.cursor, age: tc.age, openDuration: 0.25, picked: tc.picked, pickAge: tc.pickAge, pickDuration: 0.35 });
     return;
   }
   drawScene();
@@ -2809,7 +2858,7 @@ function drawScene() {
   }
   // 教學推進的波次之前, 出怪點「!」標示: 第 1 關階段 3 的卡片出現起到第 1 波預警開始; 第 2 關階段 17 出現起到第 1 波預警開始、階段 24 出現起到第 2 波預警開始
   if (playing && G.tutDriven) {
-    if (G.level === 1 && (G.tapp[3] || S.tut.done[3]) && !G.warned[0]) Art.drawSpawnMark(ctx, { x: 624, y: 90, t: G.time });
+    if (G.level === 1 && (briefMode() ? (G.tapp[5] || S.tut.done[5]) : (G.tapp[3] || S.tut.done[3])) && !G.warned[0]) Art.drawSpawnMark(ctx, { x: 624, y: 90, t: G.time });
     else if (G.level === 2 && ((G.tapp[17] && !G.warned[0]) || (G.tapp[24] && !G.warned[1]))) Art.drawSpawnMark(ctx, { x: 40, y: 194, t: G.time });
   }
   if (playing && !G.popup) {

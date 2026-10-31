@@ -1,9 +1,10 @@
-# 魂匠守衛者 美術規格(打磨第 10 輪, 沿用打磨第 9 輪)
+# 魂匠守衛者 美術規格(打磨第 11 輪, 沿用打磨第 10 輪)
 
 > RD 只讀這份。`index.html` 必須宣告 `<meta charset="utf-8">`, 否則 art.js 的中文字會變亂碼。
 > art.js 是一般 script(不是 module), 載入後提供 `window.Art`。全部 Canvas 2D 幾何繪製, 沒有外部資源; 字型只用系統字型(微軟正黑體 → 蘋方 → sans-serif)。
-> 函式名、參數、state 欄位全部照 interface.json, 一個不多一個不少(共 56 個函式)。
-> **第 10 輪: 沒有新增、刪除或改名的函式, RD 不用改接法; 只改 `drawTutorial` 內部畫法, 讀新欄位 `compact`(布林)。** compact = true(只有階段 16 開著單位選單 / 替換彈窗時)畫「一行小泡泡」: 本體 150×34、一行 18px 字置中、「新手任務」標籤中心 (bodyX − 35, bodyY − 17)、箭頭從本體下緣往下長 42 指到 (tipX, tipY)、底邊寬 16; 不畫按鍵與清單(RD 傳了也不畫)。**compact 只認 `=== true`**, 沒傳或傳錯名時會畫成 300×72 的一般泡泡、蓋住彈窗上半 — 看到大泡泡壓在彈窗上就是 compact 沒傳到。階段 11 的「正在拔除, 請稍候」(8 字, keys [])走既有一般泡泡置中畫法, 不改。
+> 函式名、參數、state 欄位全部照 interface.json, 一個不多一個不少(共 57 個函式)。
+> **第 11 輪: 新增 1 個函式 `drawTutorialChoice(ctx, s)`(開始畫面的教學種類詢問視窗), 需要 RD 接**: 畫在 drawTitle(與 drawTutorialWarn)之後; state = { cursor, age, openDuration, picked, pickAge, pickDuration }。全部文字(問題、A / B 徽章、主句、小字、「[←][→] 選擇  [Z] 確定  [X] 返回」)由美術畫, RD 不傳字串、不另畫字。**閒置時 picked = −1、pickAge = pickDuration = 0.35**; picked 只認 0 / 1, 其他值當作沒按 Z。其他 56 個函式與第 10 輪完全相同, RD 不用改接法。
+> 第 10 輪: 沒有新增、刪除或改名的函式, RD 不用改接法; 只改 `drawTutorial` 內部畫法, 讀新欄位 `compact`(布林)。 compact = true(只有階段 16 開著單位選單 / 替換彈窗時)畫「一行小泡泡」: 本體 150×34、一行 18px 字置中、「新手任務」標籤中心 (bodyX − 35, bodyY − 17)、箭頭從本體下緣往下長 42 指到 (tipX, tipY)、底邊寬 16; 不畫按鍵與清單(RD 傳了也不畫)。**compact 只認 `=== true`**, 沒傳或傳錯名時會畫成 300×72 的一般泡泡、蓋住彈窗上半 — 看到大泡泡壓在彈窗上就是 compact 沒傳到。階段 11 的「正在拔除, 請稍候」(8 字, keys [])走既有一般泡泡置中畫法, 不改。
 > 第 9 輪: art.js 與第 8 輪完全相同, 沒有新增、刪除或改內部畫法的函式, RD 不用改接法。** 本輪只改新手教學的文案(魂件名稱加「」), 字串由 RD 傳進 `drawTutorial`, 欄位不變; 最長的階段 11「靠近怪物按 Z 把「魂件」拔下來」共 16 個字元, 走既有「15 字以上縮 16px」規則, 寬約 234 ≤ 文字上限 280, 放得下;「」照一般全形字畫, 不另上色。
 > 以下第 8 輪以前的紀錄保留。**第 8 輪新增 1 個函式: `drawPlaceHere`(第 1 關階段 7 / 14 的「放這裡」標示), 需要 RD 接**(畫在 drawGroundPart 之後、drawPlacePreview 之前)。改內部畫法: `drawTitle`(4 張卡片, 中心 x = 310 + 220i; 記號、小路、開鎖跟著移)、`drawTutorial`(新欄位 `sub`: 大泡泡第二行灰色小字)、`drawActionHint`(新 label「不能拔除」畫成紅)、`drawEnemy / drawCorpse / drawBossIntro / drawBossBar`(刪掉蠻角牛王 "bossBull" 的造型、倒下、出場演出與意象色; Boss 走路只往上晃)、`drawHud / drawResult`(level 夾在 1~4)。`drawTutorialWarn` 的新字「請放在「放這裡」的位置」(11 字約 165 寬 ≤ 196)、`drawSoulPopup` 的 rally / demolish 格 locked、`drawGuide` 的新文案、`drawSpawnWarning` 的新出怪點, 舊畫法已能照傳入值畫對, 不改。
 > 以下第 7 輪的紀錄保留; 其中提到蠻角牛王的部分本輪已刪除。**第 7 輪新增 2 個函式: `drawBossIntro`(Boss 出場演出)、`drawBossBar`(HUD 中間的 Boss 血條), 需要 RD 接**; 改內部畫法: `drawEnemy / drawCorpse`(3 種 Boss 72×72)、`drawSoulSlots`(4 格)、`drawWaveBanner`(新欄位 boss:「BOSS 來襲」)、`drawSoulPopup`(說明 17 字 15px、放不下縮 14px; 「教學期間不可操作」灰字)、`drawComboReveal`(效果 17px、最寬 289)、`drawCodex`(效果最寬 232)、`drawActionHint`(「暫不能拔除」紅)、`drawGuide`(「下一步」)。名稱改動(箭塔、小魔怪…)art.js 沒有寫死的字樣, 只有本文件與註解跟著改。
@@ -47,7 +48,7 @@
 | shop / shopDeep / shopZone | #ffb84a / #3b2410 / #ffcf70 | 購買徽章、購買光座、購買區、商店提示 |
 | optionCell | #2f2a22 | 單位選單的選項格(拆除 / 重設集結點) |
 
-只出現在函式內、不進 palette 的顏色: **第 8 輪: 「放這裡」標示 = 引導卡暖黃 #ffd25a(牌子底、地面虛線、淡填 rgba(255,210,90,0.16~0.32))+ 深墨 #2a2016(牌框、字、三角、虛線底); 大泡泡 sub 灰字 #6a5640(= 引導卡小字); 蠻角牛王的鐵灰 / 口鼻 / 金鼻環 / 塵土 / 鼻息 / 意象色 #efe2c4 全部刪除。** **第 7 輪: Boss 紅 #ff3a4a(Boss 血條邊、名牌邊、「BOSS」字、橫幅「BOSS 來襲」兩側菱形)、「BOSS」小標底 #c8283a、Boss 生命條 #e0303e + 上緣 2px 意象色細線(霜角 #8fd8ff / 牛王 #efe2c4 / 魔王 #d27cff)、名牌內框金 rgba(255,210,74,0.7); 霜角配件 冰白 #dff6ff / #eefcff / #c4ecff + 冰藍描邊; 牛王 鐵灰 #737a88 + 鉚釘 #cfd4de、口鼻 #b0705a、金鼻環; 魔王 金冠 #ffd24a、杖身 #b08a4a、寶珠 = 治癒薄荷綠 + 白十字; 出場演出 地面霜 rgba(220,245,255), 塵土 #8f7a5c / #9a8468 / #a8916f, 寒氣 / 鼻息 #f2fbff / #f4f4f0, 冰塊 rgba(175,228,255,0.74) 白邊 + 裂痕 #2a4a78。** 第 6 輪: 我方近戰斬擊 = 金 #ffd24a 刀光 + 白芯 + 深褐 #3a2600 襯邊(冰霜重擊換冰藍 #8fd8ff + 深藍襯、雷霆斬換電紫 #d27cff + 深紫襯); 敵方近戰爪痕 = 粉紅 #ff4d7a 芯 + 暗紅 #3a0d1a 襯(同敵方彈); 搬運箭頭 = 引導卡暖黃 #ffd25a + 深墨 #2a2016 描邊 + 紙色 #fff4d6 流動段; 開始畫面教學鎖頭 = 米色 #e6d6b0 鎖 + 深底(同商店 / 選單的教學鎖頭)**、引導卡聚光燈描邊與箭頭 #ffd25a(暖黃)、教學擋下提示框 #c8483a(磚紅)、波次面板「完成新手任務後開始」#f0b060(教學琥珀)、**波次面板「打倒這波敵人後開始」#dfe4ee(一般淺灰白)+ 白刃銅柄小劍(本輪)**、**圖鑑未解鎖問號格 底 #121620 / 虛線框 rgba(169,176,191,0.45) / 問號 #8a91a2、「???」#6f7686(本輪)**、教學關卡片綠 #1c3324 / #25432f / 框 #4f9a5e、新芽 #7ee08a、低血量血量牌暗紅 → 亮紅閃爍。圖鑑「已組過」章 #5fd07a 本輪刪除。
+只出現在函式內、不進 palette 的顏色: **第 11 輪: 詢問視窗選項卡 未選中底 #fffcf2(比紙底 tutorPaper 再亮一階)+ 半透明深墨框 rgba(42,32,22,0.45)、選中底 #ffe7b0(暖琥珀淡色)+ 深墨 3px 框 + 琥珀 tutorAccent 外發光 4 圈; 字母徽章 未選中 = 亮紙底 + 深墨圈, 選中 = 琥珀實心 + 深墨圈; 小字 #6a5640(= 引導卡小字); 確定閃光 = 白色疊層。** **第 8 輪: 「放這裡」標示 = 引導卡暖黃 #ffd25a(牌子底、地面虛線、淡填 rgba(255,210,90,0.16~0.32))+ 深墨 #2a2016(牌框、字、三角、虛線底); 大泡泡 sub 灰字 #6a5640(= 引導卡小字); 蠻角牛王的鐵灰 / 口鼻 / 金鼻環 / 塵土 / 鼻息 / 意象色 #efe2c4 全部刪除。** **第 7 輪: Boss 紅 #ff3a4a(Boss 血條邊、名牌邊、「BOSS」字、橫幅「BOSS 來襲」兩側菱形)、「BOSS」小標底 #c8283a、Boss 生命條 #e0303e + 上緣 2px 意象色細線(霜角 #8fd8ff / 牛王 #efe2c4 / 魔王 #d27cff)、名牌內框金 rgba(255,210,74,0.7); 霜角配件 冰白 #dff6ff / #eefcff / #c4ecff + 冰藍描邊; 牛王 鐵灰 #737a88 + 鉚釘 #cfd4de、口鼻 #b0705a、金鼻環; 魔王 金冠 #ffd24a、杖身 #b08a4a、寶珠 = 治癒薄荷綠 + 白十字; 出場演出 地面霜 rgba(220,245,255), 塵土 #8f7a5c / #9a8468 / #a8916f, 寒氣 / 鼻息 #f2fbff / #f4f4f0, 冰塊 rgba(175,228,255,0.74) 白邊 + 裂痕 #2a4a78。** 第 6 輪: 我方近戰斬擊 = 金 #ffd24a 刀光 + 白芯 + 深褐 #3a2600 襯邊(冰霜重擊換冰藍 #8fd8ff + 深藍襯、雷霆斬換電紫 #d27cff + 深紫襯); 敵方近戰爪痕 = 粉紅 #ff4d7a 芯 + 暗紅 #3a0d1a 襯(同敵方彈); 搬運箭頭 = 引導卡暖黃 #ffd25a + 深墨 #2a2016 描邊 + 紙色 #fff4d6 流動段; 開始畫面教學鎖頭 = 米色 #e6d6b0 鎖 + 深底(同商店 / 選單的教學鎖頭)**、引導卡聚光燈描邊與箭頭 #ffd25a(暖黃)、教學擋下提示框 #c8483a(磚紅)、波次面板「完成新手任務後開始」#f0b060(教學琥珀)、**波次面板「打倒這波敵人後開始」#dfe4ee(一般淺灰白)+ 白刃銅柄小劍(本輪)**、**圖鑑未解鎖問號格 底 #121620 / 虛線框 rgba(169,176,191,0.45) / 問號 #8a91a2、「???」#6f7686(本輪)**、教學關卡片綠 #1c3324 / #25432f / 框 #4f9a5e、新芽 #7ee08a、低血量血量牌暗紅 → 亮紅閃爍。圖鑑「已組過」章 #5fd07a 本輪刪除。
 
 **色相張力(請製作人驗收)**:
 - 沿用上一版: 8 種基本魂件排滿色輪, 只有會共鳴的 5 色兩兩拉開(最近 44°); 不共鳴的 3 色吸收撞色(最差 電擊—衝鋒 33°), 靠圖示形狀分。
@@ -76,6 +77,13 @@
 - P18 重要資訊不能只存在一瞬間: 第一次合成演出閃過後, 配方留在組合圖鑑(C 隨時查), 那一列從問號變成完整配方(本輪拿掉「已組過」章, 解鎖本身就是記號); 波次推進橫幅閃過後, 波數常駐在左上面板。
 - P19 資訊貼著物件: **(第 6 輪)階段 16 泡泡固定在左上角後, 「搬哪件、搬去哪」改由搬運箭頭直接從那一格魂件拉到目的單位的槽列頂上, 線中段附同一件魂件的小圖示; 教學鎖頭長在卡片上**; 血量牌在主堡身上、擋下提示在玩家腳下、教學泡泡箭頭尖端貼物件、引導卡聚光燈直接圈住物件 + 箭頭碰到圈、「!」標示立在出怪點上(第 1、2 關)。
 - P21 示意圖要選對錯理解會分岔的例子: 打磨沒有說明頁, 本作不適用。
+- **第 11 輪(教學種類詢問視窗)**:
+  - P0: 「現在選的是哪一張」一眼可辨: 選中卡 = 放大 1.06 + 琥珀外發光 + 暖底 + 深墨粗框 + 實心琥珀徽章; 沒選中的卡維持原亮度(介面要求不壓暗), 只是框細、底更白、徽章空心, 看得出「也可以選」。
+  - P1: 視窗只出現在關卡預覽頁(沒有即時決策), 壓暗 0.55 讓底下的卡片退成背景; 視窗內權重 問題 30px > 選項主句 26px 粗 > 小字 16px 細灰 > 操作提示, 照玩家閱讀的順序。
+  - P3: 面板用教學那套紙底 + 深墨框 + 琥珀內框(和引導卡、新手任務泡泡同一家), 一眼知道「這是教學相關的問題」; 不用教學完成大提示的金框深底與放射光(那是慶祝, 這裡是提問); 鍵帽與全畫面同一套; 小字顏色 = 引導卡小字。
+  - P4: 選中 vs 未選中 = 尺寸(1.06 倍)+ 外框(發光粗框 vs 細淡框)+ 徽章(實心 vs 空心); 確定後 被選 vs 沒被選 = 亮度脈衝兩下 vs 淡到 40%。
+  - P7: 卡內只有徽章、主句、一行小字, 不另加插圖; 不畫倒數、不畫第二個游標記號(發光框就是游標)。
+  - P15: 移動游標(小: 卡片換框)< 確定(選中卡閃兩下、另一張淡出), 都比教學完成大提示(全畫面放射光 + 彩帶)樸素。
 - **第 10 輪(一行小泡泡)**:
   - P3: 小泡泡和一般 / 大泡泡同一套「教練提示」長相(紙色底 + 深墨框 + 琥珀呼吸內框 + 「新手任務」標籤 + 紙色箭頭), 只是縮小; 彈窗是深色面板, 小泡泡疊在它上緣仍是全畫面唯一的淺底, 一眼分得出是教學、不是彈窗的一部分。
   - P7: 照使用者要求拿掉鍵帽與清單, 只剩一句「拔掉 / 換掉這個魂件」; 該按哪個鍵由彈窗自己的操作提示講, 不重述。
@@ -104,7 +112,7 @@
 
 ## 繪製層級(照 interface.json drawOrder)
 
-開始畫面: drawTitle → drawTutorialWarn(第 1 關教學鎖擋下時)→ drawTutorialClear(大提示出現時)。
+開始畫面: drawTitle → drawTutorialWarn(第 1 關教學鎖擋下時)→ drawTutorialClear(大提示出現時)→ **drawTutorialChoice(第 11 輪, 教學種類詢問視窗開著時; 和大提示不會同時出現)**。
 關卡中: drawBackground → drawShopZone → drawHolyTrail → drawPillarRange → drawResonanceLine → drawFrostAura → drawHealAura → drawRallyFlag → drawCoin → drawCorpse → drawGroundPart → **drawPlaceHere(第 8 輪)** → drawPlacePreview → 單位與敵人與玩家(依 y)→ drawSoulSlots → drawRespawnQueue → drawShopHint → drawProjectile → drawThunderOrb → drawPierceBeam → drawHealBeam → drawAreaHit → **drawMeleeSlash** → drawShockChain → drawHitSpark → drawBlink → drawUnitBreak → drawStealLink → drawComboName → drawSpawnWarning → drawSpawnMark → drawActionHint → drawTutorialWarn → **drawTutorialArrow(階段 16)** → drawTutorial(指著場上物件 / 固定版位)→ drawHud → drawWavePanel → drawWaveBanner → **drawBossBar(第 7 輪)** → drawSlowMo → drawSoulPopup / drawShopPopup → drawTutorial(指著商店格 / 貼著彈窗 / **指著彈窗格子(第 10 輪 compact)**)→ drawGuide → drawComboReveal → **drawBossIntro(第 7 輪)** → drawCodex → drawPause → drawResult。
 
 ## 判讀約定
@@ -156,7 +164,7 @@
 
 ## 畫面文字歸屬
 
-依介面 textOwnership, 下列文字與鍵帽都由美術畫, **RD 不要另畫**: drawTitle(大標題、「第 N 關」、關名、星、鎖、「[←][→] 選關  [Z] 開始  [M] 靜音」)、**drawTutorialClear(「恭喜完成新手任務!」「[Z] 繼續」)**、drawGolem(「中立」)、**drawPlaceHere(第 8 輪: 牌子上的「放這裡」)**、**drawCastle(血量牌「hp/maxHp」)**、drawRespawnQueue、drawShopHint、drawComboName、drawActionHint、drawSoulPopup(含「教學期間不可操作」)、drawShopPopup(含「教學期間不能買」)、drawHud(關名、金幣、喇叭、「[Z] 互動  [C] 圖鑑  [Esc] 暫停  [M] 靜音」)、**drawWavePanel(「第 w / N 波」「開戰前」「下一波 S 秒」「完成新手任務後開始」「打倒這波敵人後開始」「最後一波!」)**、**drawWaveBanner(「第 N 波」「共 T 波」「最後一波!」「BOSS 來襲」)**、**drawBossIntro(第 7 輪: 「BOSS」與 RD 傳的名稱)**、**drawBossBar(第 7 輪: 「BOSS」、「hp / maxHp」與 RD 傳的名稱)**、drawSlowMo、**drawPause(「暫停」「[Esc] 繼續」)**、**drawCodex(「組合圖鑑」「已發現 n / 10」、未解鎖列的問號格與「???」、「[C] 關閉」與解鎖列 RD 傳的名稱 / 效果)**、**drawComboReveal(「新組合!」「[Z] 確定」與 RD 傳的名稱 / 效果 / 材料名)**、drawResult。
+依介面 textOwnership, 下列文字與鍵帽都由美術畫, **RD 不要另畫**: drawTitle(大標題、「第 N 關」、關名、星、鎖、「[←][→] 選關  [Z] 開始  [M] 靜音」)、**drawTutorialClear(「恭喜完成新手任務!」「[Z] 繼續」)**、**drawTutorialChoice(第 11 輪, 全部固定字串: 「你有玩過塔防遊戲嗎?」、徽章「A」「B」、「從來沒有」「有」、「讓我從最基礎的教學開始」「只給我必要教學即可」、「[←][→] 選擇  [Z] 確定  [X] 返回」)**、drawGolem(「中立」)、**drawPlaceHere(第 8 輪: 牌子上的「放這裡」)**、**drawCastle(血量牌「hp/maxHp」)**、drawRespawnQueue、drawShopHint、drawComboName、drawActionHint、drawSoulPopup(含「教學期間不可操作」)、drawShopPopup(含「教學期間不能買」)、drawHud(關名、金幣、喇叭、「[Z] 互動  [C] 圖鑑  [Esc] 暫停  [M] 靜音」)、**drawWavePanel(「第 w / N 波」「開戰前」「下一波 S 秒」「完成新手任務後開始」「打倒這波敵人後開始」「最後一波!」)**、**drawWaveBanner(「第 N 波」「共 T 波」「最後一波!」「BOSS 來襲」)**、**drawBossIntro(第 7 輪: 「BOSS」與 RD 傳的名稱)**、**drawBossBar(第 7 輪: 「BOSS」、「hp / maxHp」與 RD 傳的名稱)**、drawSlowMo、**drawPause(「暫停」「[Esc] 繼續」)**、**drawCodex(「組合圖鑑」「已發現 n / 10」、未解鎖列的問號格與「???」、「[C] 關閉」與解鎖列 RD 傳的名稱 / 效果)**、**drawComboReveal(「新組合!」「[Z] 確定」與 RD 傳的名稱 / 效果 / 材料名)**、drawResult。
 新手教學三個函式: **drawTutorial**(text 由 RD 傳, 美術畫, 階段 17 大泡泡的兩行是同一個 text 用 \n 分, **階段 31 的第二行改由 sub 傳(第 8 輪)**; 「新手任務」標籤、鍵帽、檢查清單(魂件清單 / 單位清單)、打勾、完成特效由美術畫)、**drawGuide**(text / sub 由 RD 傳, 美術畫; 「下一步」「繼續」、進度環、小圓點由美術畫)、**drawTutorialWarn**(text 由 RD 傳, 美術畫)。drawShopZone、drawSpawnMark、**drawMeleeSlash、drawTutorialArrow(第 6 輪)** 不畫任何字; **drawTitle 的教學鎖頭不寫字**, 擋下時的字由 drawTutorialWarn 畫。
 
 ## 物件表
@@ -167,6 +175,7 @@
 |---|---|---|---|
 | 開始畫面(關卡預覽) | `drawTitle(ctx, s)` | levels[{name, unlocked, bestStars, tutorial, tutorialLocked}], cursorIndex, muted, blinkTime, tokenIndex, tokenFrom, tokenAge, tokenDuration, unlockIndex, unlockAge, unlockDuration | **第 8 輪**: 4 張卡片, 中心 x 310 / 530 / 750 / 970(整排 x 210~1070), 小路與玩家記號跟著移; 索引範圍 0~3; 畫法不變。**第 6 輪**: tutorialLocked = 卡片微暗 + 右上角 20×20 米色教學鎖頭(新芽移到左上); cursorIndex −1 = 沒有選中卡。**第 4 輪**: 標題 (640,150); 卡片間小路; 教學關綠底綠框 + 新芽; 玩家記號 40×40 在 (310+220×tokenIndex, 297)(第 8 輪), 推進時弧線跳 + 落地壓扁; 開鎖: 鎖頭抖 → 碎 7 片飛散、卡片由暗變亮; 選中卡放大 1.06 + 金框外光 |
 | 教學完成大提示 | `drawTutorialClear(ctx, s)` | age, ready, closing, closeAge, closeDuration | **新**: 黑壓暗 0.55 + 緩轉金色放射光 + 彩帶(0~2.5 秒); 面板 680×220 深底金框, 0~0.4 秒 0.3 → 1.1 → 1.0; 金色粗大字; ready: 閃爍「[Z] 繼續」; closing: 整體淡出 |
+| **教學種類詢問視窗(第 11 輪新增)** | `drawTutorialChoice(ctx, s)` | cursor(0 = A、1 = B), age(真實秒數, 一直往上數), openDuration(0.25), picked(閒置 −1; 按 Z 後 = cursor), pickAge, pickDuration(0.35; 閒置 pickAge = 0.35) | **開啟**(age < 0.25): 壓暗 0 → 0.55, 面板 0.9 → 1.03 → 1.0 倍彈入。**靜止**: 黑壓暗 0.55(底下 drawTitle 照畫)+ 紙底面板 760×330(深墨框 + 琥珀內框)+ 問題 30px 深墨 + 兩張選項卡 + 底部鍵帽提示。**選中卡**(cursor): 放大 1.06、外緣琥珀發光(≤ 8px)、暖琥珀底、深墨 3px 框、徽章琥珀實心; **未選中卡**: 原大、原亮度、亮紙底、淡框、徽章空心。**確定中**(picked 0 / 1, 0 ≤ pickAge < 0.35): 被選卡維持 1.06 + 發光並白光閃兩下, 另一張淡到 40%; pickAge ≥ 0.35 停在「另一張 40%、不閃」。按 X 返回 / 確定播完由 RD 停止呼叫, 本函式沒有關閉動畫 |
 | 背景 | `drawBackground(ctx, s)` | paths | 沿用 |
 | 購買區 | `drawShopZone(ctx, s)` | x, y, radius, active | 沿用 |
 | 商店提示 | `drawShopHint(ctx, s)` | x, y | 沿用 |
@@ -231,6 +240,7 @@
 |---|---|---|
 | 開始畫面 | 1280×720 | 標題中心 (640,150) 76px; **第 8 輪 4 張**卡片 200×150 中心 (310+220i, 400)(整排 x 210~1070; 第 4 張選中放大 212×159 到 x 1076), 選中 212×159 不和相鄰卡重疊(間隔 20, 放大各吃 6); 小路 y 389~411(x 310~970, 卡片蓋住, 只在間隔露出); 記號 40×40 中心 (310+220i, 297)(y 277~317), 跳躍頂點 y 237, 壓扁最寬 46、都在 48×48 內; 開鎖碎片最遠 x ±97、y −71~+87(卡片外 ≤ 20); 新芽 (卡片 x+76, y−52) 約 18×21 |
 | 教學完成大提示 | 壓暗 1280×720 / 面板 680×220 | 面板中心 (640,360); 大字中心 (640,340) 46px; 「[Z] 繼續」(640,420); 彈入最大 748×242(允許) |
+| **教學種類詢問視窗(第 11 輪)** | 壓暗 1280×720 / 面板 760×330 / 選項卡 300×170 | 面板中心 (640,370)(x 260~1020、y 205~535), 圓角 18, 外框 3px、琥珀內框 x 269~1011、y 214~526; 開啟彈入最大 1.03 倍 783×340(允許)。問題中心 (640,255) 30px、最寬 680。選項卡中心 (465,385) / (815,385), 圓角 12; 選中放大 318×180(A x 306~624、B x 656~974、y 295~475), 發光 4 圈到外緣 8px → A x 298~632、y 287~483, 到另一張(665)仍空 33、到面板內框 ≥ 29; 徽章直徑 40 中心 (卡片 x, 330)(放大時隨卡縮放); 主句中心 (卡片 x, 385) 26px 粗; 小字中心 (卡片 x, 432) 16px 細、最寬 260(11 字約 176)。操作提示中心 (640,505), 鍵帽 22×22(y 494~516), 字 16px 深墨 |
 | 主堡 | 112×112 | 血量牌 100×20 中心 (1180,472)(x 1130~1230、y 462~482); 愛心 14×14 中心 (1142,472); 生命條 x 1152~1200、高 8; 數字右緣 1228(最寬 25, 不壓條); 軍旗 y 426~454 |
 | 金幣 | 16×16 | 半徑 7; 落地中往上至多 14(框外上方, 允許) |
 | 敵人 | 同上一版(Boss 見下方) | 疾行怪身形寬約 27, 帶尾到 x−15, 都在 32×32 內 |
@@ -262,6 +272,11 @@
 | 其他物件 | — | 與上一版相同(購買區 110、商店提示 88×24、聖光軌跡 40 寬、魂柱範圍 150、重生中 132×36、箭塔 48、魂柱 36、步兵 32、石魔像 56 + 中立牌、集結旗 24×40、潰散 96 / 120、地上魂件 28、玩家 32、Z 提示 96×22、放置預覽、槽列、冰霜圈 70、治癒領域 100、治癒光線 8 寬、投射物 10、雷電球 120、穿透 28、範圍 120、連鎖 ≤ 12 寬、火花 24、瞬閃 ≤ 12 寬、組合名稱 200×36 / 280×48、出怪預警 64) |
 
 ## 交付自查紀錄
+
+**第 11 輪**(新增 drawTutorialChoice, 其餘 56 個原樣搬過來):
+- `node --check` 通過; 匯出表 57 個函式 = 介面 57 個, 不多不少; canvas 1280×720 = 介面。
+- 假 ctx(Node vm, 系統暫存資料夾)對全部 57 個函式各餵「每個欄位都有值」、空物件、undefined 三組; drawTutorialChoice 逐狀態: 開啟動畫 age 0 / 0.05 / 0.12 / 0.2 / 0.25 / 1 / 10 × cursor 0 / 1, 確定動畫 picked 0 / 1 × pickAge 0 / 0.05 / 0.0875 / 0.175 / 0.26 / 0.34 / 0.35; drawTutorialClear 5 個 age × 3 個關閉進度; drawTutorial 31 個階段 × 9 種泡泡(一般四向、side none 清單、兩種大泡泡、compact 兩種)× 完成進度 6 點(0、0.1、0.3、0.45、0.59、閒置)。共 1888 次: 不拋錯、save/restore 成對、沒有 NaN 參數。
+- 自查修正: 新函式一開始用 `globalAlpha *=` 疊透明度, 呼叫端若留著非 1 的 globalAlpha 會一起變淡; 改成函式開頭先設回 1。
 
 **第 10 輪**(只改 drawTutorial):
 - `node --check` 通過; 匯出表 56 個函式 = 介面 56 個, 不多不少; canvas 1280×720。

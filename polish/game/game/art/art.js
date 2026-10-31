@@ -1,4 +1,4 @@
-// 魂匠守衛者(打磨第 7 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
+// 魂匠守衛者(打磨第 11 輪) — 美術(Canvas 2D 幾何繪製, 無外部資源)
 // 全域物件 window.Art; 每個函式自己 save/restore。
 (function () {
   'use strict';
@@ -3014,6 +3014,79 @@
     ctx.restore();
   }
 
+  // ---------- 教學種類詢問視窗(第 11 輪, 關卡預覽頁之上) ----------
+  // 紙底面板 760×330 中心 (640,370); 選項卡 300×170, 中心 (465,385) / (815,385)
+  var CHOICE_OPTS = [
+    { cx: 465, badge: 'A', main: '從來沒有', sub: '讓我從最基礎的教學開始' },
+    { cx: 815, badge: 'B', main: '有', sub: '只給我必要教學即可' }
+  ];
+  // 一張選項卡; sel: 選中(放大 1.06 + 外框發光 + 暖底 + 實心徽章); fade: 整張透明度; flash: 白色亮度脈衝 0~1
+  function choiceCard(ctx, o, sel, fade, flash) {
+    var cx = o.cx, cy = 385, sc = sel ? 1.06 : 1, hw = 150 * sc, hh = 85 * sc;
+    ctx.save();
+    ctx.globalAlpha *= fade;
+    if (sel) {
+      // 外框發光: 放大後卡片外緣之外 1~8px 的 4 圈漸淡細環(外緣到 8)
+      for (var g = 0; g < 4; g++) {
+        var d = 1 + 2 * g;
+        ctx.strokeStyle = rgba(C.tutorAccent, 0.7 - 0.16 * g); ctx.lineWidth = 2;
+        rr(ctx, cx - hw - d, cy - hh - d, 2 * (hw + d), 2 * (hh + d), 12 * sc + d); ctx.stroke();
+      }
+    }
+    ctx.translate(cx, cy); ctx.scale(sc, sc);
+    ctx.fillStyle = sel ? '#ffe7b0' : '#fffcf2'; rr(ctx, -150, -85, 300, 170, 12); ctx.fill();
+    ctx.strokeStyle = sel ? C.tutorInk : 'rgba(42,32,22,0.45)'; ctx.lineWidth = sel ? 3 : 2;
+    rr(ctx, -150 + ctx.lineWidth / 2, -85 + ctx.lineWidth / 2, 300 - ctx.lineWidth, 170 - ctx.lineWidth, 11); ctx.stroke();
+    // 字母徽章: 直徑 40, 中心 (卡片 x, 330) → 卡內 y −55
+    ctx.beginPath(); ctx.arc(0, -55, 20, 0, TAU);
+    ctx.fillStyle = sel ? C.tutorAccent : '#fffcf2'; ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -55, 18.75, 0, TAU);
+    ctx.strokeStyle = C.tutorInk; ctx.lineWidth = 2.5; ctx.stroke();
+    txt(ctx, o.badge, 0, -54, { size: 22, color: C.tutorInk });
+    txt(ctx, o.main, 0, 0, { size: 26, color: C.tutorInk, maxW: 260 });
+    txt(ctx, o.sub, 0, 47, { size: 16, color: '#6a5640', weight: 'normal', maxW: 260 });
+    if (flash > 0) {
+      ctx.fillStyle = 'rgba(255,255,255,' + (0.6 * flash) + ')'; rr(ctx, -150, -85, 300, 170, 12); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawTutorialChoice(ctx, s) {
+    s = s || {};
+    var age = Math.max(0, num(s.age, 1)), od = num(s.openDuration, 0.25) || 0.25;
+    var op = clamp(age / od, 0, 1);
+    var pd = num(s.pickDuration, 0.35) || 0.35, pa = num(s.pickAge, pd);
+    var picked = Math.floor(num(s.picked, -1));
+    if (picked !== 0 && picked !== 1) picked = -1;
+    var pp = (picked >= 0 && pa >= 0 && pa < pd) ? pa / pd : (picked >= 0 ? 1 : -1);
+    var cur = picked >= 0 ? picked : clamp(Math.floor(num(s.cursor, 0)), 0, 1);
+    ctx.save();
+    ctx.globalAlpha = 1;
+    // 壓暗: 0 → 0.55(和 drawTutorialClear 同一種)
+    ctx.fillStyle = 'rgba(0,0,0,' + (0.55 * op) + ')'; ctx.fillRect(0, 0, 1280, 720);
+    // 面板彈入: 0.9 → 1.03(前 70%)→ 1.0
+    var sc = op >= 1 ? 1 : op < 0.7 ? 0.9 + 0.13 * (op / 0.7) : 1.03 - 0.03 * ((op - 0.7) / 0.3);
+    ctx.translate(640, 370); ctx.scale(sc, sc); ctx.translate(-640, -370);
+    // 面板: 教學紙底 + 深墨框 + 琥珀內框(同引導卡; 無金色、無放射光)
+    ctx.fillStyle = C.tutorPaper; rr(ctx, 260, 205, 760, 330, 18); ctx.fill();
+    ctx.strokeStyle = C.tutorInk; ctx.lineWidth = 3; rr(ctx, 261.5, 206.5, 757, 327, 17); ctx.stroke();
+    ctx.strokeStyle = rgba(C.tutorAccent, 0.55); ctx.lineWidth = 2; rr(ctx, 269, 214, 742, 312, 12); ctx.stroke();
+    txt(ctx, '你有玩過塔防遊戲嗎?', 640, 255, { size: 30, color: C.tutorInk, maxW: 680 });
+    for (var i = 0; i < 2; i++) {
+      var sel = i === cur, fade = 1, flash = 0;
+      if (pp >= 0) {
+        if (i === picked) flash = Math.abs(Math.sin(TAU * pp)) * (pp < 1 ? 1 : 0);
+        else fade = 1 - 0.6 * pp;
+      }
+      choiceCard(ctx, CHOICE_OPTS[i], sel, fade, flash);
+    }
+    hintRow(ctx, [
+      { keys: ['left', 'right'], label: '選擇' },
+      { keys: ['z'], label: '確定' },
+      { keys: ['x'], label: '返回' }
+    ], 640, 505, { align: 'center', size: 16, gap: 24, color: C.tutorInk });
+    ctx.restore();
+  }
+
   // ---------- 暫停式引導卡 ----------
   var GUIDE_HI = [255, 210, 90];
   function guideArrow(ctx, a) {
@@ -3629,6 +3702,7 @@
     palette: C,
     drawTitle: drawTitle,
     drawTutorialClear: drawTutorialClear,
+    drawTutorialChoice: drawTutorialChoice,
     drawBackground: drawBackground,
     drawShopZone: drawShopZone,
     drawShopHint: drawShopHint,
