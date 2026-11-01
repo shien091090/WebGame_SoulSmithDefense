@@ -277,20 +277,24 @@
   // 一根手指對應到哪些鍵
   function keysAt(p, out, vis) {
     var d = LAYOUT.dpad, K = CONFIG.keys, dx = p.x - d.x, dy = p.y - d.y, dd = Math.hypot(dx, dy);
-    if (vis.dpad && dd <= d.R && dd >= d.dead) {
+    if (!p.btn && vis.dpad && dd <= d.R && dd >= d.dead) {
       var ax = Math.abs(dx), ay = Math.abs(dy), ratio = ax > 0 ? ay / ax : 99, h = K[dx < 0 ? 'left' : 'right'], v = K[dy < 0 ? 'up' : 'down'];
       if (CONFIG.diagonal() && ratio > 0.58 && ratio < 1.73) { if (h) out[h] = true; if (v) out[v] = true; }
       else if (ax >= ay) { if (h) out[h] = true; }
       else if (v) out[v] = true;
       return;
     }
-    var best = null, bd = 1e9;
-    ['a', 'b', 'c', 'd'].forEach(function (id) {
+    // 手指碰到哪顆按鈕就綁定那顆, 放開前只認它: 共用位置的按鈕(shareBC)按下後換了用途, 按住的手指不會接著觸發新的那顆
+    var best = p.btn || null, bd = 1e9;
+    if (!best) ['a', 'b', 'c', 'd'].forEach(function (id) {
       if (!vis[id] || !K[id]) return;
       var b = LAYOUT[id], dist = Math.hypot(p.x - b.x, p.y - b.y);
-      if (dist <= b.hit && dist < bd) { bd = dist; best = K[id]; }
+      if (dist <= b.hit && dist < bd) { bd = dist; best = id; }
     });
-    if (best) out[best] = true;
+    if (!best) return;
+    p.btn = best;
+    var bb = LAYOUT[best];
+    if (vis[best] && K[best] && Math.hypot(p.x - bb.x, p.y - bb.y) <= bb.hit) out[K[best]] = true;
   }
   function recompute() {
     var want = {}, id, k, vis = CONFIG.visible();
@@ -314,7 +318,7 @@
     if (PVDX.paused) return;
     for (i = 0; i < list.length; i++) {
       t = list[i];
-      if (KEYS) { if (end) delete touches[t.identifier]; else touches[t.identifier] = toLogical(t); continue; }
+      if (KEYS) { if (end) delete touches[t.identifier]; else { var o = touches[t.identifier], q = toLogical(t); if (o) { o.x = q.x; o.y = q.y; } else touches[t.identifier] = q; } continue; }
       if (e.type === 'touchstart' && mouseId === null) { mouseId = t.identifier; fireMouse('mousemove', t); fireMouse('mousedown', t); }
       else if (t.identifier === mouseId) {
         if (e.type === 'touchmove') fireMouse('mousemove', t);
