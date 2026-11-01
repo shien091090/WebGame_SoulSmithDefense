@@ -19,42 +19,62 @@
     // 遊戲自己已有 Esc 暫停(遊戲中 Esc 暫停 / 繼續、圖鑑中關圖鑑)
     escPause: false,
     // 鍵名照 game.js 的 inputDown: L R U D Z X S(空白鍵)
-    keys: { up: 'U', down: 'D', left: 'L', right: 'R', a: 'Z', b: 'X', c: 'S' },
+    // d: 圖鑑鈕(C), 畫在遊玩區右上角(電腦版聲音開關圖示的位置)
+    keys: { up: 'U', down: 'D', left: 'L', right: 'R', a: 'Z', b: 'X', c: 'S', d: 'C' },
     // 遊戲裡畫的鍵帽字 → 手機版: Z → A、X → B、空白 → 第三鍵圖示
     keycaps: { 'Z': 'A', 'X': 'B', '空白': 'icon' },
     // 哪些按鈕要顯示: 會疊在畫面上要按鍵才關得掉的東西(引導卡、合成演出、圖鑑、彈窗)先判斷, 再判斷整組不畫的場景
+    // b(X)與 c(空白鍵)共用同一個位置: 兩者不會同時有用(X 只在詢問 / 彈窗 / 圖鑑, 空白鍵只在自由走動且靠近主堡)
     visible: function () {
-      var none = { dpad: false, a: false, b: false, c: false };
+      var none = { dpad: false, a: false, b: false, c: false, d: false };
       try {
         if (typeof G === 'undefined') return none;
         if (G.screen === 'title') {
-          if (G.tt.clear) return { dpad: false, a: true, b: false, c: false };       // 通關大提示: 只收 Z
-          if (G.tt.adv) return none;                                                  // 推進動畫: 不能操作
-          if (G.tc) return { dpad: true, a: true, b: true, c: false };                // 教學種類詢問: 左右 / Z / X
-          return { dpad: true, a: true, b: false, c: false };                         // 關卡預覽: 左右選卡 + Z
+          if (G.tt.clear) return { dpad: false, a: true, b: false, c: false, d: false };  // 通關大提示: 只收 Z
+          if (G.tt.adv) return none;                                                     // 推進動畫: 不能操作
+          if (G.tc) return { dpad: true, a: true, b: true, c: false, d: false };         // 教學種類詢問: 左右 / Z / X
+          return { dpad: true, a: true, b: false, c: false, d: false };                  // 關卡預覽: 左右選卡 + Z
         }
-        if (G.screen === 'result') return { dpad: true, a: true, b: false, c: false }; // 結算: 左右選按鈕 + Z
-        if (G.guide || G.reveal) return { dpad: false, a: true, b: false, c: false };  // 引導卡、合成演出: 只收 Z
-        if (G.bossIntro) return none;                                                 // Boss 出場演出: 不能操作
-        if (G.codex) return { dpad: false, a: false, b: true, c: false };             // 圖鑑: X 關閉
+        if (G.screen === 'result') return { dpad: true, a: true, b: false, c: false, d: false }; // 結算: 左右選按鈕 + Z
+        if (G.guide || G.reveal) return { dpad: false, a: true, b: false, c: false, d: false };  // 引導卡、合成演出: 只收 Z
+        if (G.bossIntro) return none;                                                   // Boss 出場演出: 不能操作
+        if (G.codex) return { dpad: false, a: false, b: true, c: false, d: false };     // 圖鑑: X 關閉
         if (G.paused) return none;
-        if (G.steal && G.steal.locked) return none;                                   // 第一次搶奪鎖: 全部無效
-        if (G.popup) return { dpad: true, a: true, b: true, c: false };               // 單位選單 / 商店 / 替換彈窗
-        var h = shopHolder(), near = !!h && dist(G.player, h) <= 110;                  // 空白鍵只在購買區有用
-        return { dpad: true, a: true, b: false, c: near };
-      } catch (e) { return { dpad: true, a: true, b: false, c: false }; }
+        if (G.steal && G.steal.locked) return none;                                     // 第一次搶奪鎖: 全部無效
+        if (G.popup) return { dpad: true, a: true, b: true, c: false, d: true };        // 單位選單 / 商店 / 替換彈窗
+        var h = shopHolder(), near = !!h && dist(G.player, h) <= 110;                    // 空白鍵只在購買區有用
+        return { dpad: true, a: true, b: false, c: near, d: true };
+      } catch (e) { return { dpad: true, a: true, b: false, c: false, d: false }; }
     },
     // 遊戲中自由移動的場景可以斜走(沒有彈窗 / 引導 / 演出 / 暫停)
     diagonal: function () {
       try { return G.screen === 'play' && !G.popup && !G.guide && !G.reveal && !G.codex && !G.paused && !G.bossIntro; } catch (e) { return false; }
     },
-    // 第三鍵(空白鍵 = 開商店)圖示: 金幣(外圈 + 內圈 + 中間豎線)
+    // 第三鍵(空白鍵 = 開商店)圖示: 購物袋(提把 + 袋身 + 中間金幣); 畫成大按鈕時(s ≥ 40)袋子上移、下方加「購買」兩字
     drawIcon: function (ctx, x, y, s, color) {
-      ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = Math.max(1.6, s * 0.14);
-      ctx.beginPath(); ctx.arc(x, y, s * 0.36, 0, Math.PI * 2); ctx.stroke();
-      ctx.lineWidth = Math.max(1.2, s * 0.09);
-      ctx.beginPath(); ctx.arc(x, y, s * 0.2, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x, y - s * 0.12); ctx.lineTo(x, y + s * 0.12); ctx.stroke();
+      ctx.save();
+      var big = s >= 40, by = big ? y - s * 0.12 : y, w = s * 0.34, top = by - s * 0.14, bot = by + s * 0.3;
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineJoin = 'round';
+      ctx.lineWidth = Math.max(1.4, s * 0.07);
+      ctx.beginPath(); ctx.arc(x, top, s * 0.15, Math.PI, 0); ctx.stroke();                     // 提把
+      ctx.lineWidth = Math.max(1.6, s * 0.08);
+      ctx.beginPath(); ctx.moveTo(x - w, top); ctx.lineTo(x + w, top); ctx.lineTo(x + w * 1.12, bot); ctx.lineTo(x - w * 1.12, bot); ctx.closePath(); ctx.stroke();  // 袋身
+      ctx.beginPath(); ctx.arc(x, (top + bot) / 2 + s * 0.02, s * 0.1, 0, Math.PI * 2); ctx.fill();   // 金幣
+      if (big) {
+        ctx.font = 'bold ' + Math.round(s * 0.26) + 'px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        origFill.call(ctx, '購買', x, by + s * 0.56);
+      }
+      ctx.restore();
+    },
+    // 圖鑑鈕圖示: 打開的書(左右兩頁 + 中線)
+    drawCodexIcon: function (ctx, x, y, s, color) {
+      ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = Math.max(1.6, s * 0.09); ctx.lineJoin = 'round';
+      var w = s * 0.4, h = s * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(x, y - h * 0.8); ctx.quadraticCurveTo(x - w * 0.5, y - h * 1.1, x - w, y - h * 0.8); ctx.lineTo(x - w, y + h); ctx.quadraticCurveTo(x - w * 0.5, y + h * 0.7, x, y + h);
+      ctx.quadraticCurveTo(x + w * 0.5, y + h * 0.7, x + w, y + h); ctx.lineTo(x + w, y - h * 0.8); ctx.quadraticCurveTo(x + w * 0.5, y - h * 1.1, x, y - h * 0.8);
+      ctx.lineTo(x, y + h); ctx.stroke();
       ctx.restore();
     },
     // 暫停時整個聲音靜音, 繼續時還原成遊戲自己的靜音設定(不動遊戲的靜音開關)
@@ -72,14 +92,22 @@
     },
   };
 
-  // ───────── 版面(右邊的按鈕以右緣對齊, 換算成實際畫布寬, 畫面 1280~1680 都適用) ─────────
+  // ───────── 版面: 觸控時遊戲畫面上下貼邊、不縮小(縮小後 HUD 字太小), 兩側塗黑, 按鈕靠兩側擺, 寬度不夠時壓到遊戲畫面邊緣 ─────────
   var CW = (window.Art && Art.canvas && Art.canvas.width) || 1280, CH = (window.Art && Art.canvas && Art.canvas.height) || 720;
+  var VK = 1;
+  var VIEW = { k: VK, x: (CW - 1280 * VK) / 2, y: (CH - 720 * VK) / 2 };   // 遊戲畫面在畫布上的縮放與左上角
+  // 按鈕中心: 黑塊夠寬就置中在黑塊裡, 不夠寬就貼著畫面外緣(離邊 16)
+  var SW = VIEW.x, RO = 124, BR = 72;
+  var DX = Math.max(SW / 2, RO + 16), AX = CW - Math.max(SW / 2, BR + 20);
   var LAYOUT = {
     // 圓弧方向鍵: 中心 (x, y), 外圈半徑 Ro、內圈半徑 Ri, 四段之間留 gap 寬的細縫; 可按範圍半徑 R(比外圈大, 手指偏出去也算), 中心 dead 內不算
-    dpad: { x: 192, y: CH - 182, Ro: 168, Ri: 58, gap: 8, R: 190, dead: 26 },
-    a: { x: CW - 100, y: CH - 116, r: 80, hit: 96 },
-    b: { x: CW - 262, y: CH - 68, r: 62, hit: 76 },
-    c: { x: CW - 82, y: CH - 292, r: 54, hit: 66 },
+    dpad: { x: DX, y: CH - RO - 80, Ro: RO, Ri: RO * 0.36, gap: 8, R: RO + 24, dead: 20 },
+    a: { x: AX, y: CH - BR - 80, r: BR, hit: BR + 16 },
+    // b 與 c 同一位置(不會同時出現)
+    b: { x: AX, y: CH - BR * 3 - 104, r: BR * 0.8, hit: BR * 0.8 + 16 },
+    c: { x: AX, y: CH - BR * 3 - 104, r: BR * 0.8, hit: BR * 0.8 + 16 },
+    // 圖鑑鈕: 遊玩區右上角(設計座標 (992, 74), 電腦版聲音開關圖示的位置)
+    d: { x: VIEW.x + 992 * 1.25 * VK, y: VIEW.y + 74 * 1.25 * VK, r: 30, hit: 44 },
   };
 
   // ───────── 是不是觸控模式 ─────────
@@ -92,6 +120,7 @@
   var KEYS = CONFIG.mode === 'keys';
 
   var PVDX = { on: ON, paused: false, held: {}, draw: function () { }, finish: function () { } };
+  if (ON && KEYS) PVDX.view = VIEW;   // game.js 照它縮放遊戲畫面
   window.PVDX = PVDX;
   function call(fn, arg) { try { fn(arg); } catch (e) { console.error(e); } }
 
@@ -123,7 +152,7 @@
         }
         ctx.beginPath(); ctx.arc(d.x, d.y, d.Ri - d.gap, 0, Math.PI * 2); ctx.fillStyle = 'rgba(26,32,48,0.3)'; ctx.fill();
       }
-      var btns = [['a', 'A', 64], ['b', 'B', 50], ['c', null, 0]];
+      var btns = [['a', 'A', Math.round(LAYOUT.a.r * 0.8)], ['b', 'B', Math.round(LAYOUT.b.r * 0.8)], ['c', null, 0], ['d', null, 0]];
       for (i = 0; i < btns.length; i++) {
         var id = btns[i][0], b = LAYOUT[id];
         if (!vis[id] || !K[id]) continue;
@@ -133,7 +162,8 @@
           ctx.font = 'bold ' + btns[i][2] + 'px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif';
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = fg;
           origFill.call(ctx, btns[i][1], b.x, b.y + 2);
-        } else call(function () { CONFIG.drawIcon(ctx, b.x, b.y, b.r * 1.15, fg); });
+        } else if (id === 'd') call(function () { CONFIG.drawCodexIcon(ctx, b.x, b.y, b.r * 1.5, fg); });
+        else call(function () { CONFIG.drawIcon(ctx, b.x, b.y, b.r * 1.15, fg); });
       }
       ctx.restore();
     },
@@ -255,7 +285,7 @@
       return;
     }
     var best = null, bd = 1e9;
-    ['a', 'b', 'c'].forEach(function (id) {
+    ['a', 'b', 'c', 'd'].forEach(function (id) {
       if (!vis[id] || !K[id]) return;
       var b = LAYOUT[id], dist = Math.hypot(p.x - b.x, p.y - b.y);
       if (dist <= b.hit && dist < bd) { bd = dist; best = K[id]; }

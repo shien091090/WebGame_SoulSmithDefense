@@ -2318,7 +2318,9 @@
     // 主堡生命 → drawCastle 血量牌; 波次 / 倒數 → drawWavePanel; 中間 x 470~710 留給 drawBossBar
     // 第 13 輪: 喇叭移出 HUD → drawMuteIcon(遊玩區右上角), 本函式不再讀 muted
     // 操作提示: 右緣 1008, 鍵帽 22×22(Esc 32×22), 鍵帽與字隔 4、組間隔 14
-    hintRow(ctx, [{ keys: ['z'], label: '互動' }, { keys: ['c'], label: '圖鑑' }, { keys: ['esc'], label: '暫停' }, { keys: ['m'], label: '靜音' }], 1008, 24, { align: 'right', size: 13, gap: 14 });
+    // 觸控模式(window.PVDX.on): 手機沒有 C / Esc / M, 只留互動; 圖鑑改由觸控層的圖鑑鈕打開
+    var touch = !!(window.PVDX && window.PVDX.on);
+    hintRow(ctx, touch ? [{ keys: ['z'], label: '互動' }] : [{ keys: ['z'], label: '互動' }, { keys: ['c'], label: '圖鑑' }, { keys: ['esc'], label: '暫停' }, { keys: ['m'], label: '靜音' }], 1008, 24, { align: 'right', size: 13, gap: 14 });
     ctx.restore();
   }
   // 聲音開關圖示(第 13 輪新函式): 關卡中 (992,74) size 32、開始畫面 (974,40) size 36; 整個圖示畫在 size×size 內
@@ -3012,11 +3014,13 @@
     }
     tokenAvatar(ctx, tx, ty, sx, sy);
     // 底部提示: [←][→] 選關  [Z] 開始(閃爍)  [M] 靜音
-    hintRow(ctx, [
+    // 觸控模式不放 [M] 靜音(手機沒有 M, 聲音交給手機本身)
+    var hints = [
       { keys: ['left', 'right'], label: '選關' },
-      { keys: ['z'], label: '開始', alpha: 0.55 + 0.45 * Math.cos(t * 5), color: '#ffffff' },
-      { keys: ['m'], label: '靜音' }
-    ], CX, 530, { align: 'center', size: 20, gap: 32, weight: 'bold', stroke: 'rgba(0,0,0,0.6)', sw: 3 });
+      { keys: ['z'], label: '開始', alpha: 0.55 + 0.45 * Math.cos(t * 5), color: '#ffffff' }
+    ];
+    if (!(window.PVDX && window.PVDX.on)) hints.push({ keys: ['m'], label: '靜音' });
+    hintRow(ctx, hints, CX, 530, { align: 'center', size: 20, gap: 32, weight: 'bold', stroke: 'rgba(0,0,0,0.6)', sw: 3 });
     // 第 13 輪: 喇叭拆到 drawMuteIcon((974,40) 由 RD 另外呼叫), 本函式不再讀 muted、右上角不畫東西
     ctx.restore();
   }
@@ -3910,7 +3914,7 @@
       var col = i < 6 ? 0 : 1, row = i < 6 ? i : i - 6;
       codexRow(ctx, col ? 762 : 262, 116 + 72 * row, entries[i]);
     }
-    richLine(ctx, '[C] 關閉', CX, 542, { size: 16, kh: 22, color: C.textDim, weight: 'normal' });
+    richLine(ctx, (window.PVDX && window.PVDX.on) ? '[X] 關閉' : '[C] 關閉', CX, 542, { size: 16, kh: 22, color: C.textDim, weight: 'normal' });
     ctx.restore();
   }
 

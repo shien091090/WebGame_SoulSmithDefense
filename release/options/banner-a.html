@@ -2,33 +2,42 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>魂匠守衛者 橫幅 A — 守城戰場</title>
-<style>body{margin:0;overflow:hidden;background:#2e4733}canvas{display:block}</style>
+<title>魂匠守衛者 橫幅 A — B1</title>
+<style>@font-face{font-family:'Dela Gothic One';font-weight:400;font-style:normal;src:url(data:font/woff2;base64,d09GMgABAAAAAAWcAA8AAAAACUwAAAVIAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGx4cLgZgAFwRCAqIIIZjCxAAATYCJAMUBCAFhCgHIBckGBAbfAfIxIfotH+T3Wq2SYXk2i3AFEBQGAeAzSfOzs9fU+8ADzBK+NSu9xYROCv6tkjSTaiDog2a3KYCnksn8SACAoBCInQgcQlpMmiDBedWq32tBdxZC4Pe5pX9HU0wbirvaoFxa1HPzgxzlcyGBiCYKsgja2qYQ0rgS9wpoAErwmhrkVlf2DpalpqBKPDLYpg29WSAnUx4XkBWsSmBRDCkh3kwGXmURGAsWAgIFkm7iKANATTB5/KFk0drTC5cFrOf4nxP9Z/b/1o/OErdu7Xq/MgiK5+AqNWgpO4KF1ksdh4DOdjLwsLK9HWBpW10WIaxc3ZkWTaQ1WD1ODaOtW6sZajBaRiwA72i5i69QZFApSIkUfW3EmUQgoISuljieHGIQg8iUGQOgmL0fYojrGRDCqX8ATdt0RhCRESPcEQXlAiJcFCvwdthHHTn2wsFtG6v+f5rhzxVKqUu4QglHOHAYZtXGTi3KiFuDyEZpMDo7ffpSkt/UCIDJevt1w1ZXVMpyfX7SUMKlUr5QM6JKeHEnDnHbE84UHAV1JyTCYmujRwcebBpESFUyQeFmWmZcplHUDLfWY4gMnggYLRk8eH99vupYiG9OETGiK3vy4YUx6T+wVpBKiUlQtDFy42XSzY5KZQrhjHA5JsL6GKy2NjJSrlijcWAELrNhILjCJXBpMRfHCIT0xXyZXZ/itfHKTaZrRJT2fwlJgu4aWbK9cYbTMT/7f0voG34XMN5X0zX8eshHas83GKeyg2vtvWeLfDTGqm9bIem/s7Fpb53fae7ZFUszNX0lRzed5jeej0J0lfP9k/YFhSeGfrJy/aEkbDEbuENE724ydqRulJbHU///f6O3cYnnZ/8Fusgcoj9bZwhwv5anDW6dIrdoRX8jieiItG/v+0xGW5U4t7PbtWNNqib8sXol8m/WP9s/dm2f7X7aqO2uZLUIpOiUSZFJghfs8qt/j+Himy9wlmtY1N2RL8Tep35JzXJTNTydPbirHg/y+OTUv4VjLHOkhuM8c32IhkasS42RoV2oStT9jTr96mXPDL6djTe2cbt5eBkg5nFG10tci0OPhsfOeygR/swA+8Sb66NbDGIF5j5lvxloMqYnH11jdEaAwSv3uN6Vvr2aLLjqz2SRMw22ZvsFiSyqbarTUwp866VfPLInV6QZGPaFJKUbN6v0e4yO2l2l6MBF1ncQM0bu4Tbq5aeF55nLE6uz0lCsOnaeVmaF/eGS3PcpQukPqZ8GH9EykuH94TxYcOteSl/40TQnS4u9tiR5TMS/YVmstzTYz3tTMeJ5565o2O4p8zzUPnP7QAAEACEJI5LjyClemHvtDnmIQD8MklPBgC/Oo+Xfrv1/Q8tyo4EoAUBAIAA7OTvfwAG87/d+nZRi4Lg/RUyzEOIcbkn8xA+cIFY/UX99S1HtfAJYpRASyAFsIKmpepdllvC2qj5lrhYHTG2kxinLIEV3rMCiPCQZRCFzSwLTwywGrBEGasJVwSCSJgM1KELXWhDJ0LhBS8BrUQH6tGGLp3wRCc04Z6t6EAtvJCJBKQhDtVoQjkS0You1KEelchEC6rhgRwhUovutnQHFKiGPAO00igePvCEN7wRoDXzoo0XxfiCMc9KimjIkIoMSPdQIlfFuvmxaEUb+m+BpfbmhHj4kuwCD0vd3ioa3ysLHWhFA6pROSoSje4W+ea17gQP59sNtazc2qsbFfBEJVrR/BB+3Y9yNKIbA6hGC7xOanH54ktyW/UB+MJaTPRB3n7XZR4yD7+//m7Dzv53FmA6YR5iKtOGEWhBG6rQAgA=) format('woff2');}
+body{margin:0;overflow:hidden;background:#2e4733}canvas{display:block}</style>
 </head>
 <body>
 <canvas id="c" width="1680" height="720"></canvas>
 <script src="../game/art/art.js"></script>
 <script>
-// 橫幅 A: 遊戲戰場放大 2 倍的一景 — 怪從左上的路進攻, 雷霆魔王被魂匠拔走魂件、被衝鋒箭塔砍中; 魂柱、兵、石像守著右側主堡
-(function () {
+function draw() {
   var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
-  var W = 1680, H = 720, TAU = Math.PI * 2;
-  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  var W = 1680, H = 720;
+  var FONT = '"Dela Gothic One",sans-serif';
 
+  function plate(cx, cy, size) {
+    var s = '魂匠守衛者';
+    ctx.font = '400 ' + size + 'px ' + FONT;
+    var w = ctx.measureText(s).width;
+    return { w: w, pw: w + size * 0.9, ph: size * 1.42 };
+  }
   function title(cx, cy, size) {
     var s = '魂匠守衛者';
     ctx.save();
-    ctx.font = '900 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    var w = ctx.measureText(s).width, pw = w + size * 0.9, ph = size * 1.42, r = ph * 0.32;
+    ctx.font = '400 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var p = plate(cx, cy, size), pw = p.pw, ph = p.ph, r = ph * 0.32;
     var x0 = cx - pw / 2, y0 = cy - ph / 2;
     ctx.beginPath();
     ctx.moveTo(x0 + r, y0); ctx.lineTo(x0 + pw - r, y0); ctx.arcTo(x0 + pw, y0, x0 + pw, y0 + r, r);
     ctx.lineTo(x0 + pw, y0 + ph - r); ctx.arcTo(x0 + pw, y0 + ph, x0 + pw - r, y0 + ph, r);
     ctx.lineTo(x0 + r, y0 + ph); ctx.arcTo(x0, y0 + ph, x0, y0 + ph - r, r);
     ctx.lineTo(x0, y0 + r); ctx.arcTo(x0, y0, x0 + r, y0, r); ctx.closePath();
-    ctx.fillStyle = 'rgba(16,20,30,0.82)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,210,74,0.85)'; ctx.lineWidth = 4; ctx.stroke();
-    ctx.lineJoin = 'round'; ctx.strokeStyle = '#2a1a00'; ctx.lineWidth = size * 0.13;
+    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
+    ctx.fillStyle = 'rgba(16,20,30,0.86)'; ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = 'rgba(255,210,74,0.9)'; ctx.lineWidth = 4; ctx.stroke();
+    // 描邊改細(原 0.13 倍字級 -> 0.05), 字內留白不再被填滿
+    ctx.lineJoin = 'round'; ctx.strokeStyle = '#2a1a00'; ctx.lineWidth = size * 0.05;
     ctx.strokeText(s, cx, cy + size * 0.04);
     var g = ctx.createLinearGradient(0, cy - size / 2, 0, cy + size / 2);
     g.addColorStop(0, '#fff3b8'); g.addColorStop(0.5, '#ffd24a'); g.addColorStop(1, '#e8962a');
@@ -36,53 +45,50 @@
     ctx.restore();
   }
 
-  // ---- 場景: 設計座標 x 200~1040、y 110~470 放大 2 倍 ----
   ctx.save();
   ctx.translate(-400, -220); ctx.scale(2, 2);
   A.drawBackground(ctx, { paths: [[[288, 48], [288, 336], [900, 336]]] });
-
-  // 魂柱範圍 + 共鳴線(地面層)
   A.drawPillarRange(ctx, { x: 640, y: 420, radius: 90, kinds: ['frost'] });
   A.drawResonanceLine(ctx, { x1: 640, y1: 410, x2: 760, y2: 410, kind: 'frost', active: true });
-
-  // 主堡(只取城體, 剪掉下方的血量牌)
   ctx.save(); ctx.beginPath(); ctx.rect(900 - 70, 336 - 80, 140, 80 + 26); ctx.clip();
   A.drawCastle(ctx, { x: 900, y: 336, hp: 20, maxHp: 20 });
   ctx.restore();
-
-  // 敵人: 沿左側路往下走
   A.drawEnemy(ctx, { x: 288, y: 170, type: 'imp', moving: true, hp: 1, maxHp: 1 });
   A.drawEnemy(ctx, { x: 288, y: 228, type: 'archer', moving: true, hp: 1, maxHp: 1 });
   A.drawEnemy(ctx, { x: 288, y: 286, type: 'brute', moving: true, hp: 1, maxHp: 1 });
   A.drawEnemy(ctx, { x: 370, y: 336, type: 'ice', moving: true, hp: 1, maxHp: 1 });
-
-  // 我方: 魂柱、共鳴中的箭塔、上方另一座箭塔、兵、石像
   A.drawPillar(ctx, { x: 640, y: 410, kinds: ['frost'] });
   A.drawCrossbow(ctx, { x: 760, y: 410, resonating: true });
-  A.drawCrossbow(ctx, { x: 690, y: 245 });
-  A.drawProjectile(ctx, { x: 610, y: 270, angle: Math.atan2(320 - 245, 450 - 690), owner: 'ally', kind: 'arrow' });
+  // 原本在名牌新位置上的那座箭塔, 移到右下空地
+  A.drawCrossbow(ctx, { x: 860, y: 425 });
   A.drawGolem(ctx, { x: 760, y: 330, team: 'ally', moving: true, hp: 1, maxHp: 1 });
   A.drawSoldier(ctx, { x: 640, y: 330, moving: true, hp: 1, maxHp: 1 });
   A.drawSoldier(ctx, { x: 680, y: 344, moving: true, hp: 1, maxHp: 1 });
-
-  // 雷霆魔王 + 頭上的魂件槽(被搶的那格)
   A.drawEnemy(ctx, { x: 450, y: 336, type: 'bossThunder', moving: true, hp: 1, maxHp: 1 });
   A.drawSoulSlots(ctx, { x: 450, y: 336 - 36 - 20, slots: ['shock', 'heal'] });
-  // 衝鋒箭塔撞上魔王 + 金色刀光
   A.drawCrossbow(ctx, { x: 545, y: 336, charging: true, moving: true });
   A.drawMeleeSlash(ctx, { x: 510, y: 336, angle: Math.PI, age: 0.12, duration: 0.25, kind: 'melee', team: 'ally' });
 
-  // 魂匠: 正在拔魔王的電擊魂件(金色連線連到槽列第 1 格)
-  A.drawStealLink(ctx, { x1: 575, y1: 250, x2: 450 - 20 + 10, y2: 280, progress: 0.65 });
-  A.drawPlayer(ctx, { x: 575, y: 250, stealing: true, stealProgress: 0.65 });
+  A.drawStealLink(ctx, { x1: 390, y1: 200, x2: 440, y2: 280, progress: 0.65 });
+  A.drawPlayer(ctx, { x: 390, y: 200, stealing: true, stealProgress: 0.65 });
   ctx.restore();
 
-  // ---- 標題: 頂端壓暗 + 名牌 ----
-  var tg = ctx.createLinearGradient(0, 0, 0, 250);
-  tg.addColorStop(0, 'rgba(10,14,22,0.75)'); tg.addColorStop(1, 'rgba(10,14,22,0)');
-  ctx.fillStyle = tg; ctx.fillRect(0, 0, W, 250);
-  title(840, 112, 118);
-})();
+  // 壓暗: 頂端只留淡淡一層, 主要改成名牌後方的橢圓暗暈
+  var tg = ctx.createLinearGradient(0, 0, 0, 150);
+  tg.addColorStop(0, 'rgba(10,14,22,0.40)'); tg.addColorStop(1, 'rgba(10,14,22,0)');
+  ctx.fillStyle = tg; ctx.fillRect(0, 0, W, 150);
+  var CX = 900, CY = 205, SIZE = 145;
+  var p = plate(CX, CY, SIZE);
+  ctx.save(); ctx.translate(CX, CY); ctx.scale(1, (p.ph + 90) / (p.pw + 160));
+  var rg = ctx.createRadialGradient(0, 0, 0, 0, 0, (p.pw + 160) / 2);
+  rg.addColorStop(0, 'rgba(10,14,22,0.55)'); rg.addColorStop(0.7, 'rgba(10,14,22,0.35)'); rg.addColorStop(1, 'rgba(10,14,22,0)');
+  ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, (p.pw + 160) / 2, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  title(CX, CY, SIZE);
+
+  document.title += ' plate ' + Math.round(CX - p.pw / 2) + '~' + Math.round(CX + p.pw / 2) + ' / ' + Math.round(CY - p.ph / 2) + '~' + Math.round(CY + p.ph / 2);
+}
+document.fonts.load('400 145px "Dela Gothic One"', '魂匠守衛者').then(draw, draw);
 </script>
 </body>
 </html>
