@@ -448,7 +448,10 @@ function endLevel(win) {
     stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialMode: S.tutMode, tutorialClearSt: S.tutClearSt, boss: bossSum
   };
   downloadLog({ game: 'SoulSmithDefense', version: 'polish-13', summary, tutorial: tut, events: G.log.events });
-  if (window.PVDX) PVDX.finish(); // 一局結束(通知網站)
+  if (window.PVDX && win) { // 通知網站: 單關通關, 最後一關再送全局通關(失敗不送)
+    PVDX.levelClear(G.level);
+    if (G.level === 4) PVDX.gameClear();
+  }
   setMusic(null);
   snd(win ? 'level_win' : 'level_lose');
 }
