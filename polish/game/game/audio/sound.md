@@ -9,7 +9,18 @@
 
 Boss(打磨第 7 輪)是同一套實體聲的「大一號」: 真實錄音的冰裂、雷聲, 疊上既有的戰鼓(低音通鼓)與怪物吼聲; 雷霆魔王的電流沿用 faxcorp 電流包, 和電擊系同一種電。Boss 曲同樣是 Kevin MacLeod, 但換成有鐵砧與合唱的重打擊曲。
 
-## 本輪(打磨第 13 輪)變更
+恭喜過關(打磨第 14 輪)的勳章授予演出用同一套實體聲: 旋入是真實錢幣在桌上越轉越快的錄音, 落定是開戰音同一記戰鼓 + 重鐘 + 風鈴灑落, 凱旋是 `tutorial_clear` / `level_win` 同一段勝利旋律的「大一號」(全編制、放慢降調、加戰鼓與鐘)。
+
+## 本輪(打磨第 14 輪)變更
+- **刪除事件 `star`**(4 關都不評星等), 音檔 sfx_star.mp3 一併刪除。RD 不要再呼叫; 萬一呼叫了會被靜默忽略
+- **新增 6 個事件**(名稱照 interface.json, 需要 RD 接): `medal_spin`、`medal_land`、`medal_pin`、`all_clear`、`stat_tick`、`medal_glint`。呼叫時機見事件表與「恭喜過關演出」一節
+- `stat_tick` 有 opts `index`(第幾格統計, 0~4), 音高逐格升高(取代原本 `star` 的 index)
+- `level_win`: **第 4 關勝利不呼叫**(改由恭喜過關的演出音效); 第 1~3 關照舊
+- 音樂: `medal_spin` 與 `all_clear` 播放時 Sound 會自動停背景音樂(RD 照規格呼叫 `Sound.stopMusic()` 也無害)
+- `medal_glint` 每次恭喜過關只會出聲前 3 次: Sound 在 `medal_spin` 時重新計數, 之後第 4 次起自動靜音。RD 照規格只呼叫前 3 次即可, 多呼叫也不會響
+- 其他事件的素材、音量、opts、呼叫時機都沒變(沿用第 13 輪)
+
+## 上一輪(打磨第 13 輪)變更
 - **沒有新事件、沒有換音檔、音量不變、呼叫時機不變**: sound.js、assets/、credits.md 沿用第 12 輪, 一個檔都沒動。畫面改 16:9(設計座標 1024×576)與版面重排對音效沒有影響
 - 聲音開關圖示從 HUD / 開始畫面移到新的 drawMuteIcon: 圖示顯示的狀態照舊讀 `Sound.isMuted()`; M 鍵照舊呼叫 `Sound.setMuted(!Sound.isMuted())`。觸控模式不畫圖示, 但 `Sound` 的行為不變(靜音狀態仍由 M 或 RD 呼叫決定)
 
@@ -97,7 +108,7 @@ Boss(打磨第 7 輪)是同一套實體聲的「大一號」: 真實錄音的冰
 
 opts 欄位(全部可省略):
 - `volume`: 0~1, 乘在該事件的音量上, 預設 1。一般不需要
-- `index`: 只有 `star` 用, 第幾顆星(0 / 1 / 2), 音高逐顆升高
+- `index`: 只有 `stat_tick` 用(第 14 輪; 原本 `star` 的 index 已刪), 第幾格統計(0~4), 音高逐格升高(Do Re Mi Fa Sol)。省略時當 0
 
 ## 事件表
 音量 = 檔案最響 50 毫秒的響度(dBFS), 已燒進檔案, RD 不用另外調。全部不循環。
@@ -156,9 +167,14 @@ opts 欄位(全部可省略):
 | level_advance | level_advance(新) | 關卡預覽頁推進動畫, 玩家記號開始從這關跳往下一關的那一刻 | — | sfx_level_advance.mp3(輕揮風 + 撥弦兩音上行 + 輕落地, 0.36 秒) | −17 |
 | level_unlock | level_unlock(新) | 推進動畫中下一關的鎖碎開那一刻 | — | sfx_level_unlock.mp3(鎖頭「喀」+ 玻璃碎裂 + 明亮餘韻, 0.6 秒) | −17(峰值限制, 實際比目標 −14 輕一點) |
 | tutorial_clear | tutorial_clear(新) | 「恭喜完成新手任務!」大提示出現 | — | sfx_tutorial_clear.mp3(與 level_win 同一段勝利旋律, 只用鋼鼓 + 撥弦 + 鐵琴、升四度加快, 2.0 秒) | −12 |
-| level_win | level_win | 結算勝利出現 | — | sfx_level_win.mp3(鋼鼓 + 銅管 + 弦樂, 3 秒) | −11 |
-| level_lose | level_lose | 結算失敗出現 | — | sfx_level_lose.mp3(撥弦下行 + 薩克斯) | −13 |
-| star | star | 結算時每顆星跳出(第 1、2、3 顆各呼叫一次) | `index`: 0 / 1 / 2 | sfx_star.mp3(金屬鈴, 逐顆升高) | −15 |
+| level_win | level_win | **第 1~3 關**結算勝利出現(第 14 輪: 第 4 關勝利不呼叫, 改出恭喜過關) | — | sfx_level_win.mp3(鋼鼓 + 銅管 + 弦樂, 3 秒) | −11 |
+| level_lose | level_lose | 結算失敗出現(四關都是) | — | sfx_level_lose.mp3(撥弦下行 + 薩克斯) | −13 |
+| medal_spin | medal_spin(第 14 輪) | 恭喜過關出現的那一刻(age 0, 第 4 關勝利結算出現的同一幀)。**同時自動停背景音樂** | — | sfx_medal_spin.mp3(1.1 秒。錢幣越轉越快的真實錄音, 音高上揚 + 反轉金屬盤 / 鐘蓄力, 由 −29 dB 一路爬到 −16 dB; 停在 1.1 秒) | −16 |
+| medal_land | medal_land(第 14 輪) | age 1.1 勳章落定(閃白、衝擊環、金粉炸開那一幀) | — | sfx_medal_land.mp3(1.6 秒。戰鼓通鼓 + 重鐘 + 重金屬 + 重拳同一拍, 0.005 秒到峰值; 0.06 秒起風鈴灑落, 約 1 秒散盡) | −9 |
+| medal_pin | medal_pin(第 14 輪) | age 1.7 勳章開始移往面板頂端 | — | sfx_medal_pin.mp3(0.8 秒。上揚掃音「往上一提」, **0.55 秒卡榫「喀」**= age 2.25 別上面板; 0.62 秒後無聲) | −17 |
+| all_clear | all_clear(第 14 輪) | age 2.25 標題「恭喜過關」淡入; **或**演出中按 Z 跳過、而 all_clear 還沒播時, 在跳過那一刻立刻呼叫。**同時自動停背景音樂** | — | sfx_all_clear.mp3(3.6 秒, 約 3.1 秒後只剩淡出餘韻。和 level_win 同一段勝利旋律的全編制放慢版: 銅管領奏 + 弦樂 + 鋼鼓 + 撥弦 + 鋼琴, 0 秒戰鼓起頭, **1.91 秒主和弦**落下時加戰鼓 + 鐘 + 風鈴) | −9 |
+| stat_tick | stat_tick(第 14 輪) | 每個統計格浮現時: age 2.6、2.82、3.04、3.26、3.48, 共 5 次; 數字跳動期間不另呼叫 | `index`: 0~4(第幾格), 音高逐格升高 | sfx_stat_tick.mp3(籌碼「嗒」+ 輕撥弦, 0.06 秒後無聲) | −20 |
+| medal_glint | medal_glint(第 14 輪) | 勳章每次掃過反光開始時(age 2.4、5.4、8.4); **只呼叫前 3 次**(Sound 也會擋第 4 次以後) | — | sfx_medal_glint.mp3(單擊風鈴「叮~」, 約 1.9~2.6 kHz, 0.2 秒後只剩餘韻) | −27(全表最輕) |
 | boss_intro_frost | boss_intro_frost(第 7 輪新增) | 第 3 關霜角巨怪出場演出開始那一刻(遊戲暫停的同一幀)。**同時自動切音樂**(battle 淡出 → 2.0 秒 boss 淡入) | — | sfx_boss_intro_frost.mp3(2.75 秒。0.30 秒冰裂聲起、越裂越大聲 → **1.50 秒冰塊爆碎**(全檔最響)→ 1.7 秒巨獸咆哮, 2.5 秒後淡出) | −10 |
 | boss_intro_thunder | boss_intro_thunder(第 7 輪新增) | 第 4 關(第 8 輪起; 原第 5 關)雷霆魔王出場演出開始那一刻。**同時自動切音樂** | — | sfx_boss_intro_thunder.mp3(2.8 秒。0.1 秒遠雷醞釀 → **0.60 / 0.85 / 1.10 秒三聲落雷**(峰值 −12 / −7 / −1.5 dB, 一聲比一聲大)→ 1.10 秒落地爆裂 → 1.3 秒起電流嗡鳴到淡出。三段裡最響) | −9 |
 | boss_die | boss_die(第 7 輪新增) | Boss 生命歸 0 那一刻, **取代** enemy_die(這一下不呼叫 enemy_die) | — | sfx_boss_die.mp3(1.3 秒。重擊 + 巨獸哀嚎 → 0.35 秒轟然倒地(重鼓)→ 0.5 秒起金幣嘩啦三把 + 上揚鋼鼓短句) | −11 |
@@ -181,6 +197,7 @@ opts 欄位(全部可省略):
   - 靜音中出場也照樣換曲(只是無聲), 取消靜音就聽得到 boss
 
 - 結算畫面: 呼叫 `Sound.stopMusic()`。另外 `level_win` / `level_lose` 播放時 Sound 也會自動淡出音樂, 漏呼叫也不會疊在一起
+- 恭喜過關(第 14 輪): 同結算, 出現時呼叫 `Sound.stopMusic()`; `medal_spin`(與 `all_clear`)播放時 Sound 也會自動淡出音樂。按「繼續」回關卡預覽頁照舊 `Sound.playMusic('title')`, 「重玩」照舊 `Sound.playMusic('battle')`
 - 壓低音樂: **RD 不用另外處理, 由音效事件自動帶動**。各原因可以同時存在, 全部解除才恢復:
 
 | 原因 | 開始(呼叫這個音效時) | 結束(呼叫這個音效時) | 效果 |
@@ -195,14 +212,32 @@ opts 欄位(全部可省略):
   - 保險: `playMusic` 換曲或 `stopMusic` 時, 會清掉舊的壓低原因(例: 從暫停狀態直接離開關卡、沒播 `pause_off`); 但 150 毫秒內剛設的會保留, 所以同一幀「先 `guide_pause` 再 `playMusic('battle')`」也不會被誤清
 - 靜音: **任何時候按 M**(開始畫面、關卡中含彈窗 / 暫停 / 圖鑑 / 引導卡 / 合成演出開著、結算畫面)時呼叫 `Sound.setMuted(!Sound.isMuted())`。靜音時音樂照走只是無聲, 取消靜音會從當下位置繼續
 
+## 恭喜過關演出(第 14 輪)
+age = 恭喜過關出現後經過的真實秒數。
+
+| age | 呼叫 | 聽到什麼 |
+|---|---|---|
+| 0 | `Sound.stopMusic()` + `medal_spin` | 勳章旋入, 越轉越快、越來越響, 停在 1.1 |
+| 1.1 | `medal_land` | 全段最重的一拍 + 金粉灑落 |
+| 1.7 | `medal_pin` | 往上一提, 它自己在 0.55 秒(= age 2.25)響「喀」 |
+| 2.25 | `all_clear` | 凱旋, 主和弦在 1.91 秒(≈ age 4.16), 約 age 5.4 前淡完 |
+| 2.4 | `medal_glint` | 第 1 次反光(疊在 all_clear 上, 很輕) |
+| 2.6 / 2.82 / 3.04 / 3.26 / 3.48 | `stat_tick` `{ index: 0~4 }` | 每格浮現一聲「嗒」, 逐格升高 |
+| 5.4、8.4 | `medal_glint` | 第 2、3 次反光; 11.4 起不呼叫(呼叫了 Sound 也不出聲) |
+
+- 按 Z 跳過(0.5~4.4 秒): 正在播的讓它播完; 還沒到的 `medal_land` / `medal_pin` / `stat_tick` **都不呼叫**; `all_clear` 若還沒播, **跳過那一刻立刻呼叫**; 跳過這一下不呼叫 `ui_confirm`。`medal_glint` 照結束狀態的時間繼續(下一次 age 5.4; 若 2.4 那次因跳過沒呼叫, 照樣只算有呼叫的)
+- 演出中按 ← → 無效, 不呼叫音效; 4.4 起選按鈕照一般結算: ← → `ui_move`、Z `ui_confirm`
+- 重玩第 4 關再勝: 整段重來, 從 `medal_spin` 開始(反光次數由 Sound 重新計)
+
 ## 同時觸發的處理
 Sound 內建的保險(RD 照規格做了也不衝突):
 - 同一個事件 25 毫秒內只播一次(等於同一幀只播一次); `shock_zap` 150 毫秒(規格: 每 0.15 秒最多一次, 玩家、單位、敵人共用)、`arrow_shot` 100 毫秒、`thunder_slash` / `thunder_orb` 60 毫秒、`blink` 50 毫秒、`heal_ray` 80 毫秒、`enemy_shot` / `pierce_shot` / `whirl` 60 毫秒、`melee_hit` / `charge_hit` 50 毫秒、`coin_pickup` / `enemy_die` 40 毫秒、`ground_expire` 80 毫秒內只播一次(arrow_shot 的 100 毫秒是玩家與單位共用)
-- 同一個事件最多同時 4 聲(弓聲、`shock_zap`、`thunder_slash`、`heal_ray` 3 聲; `level_unlock` 2 聲; `level_win`、`level_lose`、`wave_start`、`wave_warning`、`combo_reveal`、`tutorial_clear`、`guide_pause`、兩個 `boss_intro_*` 各 1 聲; `boss_die` 2 聲), 超過時切掉最舊的
+- 同一個事件最多同時 4 聲(弓聲、`shock_zap`、`thunder_slash`、`heal_ray` 3 聲; `level_unlock` 2 聲; `level_win`、`level_lose`、`wave_start`、`wave_warning`、`combo_reveal`、`tutorial_clear`、`guide_pause`、兩個 `boss_intro_*` 各 1 聲; `boss_die` 2 聲; 第 14 輪: `medal_spin`、`medal_land`、`medal_pin`、`all_clear` 各 1 聲, `stat_tick` 3 聲, `medal_glint` 2 聲), 超過時切掉最舊的
+- 第 14 輪: `stat_tick` 60 毫秒、`medal_glint` 200 毫秒內只播一次; `medal_glint` 另外每次演出(從 `medal_spin` 起算)只出聲前 3 次
 - 不同事件之間互不打斷, 全部疊播
 
 要 RD 決定的(照規格):
-- 最後一隻敵人倒下 → 勝利: `enemy_die` 照播, `level_win` 疊著播
+- 最後一隻敵人倒下 → 勝利: `enemy_die` 照播, `level_win` 疊著播。**第 4 關**(第 14 輪): `enemy_die`(或 Boss 的 `boss_die`)照播, 和 `medal_spin` 疊著播, **不播** `level_win`
 - 敵人突破主堡 → 主堡生命歸 0: 只播 `level_lose`, **不播** `castle_hit`
 - 裝上 / 互換造成合成: `install_part`(或 `swap_part`)與 `fuse` 同一幀都呼叫(疊播)。合成出的組合是這次開網頁第一次出現時, 把 `fuse` 換成 `combo_new`(只播一個), 不另播 `combo`
 - 同一幀跳出多個組合名稱(換魂柱魂件讓整片單位一起變招): 該幀只呼叫一次; 有任何一個是首次就只播 `combo_new`, 否則只播 `combo`; 同一幀已呼叫 `fuse` 時不播 `combo`(`combo_new` 仍照上一條)
@@ -241,6 +276,8 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - (第 8 輪)第 1 關沒放在「放這裡」被擋: 只呼叫 `ui_invalid`; 放對時 `place_unit` / `flag_plant` 與 `tutorial_done` 同一幀都呼叫(疊播)。「放這裡」標示出現 / 消失都不呼叫音效
 - (第 10 輪)第一次搶奪鎖: 鎖住期間被吃掉的按鍵一律不呼叫音效; 拔下那一幀 `steal_done` + `tutorial_done`(+ 讀條中敵人倒下時的 `enemy_die`)疊播, 三個音色(拔劍唰 + 寶石 / 撥弦跳音 / 鬼魂嘶聲)分得開。鎖期間不會因距離拉開而取消, 所以這一步不會出現 `steal_cancel`
 - (第 10 輪)階段 16 彈窗小泡泡: 出現、改指別格都不呼叫音效
+- (第 14 輪)恭喜過關: 六個演出音照上一節時間軸各自呼叫, 前一個沒播完就疊著。`medal_spin` 收在 1.1 秒, 跟 `medal_land` 接得上不重疊; `medal_pin` 的「喀」(−17)與 `all_clear` 開頭(−9, 戰鼓起頭)同一刻, 凱旋蓋得過; 第 1 次 `medal_glint`(−27)疊在 `all_clear` 上只是點綴; `stat_tick`(−20)穿插在凱旋中段, 音色是乾的籌碼聲, 跟樂句分得開
+- (第 14 輪)第 4 關最後一隻敵人(通常是 Boss)倒下: `boss_die`(或 `enemy_die`)與 `medal_spin` 同一幀疊播, 不播 `level_win`
 - (第 11 輪)教學種類詢問視窗: 跳出時只呼叫 `guide_card`; ← → 有移動才 `ui_move`, 到頭不呼叫; X 返回 `ui_move`; Z 確定 `ui_confirm`, 0.35 秒後進關不另呼叫, 音樂照常 `playMusic('battle')`。關卡預覽頁操作鎖期間照第 6 輪規則什麼都不呼叫
 
 ## 理念或經驗落實
@@ -289,5 +326,12 @@ Sound 內建的保險(RD 照規格做了也不衝突):
 - (第 12 輪)「不加多餘聲音」: 游標到頭停住時不呼叫 `ui_invalid`, 只有真的按 Z 想進才「不行」, 避免玩家在卡片間來回瀏覽時一直被警告
 
 - (第 13 輪)「沿用任務保留上一版素材與音量」: 規格寫明音效沒有要改的東西, 一個檔都沒動; 只更新本文件裡聲音開關圖示的名稱(drawMuteIcon), 冒煙測試照常把 58 個事件在 init 前後各播一次、三首音樂各切一次
+
+- (第 14 輪)「沿用任務保留上一版素材與音量」: 只刪 `star`、加 6 個新事件, 其餘 57 個事件的音檔一個沒動; 新音都從前幾輪核對過授權的 CC0 來源(Kenney 四個包、Fupi、BigSoundBank)加工, 只新加 BigSoundBank 的錢幣旋轉與三支風鈴(都 CC0)
+- (第 14 輪)「成對 / 同系列事件取同一段素材」: `all_clear` 用 `tutorial_clear`、`level_win` 同一段 Fupi 勝利旋律, 畢業版加速升調只用輕樂器、一般勝利原速、終章放慢 0.84 倍降調用六種樂器加戰鼓與鐘, 一聽就是「同一首凱旋的最大號」; 兩個打擊點的戰鼓都是 `wave_start` 同一記低音通鼓
+- (第 14 輪)「規格指定演出音的時間點」: 以「時間軸固定、不裁開頭」建置, 用解碼器扣掉執行時起播位置驗收 — `medal_spin` 1.11 秒停、最響點 1.02 秒(越轉越響); `medal_pin` 的「喀」峰值 0.56 秒(規格 0.55); `medal_land` 0.005 秒到峰值
+- (第 14 輪)「規格寫比某音大 / 輕時量響度來設」: `medal_land` 與 `all_clear` 都是 −9(全段最重、比 level_win −11 大), `all_clear` 3.6 秒比 level_win 3 秒長; `medal_glint` −27 定為全表最輕, `stat_tick` −20 跟介面音同級
+- (第 14 輪)「小眾聲音改搜近義大類詞 / BigSoundBank 補寫實錄音」: 「勳章旋轉」搜 medal 找不到, 改用 coin spinning — 錢幣在桌上轉到停的最後一秒天生越轉越快、越來越響, 正是旋入要的「期待感往上堆」; 金粉灑落用 BigSoundBank 的風鈴(chimes)
+- (第 14 輪)「壓低音樂狀態不能漏」: `medal_glint` 的「只響前 3 次」做在 play 最前段(靜音中也計數), 由 `medal_spin` 重設; 冒煙測試驗過連呼 6 次只出 3 聲、重玩再勝又能響 3 聲
 
 聲音的輕重與辨識度都待試玩確認(音效 agent 聽不到聲音, 全部是用量測選的)。

@@ -185,7 +185,9 @@ let curSrc = null; // 目前正在出手的我方單位(階段 30 判斷「步�
 
 // 這次開網頁期間的狀態(重新整理才重置)
 const S = {
-  unlocked: [true, false, false, false], best: [0, 0, 0, 0], attempts: [0, 0, 0, 0], fails: [0, 0, 0, 0],
+  unlocked: [true, false, false, false], attempts: [0, 0, 0, 0], fails: [0, 0, 0, 0],
+  // 第 14 輪: 這次開網頁的累計(恭喜過關畫面的統計): play = 每局(durationSec − hiddenSec)加總, attempts = level_start 次數, fails = 失敗結算局數, kills = 擊倒加總
+  sess: { play: 0, attempts: 0, fails: 0, kills: 0 },
   combos: zeros(NCOMBO).map(() => false), recipes: zeros(11).map(() => false), golemUnlocked: false, pillarUnlocked: false, muted: false,
   won: [false, false, false, false], tutMode: null, pendingUnlock: -1, tutClearShown: false, tutClearSt: null,
   tut: { done: [], shownSt: [], doneSt: [], pressed: {}, fx: null, cur: 0, view: null, lastView: null },
@@ -334,7 +336,8 @@ function toggleMute() {
 // ───────── 開局 / 結算 ─────────
 function startLevel(n) {
   G.level = n; prepLevel(n);
-  S.attempts[n - 1]++;
+  S.attempts[n - 1]++; S.sess.attempts++;
+  G.ac = null;
   G.screen = 'play';
   const T = S.tut;
   G.time = 0; G.clock = 0; G.gold = LV.gold; G.castleHp = 20; G.wave = 0; G.waveStarted = 0;
@@ -401,8 +404,9 @@ function toTitle(failIdx) {
 }
 function endLevel(win) {
   const hp = Math.max(0, G.castleHp);
-  const stars = win ? 1 + (hp >= 10 ? 1 : 0) + (hp === 20 ? 1 : 0) : 0;
-  G.screen = 'result'; G.win = win; G.resultT = 0; G.stars = stars; G.starsPlayed = 0; G.resultCursor = 0;
+  const allClear = win && G.level === 4; // 第 14 輪: 第 4 關勝利出「恭喜過關」
+  G.screen = 'result'; G.win = win; G.resultT = 0; G.resultCursor = 0;
+  G.ac = allClear ? { age: 0, sec: 0, skipped: false, skipAt: null, cursor: 0, landed: false, pinned: false, cleared: false, ticks: 0, glints: 0, stats: null } : null;
   // 第 1 關勝利、而這次開網頁還沒在第 2 關勝利過: 只有 [繼續](「重玩」會繞過關卡預覽頁的第 1 關教學鎖)
   G.options = win ? ((G.level === 1 && !S.won[1]) ? ['繼續'] : ['繼續', '重玩']) : ['重來', '關卡預覽'];
   G.popup = null; G.steal = null; G.guide = null; G.reveal = null; G.revealQ = []; G.paused = false; G.codex = false; muffle(false);
@@ -410,12 +414,14 @@ function endLevel(win) {
   G.sq = G.sq.filter(n => n !== 'castle_hit');
   if (win) {
     S.won[G.level - 1] = true;
-    S.best[G.level - 1] = Math.max(S.best[G.level - 1], stars);
     if (G.level < 4 && !S.unlocked[G.level]) S.pendingUnlock = G.level; // 解鎖與推進動畫延到回關卡預覽頁才播
   } else S.fails[G.level - 1]++;
   const T = S.tut; T.fx = null; T.view = null; T.lastView = null;
-  ev('level_end', { result: win ? 'win' : 'lose', wave: G.wave, castleHp: hp, stars });
+  ev('level_end', { result: win ? 'win' : 'lose', wave: G.wave, castleHp: hp, allClear });
   const st = G.stat;
+  const durSec = r1(RT - G.log.t0), hidSec = r1(st.hiddenSec);
+  S.sess.play += durSec - hidSec; if (!win) S.sess.fails++; S.sess.kills += st.kills;
+  const sess = { playSec: Math.round(S.sess.play), attempts: S.sess.attempts, fails: S.sess.fails, kills: S.sess.kills };
   const tut = {};
   for (let k = 1; k <= 31; k++) tut[String(k)] = { shownSt: T.shownSt[k] === undefined ? null : T.shownSt[k], doneSt: T.doneSt[k] === undefined ? null : T.doneSt[k], kind: CARD[k] ? 'card' : 'quest', skipped: briefMode() && BRIEF_SKIP.indexOf(k) >= 0 };
   let bossSum = null;
@@ -433,11 +439,11 @@ function endLevel(win) {
   }
   const summary = {
     level: G.level, levelName: LV.name, attempt: S.attempts[G.level - 1], failsBefore: win ? S.fails[G.level - 1] : S.fails[G.level - 1] - 1,
-    result: win ? 'win' : 'lose', durationSec: r1(RT - G.log.t0), gameSec: r1(st.gameSec), slowMoSec: r1(st.slowMoSec), hiddenSec: r1(st.hiddenSec),
+    result: win ? 'win' : 'lose', durationSec: durSec, gameSec: r1(st.gameSec), slowMoSec: r1(st.slowMoSec), hiddenSec: hidSec,
     pauseSec: r1(st.pauseSec), pauses: st.pauses, codexSec: r1(st.codexSec), codexOpens: st.codexOpens, guideSec: r1(st.guideSec), revealSec: r1(st.revealSec), reveals: st.reveals,
     gateSec: r1(st.gateSec), clearWaitSec: r1(st.clearWaitSec), tutorialBlocks: st.tutorialBlocks, tutorialSpawns: st.tutorialSpawns, tutorialGold: st.tutorialGold, tutorialFloor: st.tutorialFloor, menuBlocks: st.menuBlocks, menuLockedTries: st.menuLockedTries, layout: '1024x576@1.25',
     stealLock: { locks: st.stealLock.locks, lockedSec: r1(st.stealLock.lockedSec), ignoredZ: st.stealLock.ignoredZ, ignoredMove: st.stealLock.ignoredMove, ignoredOther: st.stealLock.ignoredOther },
-    waveReached: G.wave, totalWaves: LV.waves.length, castleHp: hp, stars, leaks: st.leaks, leaksByWave: st.leaksByWave, leaksBySpawn: st.leaksBySpawn,
+    waveReached: G.wave, totalWaves: LV.waves.length, castleHp: hp, allClear, session: sess, leaks: st.leaks, leaksByWave: st.leaksByWave, leaksBySpawn: st.leaksBySpawn,
     kills: st.kills, playerKills: st.playerKills, playerHits: st.playerHits,
     goldEarned: st.goldEarned, goldRefund: st.goldRefund, goldSpent: st.goldSpent, goldEnd: G.gold, purchases: st.purchases,
     pillarCap: LV.cap, pillarsMax: st.pillarsMax, steals: st.steals, installs: st.installs, fuses: st.fuses,
@@ -447,13 +453,15 @@ function endLevel(win) {
     combosFoundThisLevel: st.combosNew, combosFoundTotal: S.combos.filter(Boolean).length, recipesOpenedTotal: S.recipes.filter(Boolean).length,
     stranded: strandedList().length, tutorialLevel: !!G.tutLevel, tutorialMode: S.tutMode, tutorialClearSt: S.tutClearSt, boss: bossSum
   };
-  downloadLog({ game: 'SoulSmithDefense', version: 'polish-13', summary, tutorial: tut, events: G.log.events });
+  if (G.ac) G.ac.stats = { playSec: sess.playSec, attempts: sess.attempts, fails: sess.fails, kills: sess.kills, comboCount: summary.combosFoundTotal, castleHp: hp, castleMaxHp: 20 };
+  downloadLog({ game: 'SoulSmithDefense', version: 'polish-14', summary, tutorial: tut, events: G.log.events });
   if (window.PVDX && win) { // 通知網站: 單關通關, 最後一關再送全局通關(失敗不送)
     PVDX.levelClear(G.level);
     if (G.level === 4) PVDX.gameClear();
   }
   setMusic(null);
-  snd(win ? 'level_win' : 'level_lose');
+  if (allClear) snd('medal_spin'); // 第 4 關勝利不播 level_win, 由 all_clear 當凱旋
+  else snd(win ? 'level_win' : 'level_lose');
 }
 
 // ───────── 單位分類 ─────────
@@ -1343,11 +1351,44 @@ function updateTitle(dt) {
   flushSnd();
 }
 
+// 第 14 輪: 恭喜過關演出的時間推進與音效觸發點(計數器式, 不用前後幀比較)
+const AC_INTRO = 4.4;
+function updateAllClear(dt) {
+  const a = G.ac;
+  a.sec += dt;
+  a.age += dt;
+  if (!a.skipped) {
+    if (!a.landed && a.age >= 1.1) { a.landed = true; snd('medal_land'); }
+    if (!a.pinned && a.age >= 1.7) { a.pinned = true; snd('medal_pin'); }
+    if (!a.cleared && a.age >= 2.25) { a.cleared = true; snd('all_clear'); }
+    while (a.ticks < 5 && a.age >= 2.6 + 0.22 * a.ticks) { snd('stat_tick'); a.ticks++; }
+  }
+  while (a.glints < 3 && a.age >= 2.4 + 3 * a.glints) { snd('medal_glint'); a.glints++; } // 只播前 3 次
+}
+function allClearZ() {
+  const a = G.ac;
+  if (a.age < 0.5) return; // 0.5 秒內的 Z 不算
+  if (a.age < AC_INTRO) { // 演出中: 跳到結束狀態, 這一下不算選按鈕
+    a.skipped = true; a.skipAt = Math.round(a.age * 10) / 10;
+    if (!a.cleared) { a.cleared = true; snd('all_clear'); } // 還沒播的凱旋跳過時立刻播
+    a.landed = a.pinned = true; a.ticks = 5; a.glints = Math.max(a.glints, 1); // 沒到的落定 / 別上 / 統計音不播; 反光下一次在 5.4
+    a.age = AC_INTRO;
+    zNeedRelease = true; // Z 要放開再按才執行按鈕
+    return;
+  }
+  if (zNeedRelease) return;
+  const replay = a.cursor === 1;
+  S.menuEvents.push({ type: 'allclear', t: null, st: r1(RT), option: replay ? 'replay' : 'continue', skipped: a.skipped, skipAt: a.skipAt, sec: r1(a.sec) });
+  snd('ui_confirm');
+  G.ac = null;
+  if (replay) startLevel(4); else toTitle();
+}
+
 function update(dt) {
   if (G.screen === 'title') { updateTitle(dt); return; }
   if (G.screen === 'result') {
     G.resultT += dt;
-    while (G.starsPlayed < G.stars && G.resultT >= 0.4 * G.starsPlayed) { snd('star'); G.starsPlayed++; }
+    if (G.ac) updateAllClear(dt);
     flushSnd();
     return;
   }
@@ -2617,6 +2658,14 @@ function onKey(k) {
     }
     return;
   }
+  if (G.screen === 'result' && G.ac) {
+    const a = G.ac;
+    if (a.age >= AC_INTRO && (k === 'L' || k === 'R')) { // 演出中 ← → 無效、不播音效
+      const c = clamp(a.cursor + (k === 'R' ? 1 : -1), 0, 1);
+      a.cursor = c; snd('ui_move'); // 和一般結算相同: 到頭也播
+    } else if (k === 'Z') allClearZ();
+    return;
+  }
   if (G.screen === 'result') {
     const n = G.options.length;
     if (k === 'L' || k === 'R') { G.resultCursor = clamp(G.resultCursor + (k === 'R' ? 1 : -1), 0, n - 1); snd('ui_move'); }
@@ -2715,7 +2764,7 @@ function titleState() {
   let maxU = 0; for (let i = 0; i < 4; i++) if (S.unlocked[i]) maxU = i;
   const unlocking = !!(adv && adv.unlocked);
   return {
-    levels: LEVELS.map((l, i) => ({ name: l.name, unlocked: S.unlocked[i], bestStars: S.unlocked[i] ? S.best[i] : 0, tutorial: i < 2, tutorialLocked: i === 0 && S.unlocked[0] && tutLock1() })),
+    levels: LEVELS.map((l, i) => ({ name: l.name, unlocked: S.unlocked[i], cleared: !!(S.unlocked[i] && S.won[i]), tutorial: i < 2, tutorialLocked: i === 0 && S.unlocked[0] && tutLock1() })),
     cursorIndex: (adv || G.tt.clear) ? -1 : G.cursor, // 大提示與推進動畫播完之前不畫游標
     blinkTime: G.titleT,
     tokenIndex: adv ? adv.to : maxU, tokenFrom: adv ? adv.from : maxU, tokenAge: adv ? Math.min(0.8, adv.age) : 0.8, tokenDuration: 0.8,
@@ -2986,11 +3035,13 @@ function drawScene() {
   }
   if (G.codex) Art.drawCodex(ctx, codexState());
   else if (G.paused) Art.drawPause(ctx, {});
-  if (G.screen === 'result') {
+  if (G.screen === 'result' && G.ac) {
+    Art.drawAllClear(ctx, { age: G.ac.age, introDuration: AC_INTRO, stats: Object.assign({}, G.ac.stats), options: ['繼續', '重玩'], cursorIndex: G.ac.cursor });
+  } else if (G.screen === 'result') {
     const hpShow = Math.max(0, G.castleHp);
     Art.drawResult(ctx, {
-      win: G.win, allClear: G.win && G.level === 4, level: G.level, levelName: LV.name, wave: G.wave, totalWaves: LV.waves.length,
-      castleHp: hpShow, castleMaxHp: 20, stars: G.stars, starAge: Math.min(1.2, G.resultT), starDuration: 1.2,
+      win: G.win, level: G.level, levelName: LV.name, wave: G.wave, totalWaves: LV.waves.length,
+      castleHp: hpShow, castleMaxHp: 20,
       comboCount: S.combos.filter(Boolean).length, options: G.options.slice(), cursorIndex: G.resultCursor
     });
   }

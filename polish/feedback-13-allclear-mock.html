@@ -1,0 +1,446 @@
+<title>魂匠恭喜過關演出</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap">
+<style>
+/* 版面: 單一深色世界(沿用遊戲的深藍面板色), 四個方案卡片兩欄排, 手機一欄 */
+:root {
+  color-scheme: dark;
+  --bg: #11151d;
+  --surface: #1d2331;
+  --line: #2f384c;
+  --fg: #eef0f4;
+  --dim: #a9b0bf;
+  --gold: #ffd24a;
+  --gold-ink: #1e1606;
+  --f-display: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  --f-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 1360px; margin: 0 auto; padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 28px; }
+header { display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+.eyebrow { font-size: 12px; letter-spacing: 0.12em; color: var(--gold); font-weight: 700; }
+h1 { font-family: var(--f-display); font-weight: 900; font-size: clamp(26px, 4vw, 36px); margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr)); gap: 24px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.code { font-family: var(--f-display); font-weight: 900; font-size: 22px; color: var(--gold); }
+.name { font-weight: 700; font-size: 18px; }
+.desc { margin: 0; color: var(--dim); font-size: 14px; }
+canvas { width: 100%; max-width: 100%; aspect-ratio: 16 / 9; display: block; border-radius: 8px; background: #000; cursor: pointer; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.row { flex-wrap: nowrap; align-items: flex-start; }
+.beats { flex: 1; min-width: 0; margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.beats li { font-size: 12px; color: var(--dim); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-variant-numeric: tabular-nums; }
+button { font-family: var(--f-body); font-weight: 700; font-size: 14px; background: var(--gold); color: var(--gold-ink); border: 0; border-radius: 8px; padding: 8px 18px; cursor: pointer; }
+button:focus-visible, canvas:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">魂匠守衛者 · 打磨第 13 輪</span>
+    <h1>打完第 4 關的恭喜過關演出</h1>
+    <p>四個方案的面板與統計項目都一樣, 只差在出場演出。點畫面或按「重播」可重看。數字是示意; 音效之後由音效節點配合演出節奏製作。</p>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  var C = { panel: '#1d2331', gold: '#ffd24a', text: '#f2f2f2', dim: '#a9b0bf', val: '#ffd28a' };
+  var W = 1024, H = 576, CX = 512, K = 1.25;
+  var bg = new Image(); bg.src = 'bg.png';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- 小工具 ----------
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function p01(t, a, d) { return clamp((t - a) / d, 0, 1); }
+  function eOut(x) { return 1 - Math.pow(1 - x, 3); }
+  function eIn(x) { return x * x * x; }
+  function eInOut(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+  function eBack(x) { var c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function txt(ctx, s, x, y, o) {
+    o = o || {};
+    ctx.font = (o.weight || 'bold') + ' ' + (o.size || 14) + 'px ' + FONT;
+    ctx.textAlign = o.align || 'center'; ctx.textBaseline = 'middle';
+    if (o.stroke) { ctx.lineJoin = 'round'; ctx.strokeStyle = o.stroke; ctx.lineWidth = o.sw || 3; ctx.strokeText(s, x, y); }
+    ctx.fillStyle = o.color || C.text; ctx.fillText(s, x, y);
+  }
+  function mixHex(a, b, k) {
+    var pa = [1, 3, 5].map(function (i) { return parseInt(a.substr(i, 2), 16); });
+    var pb = [1, 3, 5].map(function (i) { return parseInt(b.substr(i, 2), 16); });
+    return 'rgb(' + pa.map(function (v, i) { return Math.round(v + (pb[i] - v) * k); }).join(',') + ')';
+  }
+
+  // ---------- 粒子 ----------
+  function stepParts(arr, dt) {
+    for (var i = arr.length - 1; i >= 0; i--) {
+      var p = arr[i];
+      p.age += dt; if (p.age >= p.life) { arr.splice(i, 1); continue; }
+      p.vx *= Math.pow(p.drag || 1, dt * 60); p.vy *= Math.pow(p.drag || 1, dt * 60);
+      p.vy += (p.g || 0) * dt; p.px = p.x; p.py = p.y; p.x += p.vx * dt; p.y += p.vy * dt; p.rot = (p.rot || 0) + (p.spin || 0) * dt;
+    }
+  }
+  function drawParts(ctx, arr) {
+    for (var i = 0; i < arr.length; i++) {
+      var p = arr[i], k = 1 - p.age / p.life, a = p.fade === false ? 1 : Math.min(1, k * 1.6);
+      ctx.globalAlpha = a;
+      if (p.kind === 'confetti') {
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.scale(Math.cos(p.rot * 2.3), 1);
+        ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size * 0.3, p.size, p.size * 0.6); ctx.restore();
+      } else if (p.kind === 'spark') {
+        ctx.strokeStyle = p.color; ctx.lineWidth = p.size; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(p.x - p.vx * 0.03, p.y - p.vy * 0.03); ctx.lineTo(p.x, p.y); ctx.stroke();
+      } else if (p.kind === 'twinkle') {
+        var s = p.size * (0.6 + 0.4 * Math.sin(p.age * 18 + p.seed));
+        ctx.fillStyle = p.color; ctx.beginPath();
+        ctx.moveTo(p.x, p.y - s * 2); ctx.lineTo(p.x + s * 0.4, p.y); ctx.lineTo(p.x, p.y + s * 2); ctx.lineTo(p.x - s * 0.4, p.y); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(p.x - s * 2, p.y); ctx.lineTo(p.x, p.y + s * 0.4); ctx.lineTo(p.x + s * 2, p.y); ctx.lineTo(p.x, p.y - s * 0.4); ctx.closePath(); ctx.fill();
+      } else {
+        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size * (p.shrink ? k : 1), 0, 6.283); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+  var CONF = ['#ffd24a', '#ff7a90', '#8fd8ff', '#7ee08a', '#d27cff', '#fff1c9'];
+
+  // ---------- 共用: 面板、標題、統計、按鈕 ----------
+  var STATS = [
+    { l: '總遊玩時間', v: 2292, f: function (v) { return Math.floor(v / 60) + ' 分 ' + ('0' + Math.floor(v % 60)).slice(-2) + ' 秒'; } },
+    { l: '挑戰次數', v: 9, f: function (v) { return Math.round(v) + ' 次(失敗 5)'; } },
+    { l: '擊倒敵人', v: 1286, f: function (v) { return Math.round(v).toLocaleString('en-US'); } },
+    { l: '發現組合', v: 8, f: function (v) { return Math.round(v) + ' / 10'; } },
+    { l: '最後一戰主堡', v: 14, f: function (v) { return Math.round(v) + ' / 20'; } }
+  ];
+  function cellPos(i, dy) { var xs = [CX - 270, CX + 10, CX - 270, CX + 10, CX - 130], ys = [240, 240, 296, 296, 352]; return [xs[i], ys[i] + (dy || 0)]; }
+  function dim(ctx, a) { ctx.fillStyle = 'rgba(8,10,18,' + a + ')'; ctx.fillRect(0, 0, W, H); }
+  function panelBody(ctx, a) { ctx.globalAlpha = a; ctx.fillStyle = C.panel; rr(ctx, CX - 340, 68, 680, 440, 18); ctx.fill(); ctx.globalAlpha = 1; }
+  function panelBorder(ctx, a) { ctx.globalAlpha = a; ctx.strokeStyle = C.gold; ctx.lineWidth = 3; rr(ctx, CX - 338.5, 69.5, 677, 437, 17); ctx.stroke(); ctx.globalAlpha = 1; }
+  function panel(ctx, a) { panelBody(ctx, a); panelBorder(ctx, a); }
+  function subtitle(ctx, t, t0, y) { var p = p01(t, t0, 0.35); if (!p) return; ctx.globalAlpha = p; txt(ctx, '四座關卡全數守住', CX, (y || 170) + 8 * (1 - eOut(p)), { size: 20, color: C.dim }); ctx.globalAlpha = 1; }
+  function divider(ctx, t, t0, y) { var p = eOut(p01(t, t0, 0.4)); if (!p) return; y = y || 200; ctx.strokeStyle = 'rgba(230,214,176,0.3)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(CX - 270 * p, y); ctx.lineTo(CX + 270 * p, y); ctx.stroke(); }
+  function stats(ctx, t, t0, dy, glow) {
+    for (var i = 0; i < STATS.length; i++) {
+      var s0 = t0 + i * 0.22, p = p01(t, s0, 0.3); if (!p) continue;
+      var pos = cellPos(i, dy), x = pos[0], y = pos[1] + 12 * (1 - eOut(p));
+      ctx.globalAlpha = p;
+      ctx.fillStyle = 'rgba(255,255,255,0.05)'; rr(ctx, x, y - 23, 260, 46, 8); ctx.fill();
+      if (glow) { var g = 1 - p01(t, s0, 0.7); if (g > 0) { ctx.strokeStyle = 'rgba(255,170,60,' + g + ')'; ctx.lineWidth = 2.5; ctx.shadowColor = '#ff9a30'; ctx.shadowBlur = 16 * g; rr(ctx, x, y - 23, 260, 46, 8); ctx.stroke(); ctx.shadowBlur = 0; } }
+      txt(ctx, STATS[i].l, x + 16, y, { size: 18, color: C.dim, align: 'left', weight: 'normal' });
+      var c = eOut(p01(t, s0 + 0.1, 0.8)), done = c >= 1;
+      txt(ctx, STATS[i].f(STATS[i].v * c), x + 244, y, { size: 23, color: done ? C.val : '#fff6dc', align: 'right' });
+      ctx.globalAlpha = 1;
+    }
+  }
+  function button(ctx, cx, cy, w, h, label, focused) {
+    if (focused) { ctx.fillStyle = 'rgba(255,210,74,0.25)'; rr(ctx, cx - w / 2 - 5, cy - h / 2 - 5, w + 10, h + 10, 12); ctx.fill(); }
+    ctx.fillStyle = focused ? C.gold : '#2a3244'; rr(ctx, cx - w / 2, cy - h / 2, w, h, 9); ctx.fill();
+    ctx.strokeStyle = focused ? '#fff2b0' : '#4a5670'; ctx.lineWidth = focused ? 3 : 1.5; rr(ctx, cx - w / 2 + 1.5, cy - h / 2 + 1.5, w - 3, h - 3, 8); ctx.stroke();
+    txt(ctx, label, cx, cy + 1, { size: 20, color: focused ? '#1e1606' : C.text });
+  }
+  function keycap(ctx, x, y, s) { ctx.fillStyle = '#e9e4d6'; rr(ctx, x - 11, y - 11, 22, 22, 4); ctx.fill(); txt(ctx, s, x, y + 1, { size: 13, color: '#1d2331' }); }
+  function buttons(ctx, t, t0) {
+    var p = p01(t, t0, 0.35); if (!p) return;
+    ctx.globalAlpha = p;
+    var y = 428 + 10 * (1 - eOut(p));
+    button(ctx, CX - 95, y, 170, 50, '繼續', true); button(ctx, CX + 95, y, 170, 50, '重玩', false);
+    keycap(ctx, CX - 76, 478, '←'); keycap(ctx, CX - 52, 478, '→'); txt(ctx, '選', CX - 30, 478, { size: 15, color: C.dim, weight: 'normal' });
+    keycap(ctx, CX + 12, 478, 'Z'); txt(ctx, '確定', CX + 44, 478, { size: 15, color: C.dim, weight: 'normal' });
+    ctx.globalAlpha = 1;
+  }
+  function title(ctx, x, y, o) { txt(ctx, '恭喜過關', x, y, Object.assign({ size: 48, color: C.gold, stroke: '#000', sw: 5 }, o || {})); }
+  function shakeAt(t, hits) {
+    var dx = 0, dy = 0;
+    hits.forEach(function (h) { var k = 1 - (t - h[0]) / (h[2] || 0.3); if (t >= h[0] && k > 0) { dx += Math.sin(t * 90) * h[1] * k; dy += Math.cos(t * 77) * h[1] * k; } });
+    return [dx, dy];
+  }
+
+  // ---------- 方案 A: 金光爆發 ----------
+  function variantA() {
+    var parts = [], fired = false, trickle = 0;
+    return {
+      code: 'A', name: '金光爆發', desc: '畫面一亮, 標題從大到小砸進來、畫面一震, 兩側噴出彩帶; 背後的金色光芒持續旋轉, 面板從標題往上下展開。',
+      beats: ['0.4 秒 閃光', '0.9 秒 標題落地+彩帶', '1.2 秒 面板展開', '1.8 秒 數字逐格跳'],
+      reset: function () { parts = []; fired = false; trickle = 0; },
+      update: function (dt, t) {
+        if (!fired && t >= 0.85) {
+          fired = true;
+          for (var s = 0; s < 2; s++) for (var i = 0; i < 90; i++) {
+            var dir = s ? -1 : 1;
+            parts.push({ kind: 'confetti', x: s ? W + 10 : -10, y: H - 20, vx: dir * rnd(180, 620), vy: -rnd(450, 900), g: 520, drag: 0.985, life: rnd(2.2, 3.4), age: 0, size: rnd(8, 14), color: pick(CONF), spin: rnd(-8, 8), rot: rnd(0, 6) });
+          }
+        }
+        if (t > 2.2) { trickle += dt * 14; while (trickle >= 1) { trickle--; parts.push({ kind: 'confetti', x: rnd(0, W), y: -10, vx: rnd(-30, 30), vy: rnd(60, 120), g: 30, drag: 1, life: 6, age: 0, size: rnd(7, 11), color: pick(CONF), spin: rnd(-5, 5), rot: rnd(0, 6) }); } }
+        stepParts(parts, dt);
+      },
+      draw: function (ctx, t) {
+        var sh = shakeAt(t, [[0.85, 10, 0.35]]);
+        dim(ctx, 0.72 * p01(t, 0, 0.4));
+        ctx.save(); ctx.translate(sh[0], sh[1]);
+        // 光芒
+        var ra = 0.4 * eOut(p01(t, 0.4, 0.5));
+        if (ra > 0) {
+          ctx.save(); ctx.translate(CX, 122); ctx.rotate(t * 0.25);
+          var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 640); g.addColorStop(0, 'rgba(255,220,110,' + ra + ')'); g.addColorStop(1, 'rgba(255,220,110,0)');
+          ctx.fillStyle = g;
+          for (var i = 0; i < 18; i++) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 640, i * 0.349, i * 0.349 + 0.15); ctx.closePath(); ctx.fill(); }
+          ctx.restore();
+        }
+        // 面板從標題那一列往上下展開
+        var pp = eOut(p01(t, 1.2, 0.45));
+        if (pp > 0) { ctx.save(); ctx.translate(CX, 122); ctx.scale(1, Math.max(0.02, pp)); ctx.translate(-CX, -122); panel(ctx, 1); ctx.restore(); }
+        // 標題後的光暈
+        var tp = p01(t, 0.4, 0.45);
+        if (tp > 0) {
+          var hg = ctx.createRadialGradient(CX, 122, 0, CX, 122, 200); hg.addColorStop(0, 'rgba(255,214,90,' + (0.35 + 0.1 * Math.sin(t * 3)) + ')'); hg.addColorStop(1, 'rgba(255,214,90,0)');
+          ctx.fillStyle = hg; ctx.fillRect(CX - 200, 22, 400, 200);
+          var sc = 3 - 2 * eBack(tp);
+          ctx.save(); ctx.globalAlpha = clamp(tp * 3, 0, 1); ctx.translate(CX, 122); ctx.scale(sc, sc);
+          ctx.shadowColor = 'rgba(255,200,60,0.9)'; ctx.shadowBlur = 18 + 8 * Math.sin(t * 3);
+          title(ctx, 0, 0); ctx.restore();
+        }
+        if (pp >= 1) { subtitle(ctx, t, 1.6); divider(ctx, t, 1.7); stats(ctx, t, 1.8); buttons(ctx, t, 3.3); }
+        ctx.restore();
+        drawParts(ctx, parts);
+        var fl = 0.85 * (1 - p01(t, 0.38, 0.45)); if (t >= 0.38 && fl > 0) { ctx.fillStyle = 'rgba(255,250,230,' + fl + ')'; ctx.fillRect(0, 0, W, H); }
+      }
+    };
+  }
+
+  // ---------- 方案 B: 煙火凱旋 ----------
+  function variantB() {
+    var rockets = [], parts = [], plan, next;
+    function launch(x, apex) { rockets.push({ x: x, y: H + 10, sx: x, ty: apex, age: 0, dur: rnd(0.55, 0.7), col: pick(CONF.slice(0, 5)) }); }
+    function burst(r) {
+      var n = 80;
+      for (var i = 0; i < n; i++) { var a = i / n * 6.283 + rnd(-0.04, 0.04), sp = rnd(150, 270); parts.push({ kind: 'dot', x: r.x, y: r.ty, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: 90, drag: 0.965, life: rnd(1.1, 1.6), age: 0, size: rnd(2, 3.2), color: r.col, shrink: true }); }
+      for (var j = 0; j < 14; j++) parts.push({ kind: 'twinkle', x: r.x + rnd(-80, 80), y: r.ty + rnd(-80, 80), vx: 0, vy: 20, life: rnd(0.8, 1.4), age: 0, size: rnd(2, 3.5), color: '#fff6d0', seed: rnd(0, 9) });
+    }
+    return {
+      code: 'B', name: '煙火凱旋', desc: '先放一輪煙火, 紅色緞帶從中間往兩邊拉開, 四個字一個一個蓋印上去; 演出結束後兩側仍會零星放煙火。',
+      beats: ['0.2 秒 煙火齊放', '1.2 秒 面板浮現', '1.5 秒 緞帶拉開', '1.8 秒 逐字蓋印', '2.6 秒 數字逐格跳'],
+      reset: function () { rockets = []; parts = []; plan = [[0.1, 230, 150], [0.3, 800, 130], [0.55, 420, 200], [0.8, 640, 110], [1.0, 120, 240]]; next = 2.4; },
+      update: function (dt, t) {
+        while (plan.length && t >= plan[0][0]) { var q = plan.shift(); launch(q[1], q[2]); }
+        if (t >= next) { next = t + rnd(0.7, 1.1); var left = Math.random() < 0.5; launch(left ? rnd(40, 150) : rnd(874, 984), rnd(70, 260)); }
+        for (var i = rockets.length - 1; i >= 0; i--) {
+          var r = rockets[i]; r.age += dt; var k = eOut(clamp(r.age / r.dur, 0, 1)); r.y = H + 10 + (r.ty - H - 10) * k; r.x = r.sx + Math.sin(r.age * 9) * 3;
+          if (Math.random() < 0.8) parts.push({ kind: 'dot', x: r.x, y: r.y + 4, vx: rnd(-15, 15), vy: rnd(20, 60), g: 0, life: 0.4, age: 0, size: 1.6, color: '#ffe3a0', shrink: true });
+          if (r.age >= r.dur) { burst(r); rockets.splice(i, 1); }
+        }
+        stepParts(parts, dt);
+      },
+      draw: function (ctx, t) {
+        dim(ctx, 0.62 * p01(t, 0, 0.4));
+        drawParts(ctx, parts);
+        rockets.forEach(function (r) { ctx.fillStyle = '#fff6d0'; ctx.beginPath(); ctx.arc(r.x, r.y, 3, 0, 6.283); ctx.fill(); });
+        var pp = eOut(p01(t, 1.1, 0.4));
+        if (pp > 0) { ctx.save(); ctx.translate(CX, 288); var s = 0.92 + 0.08 * pp; ctx.scale(s, s); ctx.translate(-CX, -288); panel(ctx, pp); ctx.restore(); }
+        // 緞帶
+        var rp = eOut(p01(t, 1.45, 0.4));
+        if (rp > 0) {
+          var hw = 230 * rp, y0 = 98, h = 52;
+          ctx.fillStyle = '#7a1f33';
+          ctx.beginPath(); ctx.moveTo(CX - hw - 30, y0 + 10); ctx.lineTo(CX - hw + 4, y0 + 10); ctx.lineTo(CX - hw + 4, y0 + h + 10); ctx.lineTo(CX - hw - 30, y0 + h + 10); ctx.lineTo(CX - hw - 16, y0 + 10 + h / 2); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(CX + hw + 30, y0 + 10); ctx.lineTo(CX + hw - 4, y0 + 10); ctx.lineTo(CX + hw - 4, y0 + h + 10); ctx.lineTo(CX + hw + 30, y0 + h + 10); ctx.lineTo(CX + hw + 16, y0 + 10 + h / 2); ctx.closePath(); ctx.fill();
+          var rg = ctx.createLinearGradient(0, y0, 0, y0 + h); rg.addColorStop(0, '#d8485f'); rg.addColorStop(1, '#a32c45');
+          ctx.fillStyle = rg; ctx.fillRect(CX - hw, y0, hw * 2, h);
+          ctx.strokeStyle = 'rgba(255,214,140,0.7)'; ctx.lineWidth = 1.5; ctx.strokeRect(CX - hw + 4, y0 + 4, hw * 2 - 8, h - 8);
+        }
+        var chars = ['恭', '喜', '過', '關'];
+        for (var i = 0; i < 4; i++) {
+          var cp = p01(t, 1.8 + i * 0.16, 0.22); if (!cp) continue;
+          var x = CX - 84 + i * 56, sc = 2.4 - 1.4 * eOut(cp);
+          if (cp < 1) { ctx.strokeStyle = 'rgba(255,230,160,' + (1 - cp) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, 124, 20 + 30 * cp, 0, 6.283); ctx.stroke(); }
+          ctx.save(); ctx.globalAlpha = cp; ctx.translate(x, 124); ctx.scale(sc, sc);
+          txt(ctx, chars[i], 0, 0, { size: 46, color: '#fff2c4', stroke: '#4a0f1d', sw: 6 }); ctx.restore();
+        }
+        subtitle(ctx, t, 2.5, 178); divider(ctx, t, 2.55, 204); stats(ctx, t, 2.6, 4); buttons(ctx, t, 4.0);
+      }
+    };
+  }
+
+  // ---------- 方案 C: 魂火鍛造 ----------
+  function variantC() {
+    var embers = [], parts = [], hits = [1.2, 1.55, 1.9], done = 0, amb = 0, ring = [];
+    function path(ctx) { rr(ctx, CX - 338.5, 69.5, 677, 437, 17); }
+    return {
+      code: 'C', name: '魂火鍛造', desc: '貼合「魂匠」主題: 四周的火星捲向中央, 鐵鎚敲三下, 每一下火花四濺、標題由白熱冷卻成金色; 面板金邊沿著外框燒出來, 統計格逐格點火。',
+      beats: ['0 秒 火星聚攏', '1.2 / 1.55 / 1.9 秒 三次敲擊', '2.1 秒 金邊燒出', '2.6 秒 數字逐格點火'],
+      reset: function () {
+        parts = []; ring = []; done = 0; amb = 0; embers = [];
+        for (var i = 0; i < 140; i++) { var a = rnd(0, 6.283), d = rnd(560, 760); embers.push({ sx: CX + Math.cos(a) * d, sy: 122 + Math.sin(a) * d * 0.7, delay: rnd(0, 0.35), size: rnd(1.6, 3.4), turn: rnd(1.4, 2.4) * (Math.random() < 0.5 ? 1 : -1) }); }
+      },
+      update: function (dt, t) {
+        while (done < hits.length && t >= hits[done]) {
+          var n = done === 2 ? 90 : 50;
+          for (var i = 0; i < n; i++) { var a = rnd(Math.PI * 1.05, Math.PI * 1.95), sp = rnd(220, 620); parts.push({ kind: 'spark', x: CX + rnd(-60, 60), y: 130, vx: Math.cos(a) * sp * 1.3, vy: Math.sin(a) * sp, g: 1100, drag: 0.99, life: rnd(0.5, 1.0), age: 0, size: rnd(1.5, 3), color: pick(['#ffd24a', '#ffb347', '#fff1c9', '#ff8a3c']) }); }
+          ring.push({ t0: hits[done], big: done === 2 }); done++;
+        }
+        if (t > 1.9) { amb += dt * 16; while (amb >= 1) { amb--; parts.push({ kind: 'dot', x: rnd(0, W), y: H + 6, vx: rnd(-12, 12), vy: -rnd(40, 90), g: 0, drag: 1, life: rnd(3, 6), age: 0, size: rnd(1.2, 2.6), color: pick(['#ff9a30', '#ffcf70', '#ff7040']), shrink: true }); } }
+        stepParts(parts, dt);
+      },
+      draw: function (ctx, t) {
+        var sh = shakeAt(t, [[1.2, 6, 0.2], [1.55, 8, 0.22], [1.9, 14, 0.35]]);
+        dim(ctx, 0.8 * p01(t, 0, 0.5));
+        var vg = ctx.createRadialGradient(CX, 200, 0, CX, 200, 600); vg.addColorStop(0, 'rgba(255,120,30,' + (0.18 * p01(t, 0.2, 1)) + ')'); vg.addColorStop(1, 'rgba(255,120,30,0)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+        ctx.save(); ctx.translate(sh[0], sh[1]);
+        drawParts(ctx, parts.filter(function (p) { return p.kind === 'dot'; }));
+        // 面板: 底色淡入, 金邊沿外框燒出
+        var fb = p01(t, 2.05, 0.3); if (fb > 0) panelBody(ctx, fb);
+        var bp = eInOut(p01(t, 2.1, 0.7));
+        if (bp > 0) {
+          var L = 2 * (677 + 437) - (8 - 2 * Math.PI) * 17;
+          ctx.save(); ctx.strokeStyle = C.gold; ctx.lineWidth = 3; ctx.setLineDash([L * bp, L]); ctx.lineDashOffset = 0; path(ctx); ctx.stroke(); ctx.restore();
+          if (bp < 1) { ctx.save(); ctx.strokeStyle = '#fff3c0'; ctx.shadowColor = '#ff9a30'; ctx.shadowBlur = 20; ctx.lineWidth = 5; ctx.setLineDash([24, L]); ctx.lineDashOffset = -(L * bp - 24); path(ctx); ctx.stroke(); ctx.restore(); }
+        }
+        // 敲擊衝擊環
+        ring.forEach(function (r) { var k = p01(t, r.t0, r.big ? 0.6 : 0.45); if (k >= 1) return; ctx.strokeStyle = 'rgba(255,200,110,' + (1 - k) + ')'; ctx.lineWidth = (r.big ? 8 : 5) * (1 - k) + 1; ctx.beginPath(); ctx.ellipse(CX, 124, 40 + (r.big ? 520 : 300) * eOut(k), 14 + (r.big ? 180 : 100) * eOut(k), 0, 0, 6.283); ctx.stroke(); });
+        // 標題: 每敲一下更清楚, 第三下後由白熱冷卻成金色
+        var lv = t >= 1.9 ? 1 : t >= 1.55 ? 0.66 : t >= 1.2 ? 0.33 : 0;
+        if (lv > 0) {
+          var cool = p01(t, 1.9, 1.2);
+          var col = t >= 1.9 ? mixHex('#fff8e8', '#ffd24a', cool) : '#fff8e8';
+          ctx.save(); ctx.globalAlpha = lv; ctx.shadowColor = t >= 1.9 ? 'rgba(255,140,40,' + (1 - cool * 0.6) + ')' : 'rgba(255,170,60,1)'; ctx.shadowBlur = t >= 1.9 ? 34 - 18 * cool + 6 * Math.sin(t * 2.5) : 30;
+          title(ctx, CX, 122, { color: col, stroke: t >= 1.9 ? '#000' : '#7a2d00' }); ctx.restore();
+        }
+        // 火星聚攏
+        embers.forEach(function (e) {
+          var k = p01(t, e.delay, 1.15 - e.delay); if (k >= 1) return;
+          var q = eIn(k), ang = (1 - q) * e.turn, dx = (e.sx - CX) * (1 - q), dy = (e.sy - 122) * (1 - q);
+          var x = CX + dx * Math.cos(ang) - dy * Math.sin(ang), y = 122 + dx * Math.sin(ang) + dy * Math.cos(ang);
+          ctx.fillStyle = 'rgba(255,' + Math.round(150 + 80 * q) + ',60,' + (0.4 + 0.6 * q) + ')'; ctx.beginPath(); ctx.arc(x, y, e.size, 0, 6.283); ctx.fill();
+        });
+        if (bp >= 1 || t > 2.6) { subtitle(ctx, t, 2.5); divider(ctx, t, 2.55); stats(ctx, t, 2.6, 0, true); buttons(ctx, t, 4.0); }
+        drawParts(ctx, parts.filter(function (p) { return p.kind === 'spark'; }));
+        ctx.restore();
+        hits.forEach(function (h, i) { var k = p01(t, h, 0.25); if (t >= h && k < 1) { ctx.fillStyle = 'rgba(255,230,180,' + (0.35 + 0.2 * i) * (1 - k) + ')'; ctx.fillRect(0, 0, W, H); } });
+      }
+    };
+  }
+
+  // ---------- 方案 D: 勳章授予 ----------
+  function variantD() {
+    var parts = [], landed = false, tw = 0;
+    function medal(ctx, x, y, R, face, ribbon, glint) {
+      if (ribbon > 0) {
+        ctx.save(); ctx.globalAlpha = ribbon;
+        [[-1, '#3f6fbf', '#2f4f86'], [1, '#c2465e', '#8a2a3f']].forEach(function (c) {
+          ctx.fillStyle = c[1]; ctx.beginPath(); ctx.moveTo(x + c[0] * R * 0.15, y + R * 0.5); ctx.lineTo(x + c[0] * R * 0.75, y + R * 1.7); ctx.lineTo(x + c[0] * R * 0.45, y + R * 1.55); ctx.lineTo(x + c[0] * R * 0.3, y + R * 1.85); ctx.lineTo(x - c[0] * R * 0.2, y + R * 0.6); ctx.closePath(); ctx.fill();
+        });
+        ctx.restore();
+      }
+      ctx.save(); ctx.translate(x, y); ctx.scale(Math.max(0.04, Math.abs(face)), 1);
+      var back = face < 0;
+      ctx.fillStyle = back ? '#8a6410' : '#b8860b'; ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
+      var g = ctx.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.1, 0, 0, R * 0.9); g.addColorStop(0, back ? '#d9a93a' : '#fff1a8'); g.addColorStop(1, back ? '#9a7012' : '#e0a92a');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R * 0.88, 0, 6.283); ctx.fill();
+      ctx.strokeStyle = 'rgba(122,82,0,0.8)'; ctx.lineWidth = R * 0.04; ctx.beginPath(); ctx.arc(0, 0, R * 0.74, 0, 6.283); ctx.stroke();
+      if (!back) {
+        // 城堡徽記
+        var s = R / 70; ctx.fillStyle = '#7a5200';
+        ctx.beginPath();
+        ctx.moveTo(-34 * s, 30 * s); ctx.lineTo(-34 * s, -22 * s); ctx.lineTo(-26 * s, -22 * s); ctx.lineTo(-26 * s, -14 * s); ctx.lineTo(-18 * s, -14 * s); ctx.lineTo(-18 * s, -22 * s);
+        ctx.lineTo(-10 * s, -22 * s); ctx.lineTo(-10 * s, -6 * s); ctx.lineTo(10 * s, -6 * s); ctx.lineTo(10 * s, -22 * s); ctx.lineTo(18 * s, -22 * s); ctx.lineTo(18 * s, -14 * s);
+        ctx.lineTo(26 * s, -14 * s); ctx.lineTo(26 * s, -22 * s); ctx.lineTo(34 * s, -22 * s); ctx.lineTo(34 * s, 30 * s); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f6d36a'; ctx.beginPath(); ctx.moveTo(-8 * s, 30 * s); ctx.lineTo(-8 * s, 12 * s); ctx.arc(0, 12 * s, 8 * s, Math.PI, 0); ctx.lineTo(8 * s, 30 * s); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#7a5200'; ctx.fillRect(-1.5 * s, -40 * s, 3 * s, 20 * s); ctx.beginPath(); ctx.moveTo(1.5 * s, -40 * s); ctx.lineTo(16 * s, -35 * s); ctx.lineTo(1.5 * s, -30 * s); ctx.fill();
+      }
+      if (glint > 0 && glint < 1 && !back) {
+        ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R * 0.88, 0, 6.283); ctx.clip();
+        var gx = -R * 1.4 + glint * R * 2.8; var lg = ctx.createLinearGradient(gx - R * 0.3, 0, gx + R * 0.3, 0);
+        lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, 'rgba(255,255,255,0.75)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.rotate(-0.5); ctx.fillStyle = lg; ctx.fillRect(-R * 2, -R * 2, R * 4, R * 4); ctx.restore();
+      }
+      ctx.restore();
+    }
+    return {
+      code: 'D', name: '勳章授予', desc: '一枚城堡勳章旋轉著飛到畫面中央, 落定時金粉炸開; 接著勳章縮小移到面板頂端, 像別在面板上, 之後每隔幾秒閃一道光。',
+      beats: ['0 秒 勳章旋入', '1.1 秒 落定+金粉', '1.7 秒 移到面板頂端', '2.3 秒 標題', '2.6 秒 數字逐格跳'],
+      reset: function () { parts = []; landed = false; tw = 0; },
+      update: function (dt, t) {
+        if (!landed && t >= 1.1) {
+          landed = true;
+          for (var i = 0; i < 110; i++) { var a = rnd(0, 6.283), sp = rnd(120, 460); parts.push({ kind: i % 4 ? 'dot' : 'twinkle', x: CX + Math.cos(a) * 60, y: 260 + Math.sin(a) * 60, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: 160, drag: 0.95, life: rnd(0.9, 1.7), age: 0, size: rnd(1.6, 3.4), color: pick(['#ffd24a', '#fff1c9', '#ffcc33']), shrink: true, seed: rnd(0, 9) }); }
+        }
+        if (t > 2.3) { tw += dt * 5; while (tw >= 1) { tw--; var a2 = rnd(0, 6.283); parts.push({ kind: 'twinkle', x: CX + Math.cos(a2) * rnd(44, 70), y: 74 + Math.sin(a2) * rnd(30, 56), vx: 0, vy: 0, life: rnd(0.6, 1.1), age: 0, size: rnd(1.6, 2.8), color: '#fff6d0', seed: rnd(0, 9) }); } }
+        stepParts(parts, dt);
+      },
+      draw: function (ctx, t) {
+        var sh = shakeAt(t, [[1.1, 9, 0.3]]);
+        dim(ctx, 0.75 * p01(t, 0, 0.4));
+        ctx.save(); ctx.translate(sh[0], sh[1]);
+        var spin = p01(t, 0, 1.1), mv = eInOut(p01(t, 1.7, 0.55));
+        var mx = CX, my = 260 + (74 - 260) * mv, R = 70 * (0.25 + 0.75 * eOut(spin)) * (1 - 0.45 * mv);
+        // 勳章背後的光芒(移上去前)
+        var ra = 0.35 * p01(t, 0.6, 0.5) * (1 - mv);
+        if (ra > 0) {
+          ctx.save(); ctx.translate(mx, my); ctx.rotate(-t * 0.3);
+          var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 420); g.addColorStop(0, 'rgba(255,220,110,' + ra + ')'); g.addColorStop(1, 'rgba(255,220,110,0)'); ctx.fillStyle = g;
+          for (var i = 0; i < 14; i++) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 420, i * 0.449, i * 0.449 + 0.2); ctx.closePath(); ctx.fill(); }
+          ctx.restore();
+        }
+        var pp = eOut(p01(t, 1.85, 0.45));
+        if (pp > 0) { ctx.save(); ctx.translate(CX, 68); ctx.scale(1, Math.max(0.02, pp)); ctx.translate(-CX, -68); panel(ctx, 1); ctx.restore(); }
+        var lk = p01(t, 1.1, 0.5); if (t >= 1.1 && lk < 1) { ctx.strokeStyle = 'rgba(255,220,130,' + (1 - lk) + ')'; ctx.lineWidth = 6 * (1 - lk) + 1; ctx.beginPath(); ctx.arc(CX, 260, 70 + 260 * eOut(lk), 0, 6.283); ctx.stroke(); }
+        var face = Math.cos((1 - eOut(spin)) * Math.PI * 7);
+        var glint = t > 2.4 ? ((t - 2.4) % 3) / 0.7 : (t > 1.1 && t < 1.8 ? (t - 1.1) / 0.6 : -1);
+        medal(ctx, mx, my, R, face, 1 - p01(t, 1.7, 0.3), glint);
+        var tp = p01(t, 2.25, 0.35);
+        if (tp > 0) { ctx.save(); ctx.globalAlpha = tp; ctx.shadowColor = 'rgba(255,200,60,0.7)'; ctx.shadowBlur = 14; title(ctx, CX, 150 + 10 * (1 - eOut(tp))); ctx.restore(); }
+        subtitle(ctx, t, 2.4, 196); divider(ctx, t, 2.45, 222); stats(ctx, t, 2.6, 12); buttons(ctx, t, 4.0);
+        ctx.restore();
+        drawParts(ctx, parts);
+        var fl = 0.6 * (1 - p01(t, 1.1, 0.3)); if (t >= 1.1 && fl > 0) { ctx.fillStyle = 'rgba(255,248,225,' + fl + ')'; ctx.fillRect(0, 0, W, H); }
+      }
+    };
+  }
+
+  // ---------- 卡片與播放 ----------
+  var grid = document.getElementById('grid');
+  [variantA, variantB, variantC, variantD].forEach(function (mk) {
+    var v = mk();
+    var card = document.createElement('section'); card.className = 'card';
+    card.innerHTML = '<div class="head"><span class="code">方案 ' + v.code + '</span><span class="name">' + v.name + '</span></div>' +
+      '<p class="desc">' + v.desc + '</p>' +
+      '<canvas width="1280" height="720" tabindex="0" id="cv-' + v.code + '" aria-label="方案 ' + v.code + ' ' + v.name + ' 演出預覽, 點擊重播"></canvas>' +
+      '<div class="row"><ul class="beats">' + v.beats.map(function (b) { return '<li>' + b + '</li>'; }).join('') + '</ul><button type="button" id="rp-' + v.code + '">重播</button></div>';
+    grid.appendChild(card);
+    var cv = card.querySelector('canvas'), ctx = cv.getContext('2d');
+    var t = 0, last = 0, playing = false, visible = false, started = false;
+    function frame() {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      if (bg.complete && bg.naturalWidth) ctx.drawImage(bg, 0, 0, 1280, 720); else { ctx.fillStyle = '#2e4733'; ctx.fillRect(0, 0, 1280, 720); }
+      ctx.setTransform(K, 0, 0, K, 0, 0);
+      v.draw(ctx, t);
+    }
+    function restart() { v.reset(); t = 0; last = 0; started = true; if (reduce) { simulate(6); frame(); return; } if (!playing) { playing = true; requestAnimationFrame(loop); } }
+    function simulate(to) { var step = 1 / 60; while (t < to) { t += step; v.update(step, t); } }
+    function loop(ts) {
+      if (!visible) { playing = false; return; }
+      var dt = last ? Math.min(0.05, (ts - last) / 1000) : 1 / 60; last = ts;
+      t += dt; v.update(dt, t); frame(); requestAnimationFrame(loop);
+    }
+    cv.addEventListener('click', restart);
+    cv.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); restart(); } });
+    card.querySelector('button').addEventListener('click', restart);
+    // 靜止畫面先畫完成狀態, 捲到畫面內才從頭播
+    v.reset(); simulate(5); frame();
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        visible = e.isIntersecting;
+        if (visible && !reduce) { if (!started) restart(); else if (!playing) { playing = true; last = 0; requestAnimationFrame(loop); } }
+      });
+    }, { threshold: 0.35 });
+    io.observe(cv);
+    bg.addEventListener('load', function () { if (!playing) frame(); });
+  });
+})();
+</script>
