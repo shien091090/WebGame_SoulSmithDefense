@@ -1,51 +1,44 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>魂匠守衛者 圖示 A — 魂匠捧著魂件</title>
-<style>body{margin:0;overflow:hidden;background:#11141d}canvas{display:block}</style>
+<title>圖示 A — 魂匠</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
 </head>
 <body>
 <canvas id="c" width="512" height="512"></canvas>
 <script src="../game/art/art.js"></script>
 <script>
-// 圖示 A: 主角魂匠放大置中, 右手捧著一顆組合魂件(雷霆斬); 背後是鍛爐暖光 + 魂光環。無文字
+// 圖示 A「魂匠」: 玩家魂匠(drawPlayer)放大成主體, 背後金色圓環 + 鍛爐暖光; 四角只有深色背景, 不放字
 (function () {
-  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
-  var W = 512, H = 512, TAU = Math.PI * 2;
-  function at(x, y, k, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); fn(); ctx.restore(); }
-
-  // 底: 鍛爐暖光(中心暖褐 → 外圍深藍黑), 四角只有底色
-  var g = ctx.createRadialGradient(256, 236, 10, 256, 256, 380);
-  g.addColorStop(0, '#6a4416'); g.addColorStop(0.45, '#2e2014'); g.addColorStop(1, '#11141d');
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 512, H = 512, CX = 256, CY = 256, TAU = Math.PI * 2;
+  // 背景: 深夜藍(遊戲 HUD / 面板色系), 中央鍛爐暖光
+  ctx.fillStyle = '#121725'; ctx.fillRect(0, 0, W, H);
+  var g = ctx.createRadialGradient(CX, CY + 10, 20, CX, CY + 10, 300);
+  g.addColorStop(0, 'rgba(255,176,32,0.55)'); g.addColorStop(0.45, 'rgba(224,144,42,0.22)'); g.addColorStop(1, 'rgba(224,144,42,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-
-  // 魂光環(在中間 80% 內)
+  // 金色圓環(和開始畫面的玩家記號同一個金環), 半徑 205: 在中間 80% 內
+  ctx.strokeStyle = '#2a1a08'; ctx.lineWidth = 22; ctx.beginPath(); ctx.arc(CX, CY, 205, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 12; ctx.beginPath(); ctx.arc(CX, CY, 205, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,241,201,0.55)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(CX, CY, 196, 0, TAU); ctx.stroke();
+  // 環上 8 個魂光小點
+  for (var i = 0; i < 8; i++) {
+    var a = -Math.PI / 2 + i * TAU / 8;
+    ctx.fillStyle = i % 2 ? '#cfe0ff' : '#fff1c9';
+    ctx.beginPath(); ctx.arc(CX + Math.cos(a) * 205, CY + Math.sin(a) * 205, i % 2 ? 6 : 8, 0, TAU); ctx.fill();
+  }
+  // 主體: 玩家魂匠, 放大 11 倍(身體直徑約 320); 身體圓心在單位座標 (0, 1)
+  var K = 11;
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,210,74,0.12)'; ctx.lineWidth = 20;
-  ctx.beginPath(); ctx.arc(256, 252, 186, 0, TAU); ctx.stroke();
-  ctx.strokeStyle = 'rgba(255,210,74,0.32)'; ctx.lineWidth = 5;
-  ctx.beginPath(); ctx.arc(256, 252, 204, 0, TAU); ctx.stroke();
-  // 環上的鍛造火星
-  ctx.fillStyle = '#ffd24a';
-  [0.3, 1.1, 2.0, 2.6, 3.5, 4.3, 5.0, 5.8].forEach(function (a, i) {
-    var r = 204 + (i % 2 ? 9 : -9), s = i % 3 === 0 ? 5 : 3.5;
-    ctx.globalAlpha = i % 2 ? 0.55 : 0.85;
-    ctx.beginPath(); ctx.arc(256 + Math.cos(a) * r, 252 + Math.sin(a) * r, s, 0, TAU); ctx.fill();
-  });
+  ctx.translate(CX, CY - 1 * K + 4); ctx.scale(K, K);
+  Art.drawPlayer(ctx, { x: 0, y: 0, moving: false, attackAge: 0.15, attackDuration: 0.15, attackKind: 'other', resonating: false, stealing: false, holdingFlag: false, handItem: '' });
   ctx.restore();
-
-  // 主角: drawPlayer 放大 7.2 倍; 本體圓心在 (170, 248), 手上魂件在 (+28, −1)
-  var K = 7.2, PX = 170, PY = 248;
-  var ix = PX + 28 * K, iy = PY - 1 * K;
-  // 魂件背後的魂光(冷白藍, 和暖色主角分開)
-  var g2 = ctx.createRadialGradient(ix, iy, 8, ix, iy, 118);
-  g2.addColorStop(0, 'rgba(230,240,255,0.85)'); g2.addColorStop(0.5, 'rgba(207,224,255,0.35)'); g2.addColorStop(1, 'rgba(207,224,255,0)');
-  ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(ix, iy, 118, 0, TAU); ctx.fill();
-
-  at(PX, PY, K, function () {
-    A.drawPlayer(ctx, { x: 0, y: 0, moving: false, handItem: 'thunderSlash', stealing: false, resonating: false });
-  });
+  // 胸前一點高光(讓大圓身有體積)
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.beginPath(); ctx.ellipse(CX - 92, CY + 50, 24, 15, -0.9, 0, TAU); ctx.fill();
+  ctx.restore();
 })();
 </script>
 </body>

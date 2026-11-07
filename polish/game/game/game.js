@@ -2776,19 +2776,10 @@ function touchOn() { return !!(window.PVDX && window.PVDX.on); }
 function touchText(s) { return touchOn() && s ? s.replace(/按 Z/g, '按 A').replace(/按 X/g, '按 B').replace(/空白鍵/g, '購買鈕') : s; }
 function render() {
   ctx.save();
-  const v = touchOn() && window.PVDX.view;
-  if (v) {
-    // 觸控模式: 設計區縮小置中(比例與位置由 touch.js 算), 兩側整塊塗黑留給觸控按鈕, 遊戲畫面剪在設計區內
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, CW, CH);
-    ctx.setTransform(DPR * SC * v.k, 0, 0, DPR * SC * v.k, DPR * v.x, DPR * v.y);
-    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
-  } else {
-    // 每幀開頭: 實際像素 = DPR, 再整體放大 1.25 倍(設計座標 1024×576 → 邏輯畫布 1280×720)
-    // 畫面比 1280 寬時, 1024×576 設計區置中(最外層平移一次); 畫滿整面的東西由美術畫到 x −160~1184
-    ctx.setTransform(DPR * SC, 0, 0, DPR * SC, DPR * OX, 0);
-    ctx.clearRect(-OX / SC - 4, -4, CW / SC + 8, H + 8);
-  }
+  // 每幀開頭: 實際像素 = DPR, 再整體放大 1.25 倍(設計座標 1024×576 → 邏輯畫布 1280×720)
+  // 畫面比 1280 寬時, 1280×720 設計區置中(最外層平移一次 OX); 兩側由 touch.js 塗黑放按鈕
+  ctx.setTransform(DPR * SC, 0, 0, DPR * SC, DPR * OX, 0);
+  ctx.clearRect(-OX / SC - 4, -4, CW / SC + 8, H + 8);
   try { renderScene(); } finally { ctx.restore(); }
 }
 function renderScene() {

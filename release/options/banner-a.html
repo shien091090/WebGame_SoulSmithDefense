@@ -1,94 +1,95 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>魂匠守衛者 橫幅 A — B1</title>
-<style>@font-face{font-family:'Dela Gothic One';font-weight:400;font-style:normal;src:url(data:font/woff2;base64,d09GMgABAAAAAAWcAA8AAAAACUwAAAVIAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGx4cLgZgAFwRCAqIIIZjCxAAATYCJAMUBCAFhCgHIBckGBAbfAfIxIfotH+T3Wq2SYXk2i3AFEBQGAeAzSfOzs9fU+8ADzBK+NSu9xYROCv6tkjSTaiDog2a3KYCnksn8SACAoBCInQgcQlpMmiDBedWq32tBdxZC4Pe5pX9HU0wbirvaoFxa1HPzgxzlcyGBiCYKsgja2qYQ0rgS9wpoAErwmhrkVlf2DpalpqBKPDLYpg29WSAnUx4XkBWsSmBRDCkh3kwGXmURGAsWAgIFkm7iKANATTB5/KFk0drTC5cFrOf4nxP9Z/b/1o/OErdu7Xq/MgiK5+AqNWgpO4KF1ksdh4DOdjLwsLK9HWBpW10WIaxc3ZkWTaQ1WD1ODaOtW6sZajBaRiwA72i5i69QZFApSIkUfW3EmUQgoISuljieHGIQg8iUGQOgmL0fYojrGRDCqX8ATdt0RhCRESPcEQXlAiJcFCvwdthHHTn2wsFtG6v+f5rhzxVKqUu4QglHOHAYZtXGTi3KiFuDyEZpMDo7ffpSkt/UCIDJevt1w1ZXVMpyfX7SUMKlUr5QM6JKeHEnDnHbE84UHAV1JyTCYmujRwcebBpESFUyQeFmWmZcplHUDLfWY4gMnggYLRk8eH99vupYiG9OETGiK3vy4YUx6T+wVpBKiUlQtDFy42XSzY5KZQrhjHA5JsL6GKy2NjJSrlijcWAELrNhILjCJXBpMRfHCIT0xXyZXZ/itfHKTaZrRJT2fwlJgu4aWbK9cYbTMT/7f0voG34XMN5X0zX8eshHas83GKeyg2vtvWeLfDTGqm9bIem/s7Fpb53fae7ZFUszNX0lRzed5jeej0J0lfP9k/YFhSeGfrJy/aEkbDEbuENE724ydqRulJbHU///f6O3cYnnZ/8Fusgcoj9bZwhwv5anDW6dIrdoRX8jieiItG/v+0xGW5U4t7PbtWNNqib8sXol8m/WP9s/dm2f7X7aqO2uZLUIpOiUSZFJghfs8qt/j+Himy9wlmtY1N2RL8Tep35JzXJTNTydPbirHg/y+OTUv4VjLHOkhuM8c32IhkasS42RoV2oStT9jTr96mXPDL6djTe2cbt5eBkg5nFG10tci0OPhsfOeygR/swA+8Sb66NbDGIF5j5lvxloMqYnH11jdEaAwSv3uN6Vvr2aLLjqz2SRMw22ZvsFiSyqbarTUwp866VfPLInV6QZGPaFJKUbN6v0e4yO2l2l6MBF1ncQM0bu4Tbq5aeF55nLE6uz0lCsOnaeVmaF/eGS3PcpQukPqZ8GH9EykuH94TxYcOteSl/40TQnS4u9tiR5TMS/YVmstzTYz3tTMeJ5565o2O4p8zzUPnP7QAAEACEJI5LjyClemHvtDnmIQD8MklPBgC/Oo+Xfrv1/Q8tyo4EoAUBAIAA7OTvfwAG87/d+nZRi4Lg/RUyzEOIcbkn8xA+cIFY/UX99S1HtfAJYpRASyAFsIKmpepdllvC2qj5lrhYHTG2kxinLIEV3rMCiPCQZRCFzSwLTwywGrBEGasJVwSCSJgM1KELXWhDJ0LhBS8BrUQH6tGGLp3wRCc04Z6t6EAtvJCJBKQhDtVoQjkS0You1KEelchEC6rhgRwhUovutnQHFKiGPAO00igePvCEN7wRoDXzoo0XxfiCMc9KimjIkIoMSPdQIlfFuvmxaEUb+m+BpfbmhHj4kuwCD0vd3ioa3ysLHWhFA6pROSoSje4W+ea17gQP59sNtazc2qsbFfBEJVrR/BB+3Y9yNKIbA6hGC7xOanH54ktyW/UB+MJaTPRB3n7XZR4yD7+//m7Dzv53FmA6YR5iKtOGEWhBG6rQAgA=) format('woff2');}
-body{margin:0;overflow:hidden;background:#2e4733}canvas{display:block}</style>
+<title>橫幅 A — 守住主堡</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
 </head>
 <body>
 <canvas id="c" width="1680" height="720"></canvas>
 <script src="../game/art/art.js"></script>
 <script>
-function draw() {
-  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art;
-  var W = 1680, H = 720;
-  var FONT = '"Dela Gothic One",sans-serif';
-
-  function plate(cx, cy, size) {
-    var s = '魂匠守衛者';
-    ctx.font = '400 ' + size + 'px ' + FONT;
-    var w = ctx.measureText(s).width;
-    return { w: w, pw: w + size * 0.9, ph: size * 1.42 };
+// 橫幅 A「守住主堡」: 遊戲的草地 + 路線(drawBackground)放大 2.4 倍, 左邊敵人沿路排排走來, 右邊我方部隊擋在主堡前;
+// 標題「魂匠守衛者」置中上方。左下角(x < 504、y > 540)只有草地與岔路。
+(function () {
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 1680, H = 720, TAU = Math.PI * 2, K = 2.4;   // 世界座標 × 2.4 = 畫布座標
+  var FONT = '"Microsoft JhengHei","PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+  var IDLE = { hitAge: 0.2, hitDuration: 0.2, attackAge: 0.15, attackDuration: 0.15, attackKind: 'other', attackAngle: 0, targeted: false };
+  function st(o) { var r = {}, k; for (k in IDLE) r[k] = IDLE[k]; for (k in o) r[k] = o[k]; return r; }
+  // 主堡: 函式在城牆下半畫血量牌(含字); 牌子那一條(單位座標 y 27~49)剪掉, 改補畫同色城牆
+  function castleNoPlate(x, y) {
+    var s = st({ x: x, y: y, hp: 20, maxHp: 20, hitDuration: 0.3, hitAge: 0.3 });
+    ctx.save(); ctx.beginPath(); ctx.rect(x - 80, y - 80, 160, 107); ctx.clip(); Art.drawCastle(ctx, s); ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.rect(x - 80, y + 49, 160, 30); ctx.clip(); Art.drawCastle(ctx, s); ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.rect(x - 80, y + 27, 160, 22); ctx.clip();
+    ctx.translate(x, y);
+    ctx.fillStyle = '#5d6272'; rrect(-48, -34, 96, 86, 6); ctx.fill();
+    ctx.fillStyle = '#8d93a3'; rrect(-45, -31, 90, 80, 5); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-25, 38); ctx.lineTo(25, 38); ctx.stroke();
+    ctx.restore();
+  }
+  function rrect(x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
   function title(cx, cy, size) {
-    var s = '魂匠守衛者';
     ctx.save();
-    ctx.font = '400 ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    var p = plate(cx, cy, size), pw = p.pw, ph = p.ph, r = ph * 0.32;
-    var x0 = cx - pw / 2, y0 = cy - ph / 2;
-    ctx.beginPath();
-    ctx.moveTo(x0 + r, y0); ctx.lineTo(x0 + pw - r, y0); ctx.arcTo(x0 + pw, y0, x0 + pw, y0 + r, r);
-    ctx.lineTo(x0 + pw, y0 + ph - r); ctx.arcTo(x0 + pw, y0 + ph, x0 + pw - r, y0 + ph, r);
-    ctx.lineTo(x0 + r, y0 + ph); ctx.arcTo(x0, y0 + ph, x0, y0 + ph - r, r);
-    ctx.lineTo(x0, y0 + r); ctx.arcTo(x0, y0, x0 + r, y0, r); ctx.closePath();
-    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
-    ctx.fillStyle = 'rgba(16,20,30,0.86)'; ctx.fill();
+    ctx.font = 'bold ' + size + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 6;
+    ctx.strokeStyle = '#2a1a00'; ctx.lineWidth = size * 0.16; ctx.strokeText('魂匠守衛者', cx, cy);
     ctx.shadowColor = 'transparent';
-    ctx.strokeStyle = 'rgba(255,210,74,0.9)'; ctx.lineWidth = 4; ctx.stroke();
-    // 描邊改細(原 0.13 倍字級 -> 0.05), 字內留白不再被填滿
-    ctx.lineJoin = 'round'; ctx.strokeStyle = '#2a1a00'; ctx.lineWidth = size * 0.05;
-    ctx.strokeText(s, cx, cy + size * 0.04);
     var g = ctx.createLinearGradient(0, cy - size / 2, 0, cy + size / 2);
-    g.addColorStop(0, '#fff3b8'); g.addColorStop(0.5, '#ffd24a'); g.addColorStop(1, '#e8962a');
-    ctx.fillStyle = g; ctx.fillText(s, cx, cy + size * 0.04);
+    g.addColorStop(0, '#fff1a8'); g.addColorStop(0.55, '#ffd24a'); g.addColorStop(1, '#e0902a');
+    ctx.fillStyle = g; ctx.fillText('魂匠守衛者', cx, cy);
     ctx.restore();
   }
 
-  ctx.save();
-  ctx.translate(-400, -220); ctx.scale(2, 2);
-  A.drawBackground(ctx, { paths: [[[288, 48], [288, 336], [900, 336]]] });
-  A.drawPillarRange(ctx, { x: 640, y: 420, radius: 90, kinds: ['frost'] });
-  A.drawResonanceLine(ctx, { x1: 640, y1: 410, x2: 760, y2: 410, kind: 'frost', active: true });
-  ctx.save(); ctx.beginPath(); ctx.rect(900 - 70, 336 - 80, 140, 80 + 26); ctx.clip();
-  A.drawCastle(ctx, { x: 900, y: 336, hp: 20, maxHp: 20 });
+  // ---- 世界層(2.4 倍) ----
+  ctx.save(); ctx.scale(K, K);
+  // 主路: 從左邊畫面外進來, 水平走到主堡; 岔路: 從左下進來在 x 180 併入(左下角只有路面與草地)
+  Art.drawBackground(ctx, { paths: [[[0, 190], [600, 190]], [[0, 282], [180, 282], [180, 190], [600, 190]]] });
   ctx.restore();
-  A.drawEnemy(ctx, { x: 288, y: 170, type: 'imp', moving: true, hp: 1, maxHp: 1 });
-  A.drawEnemy(ctx, { x: 288, y: 228, type: 'archer', moving: true, hp: 1, maxHp: 1 });
-  A.drawEnemy(ctx, { x: 288, y: 286, type: 'brute', moving: true, hp: 1, maxHp: 1 });
-  A.drawEnemy(ctx, { x: 370, y: 336, type: 'ice', moving: true, hp: 1, maxHp: 1 });
-  A.drawPillar(ctx, { x: 640, y: 410, kinds: ['frost'] });
-  A.drawCrossbow(ctx, { x: 760, y: 410, resonating: true });
-  // 原本在名牌新位置上的那座箭塔, 移到右下空地
-  A.drawCrossbow(ctx, { x: 860, y: 425 });
-  A.drawGolem(ctx, { x: 760, y: 330, team: 'ally', moving: true, hp: 1, maxHp: 1 });
-  A.drawSoldier(ctx, { x: 640, y: 330, moving: true, hp: 1, maxHp: 1 });
-  A.drawSoldier(ctx, { x: 680, y: 344, moving: true, hp: 1, maxHp: 1 });
-  A.drawEnemy(ctx, { x: 450, y: 336, type: 'bossThunder', moving: true, hp: 1, maxHp: 1 });
-  A.drawSoulSlots(ctx, { x: 450, y: 336 - 36 - 20, slots: ['shock', 'heal'] });
-  A.drawCrossbow(ctx, { x: 545, y: 336, charging: true, moving: true });
-  A.drawMeleeSlash(ctx, { x: 510, y: 336, angle: Math.PI, age: 0.12, duration: 0.25, kind: 'melee', team: 'ally' });
+  // 上緣壓暗(給標題一塊安靜的底)
+  var top = ctx.createLinearGradient(0, 0, 0, 300);
+  top.addColorStop(0, 'rgba(10,14,22,0.72)'); top.addColorStop(1, 'rgba(10,14,22,0)');
+  ctx.fillStyle = top; ctx.fillRect(0, 0, W, 300);
 
-  A.drawStealLink(ctx, { x1: 390, y1: 200, x2: 440, y2: 280, progress: 0.65 });
-  A.drawPlayer(ctx, { x: 390, y: 200, stealing: true, stealProgress: 0.65 });
+  ctx.save(); ctx.scale(K, K);
+  // 魂柱 → 箭塔的共鳴線(冰霜)
+  Art.drawResonanceLine(ctx, { x1: 330, y1: 135, x2: 404, y2: 135, kind: 'frost', active: true });
+  // 主堡(右, 中心 (600,190) → 畫布 (1440,456))
+  castleNoPlate(600, 190);
+  Art.drawSoulSlots(ctx, { x: 600, y: 114, slots: ['shop', 'melee'], virtual: [] });
+  // 敵人排排走來(依 y 小到大畫)
+  var foes = [['imp', 74, 189], ['archer', 114, 192], ['ice', 154, 187], ['thunder', 196, 192], ['healer', 240, 186], ['drummer', 285, 191], ['brute', 334, 188]];
+  foes.sort(function (a, b) { return a[2] - b[2]; }).forEach(function (f) {
+    Art.drawEnemy(ctx, st({ x: f[1], y: f[2], type: f[0], hp: 10, maxHp: 10, moving: true, slowed: f[0] === 'drummer', healing: false, swift: false, stunAge: 1, stunDuration: 1 }));
+  });
+  // 我方: 魂柱、箭塔、步兵、石魔像
+  Art.drawPillar(ctx, st({ x: 330, y: 135, kinds: ['frost'], moving: false, charging: false, rooted: false }));
+  Art.drawSoulSlots(ctx, { x: 330, y: 97, slots: ['frost'], virtual: [] });
+  Art.drawCrossbow(ctx, st({ x: 404, y: 135, moving: false, charging: false, rooted: false, resonating: true }));
+  Art.drawSoulSlots(ctx, { x: 404, y: 91, slots: ['ranged'], virtual: [{ kind: 'frost', used: true }] });
+  Art.drawSoldier(ctx, st({ x: 424, y: 178, hp: 10, maxHp: 10, moving: false, charging: false, rooted: false, healing: false, resonating: false, returning: false }));
+  Art.drawGolem(ctx, st({ x: 476, y: 192, team: 'ally', hp: 10, maxHp: 10, moving: false, charging: false, rooted: false, healing: false, resonating: false, returning: false }));
+  Art.drawSoldier(ctx, st({ x: 430, y: 206, hp: 10, maxHp: 10, moving: false, charging: false, rooted: false, healing: false, resonating: false, returning: false, attackKind: 'melee', attackAge: 0.05, attackDuration: 0.25, attackAngle: Math.PI }));
+  // 冰箭飛向前排敵人
+  [[380, 153], [358, 169]].forEach(function (p) {
+    Art.drawProjectile(ctx, { x: p[0], y: p[1], angle: Math.atan2(53, -70), owner: 'ally', kind: 'ice' });
+  });
+  Art.drawMeleeSlash(ctx, { x: 352, y: 204, angle: Math.PI, kind: 'melee', team: 'ally', age: 0.1, duration: 0.25 });
   ctx.restore();
 
-  // 壓暗: 頂端只留淡淡一層, 主要改成名牌後方的橢圓暗暈
-  var tg = ctx.createLinearGradient(0, 0, 0, 150);
-  tg.addColorStop(0, 'rgba(10,14,22,0.40)'); tg.addColorStop(1, 'rgba(10,14,22,0)');
-  ctx.fillStyle = tg; ctx.fillRect(0, 0, W, 150);
-  var CX = 900, CY = 205, SIZE = 145;
-  var p = plate(CX, CY, SIZE);
-  ctx.save(); ctx.translate(CX, CY); ctx.scale(1, (p.ph + 90) / (p.pw + 160));
-  var rg = ctx.createRadialGradient(0, 0, 0, 0, 0, (p.pw + 160) / 2);
-  rg.addColorStop(0, 'rgba(10,14,22,0.55)'); rg.addColorStop(0.7, 'rgba(10,14,22,0.35)'); rg.addColorStop(1, 'rgba(10,14,22,0)');
-  ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, (p.pw + 160) / 2, 0, Math.PI * 2); ctx.fill();
+  // 主角: 玩家魂匠放大 4.2 倍, 捧著冰箭魂件站在主堡前(畫布 (1100,604))
+  ctx.save(); ctx.translate(1100, 604); ctx.scale(4.2, 4.2);
+  Art.drawPlayer(ctx, { x: 0, y: 0, moving: false, attackAge: 0.15, attackDuration: 0.15, attackKind: 'other', resonating: false, stealing: false, holdingFlag: false, handItem: 'iceArrow' });
   ctx.restore();
-  title(CX, CY, SIZE);
 
-  document.title += ' plate ' + Math.round(CX - p.pw / 2) + '~' + Math.round(CX + p.pw / 2) + ' / ' + Math.round(CY - p.ph / 2) + '~' + Math.round(CY + p.ph / 2);
-}
-document.fonts.load('400 145px "Dela Gothic One"', '魂匠守衛者').then(draw, draw);
+  // 標題: 置中上方
+  title(840, 118, 132);
+})();
 </script>
 </body>
 </html>

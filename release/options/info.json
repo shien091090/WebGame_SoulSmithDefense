@@ -7,5 +7,5 @@
  "ratio": "16:9",
  "ratio_site": true,
  "mobile_ratio": "16:9-21:9",
- "mobile": true
+ "touch": true
 }

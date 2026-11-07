@@ -1,44 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>魂匠守衛者 圖示 C — 霜角魔王</title>
-<style>body{margin:0;overflow:hidden;background:#14070d}canvas{display:block}</style>
+<title>圖示 C — 主堡守衛</title>
+<style>body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style>
 </head>
 <body>
 <canvas id="c" width="512" height="512"></canvas>
 <script src="../game/art/art.js"></script>
 <script>
-// 圖示 C: 霜角 Boss 正面特寫(冰晶巨角 + 雙冰刃), 暗紅底 + 頭後冰藍光暈。無文字
+// 圖示 C「主堡守衛」: 主堡(drawCastle)放大置中, 前方草丘上兩名我方步兵(drawSoldier)把守; 黃昏暖天空; 不放字
+// 主堡函式會在城牆下半畫血量牌(含「20/20」字): 這裡只取牌子以上的城體(剪裁 y < 牌頂), 下緣由前景草丘蓋住
 (function () {
-  var cv = document.getElementById('c'), ctx = cv.getContext('2d'), A = window.Art, P = A.palette;
-  var W = 512, H = 512, TAU = Math.PI * 2;
-  function at(x, y, k, fn) { ctx.save(); ctx.translate(x, y); ctx.scale(k, k); fn(); ctx.restore(); }
-
-  // 底: 敵方暗紅(和 Boss 的藍紫身體拉開對比)
-  var g = ctx.createRadialGradient(256, 230, 10, 256, 256, 380);
-  g.addColorStop(0, '#6e2038'); g.addColorStop(0.5, '#34101e'); g.addColorStop(1, '#14070d');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-
-  // 頭後冰藍光暈(勾出巨角輪廓)
-  var g2 = ctx.createRadialGradient(256, 150, 10, 256, 170, 210);
-  g2.addColorStop(0, 'rgba(190,235,255,0.55)'); g2.addColorStop(1, 'rgba(143,216,255,0)');
-  ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(256, 170, 210, 0, TAU); ctx.fill();
-
-  // 飄落冰屑(菱形)
-  ctx.fillStyle = 'rgba(220,245,255,0.75)';
-  [[90, 120, 0.4, 9], [420, 110, -0.5, 8], [80, 330, 0.9, 7], [440, 320, 0.2, 9], [150, 60, 1.2, 6], [370, 60, -1.0, 6], [120, 420, 0.5, 6], [400, 420, -0.3, 6]].forEach(function (q) {
-    ctx.save(); ctx.translate(q[0], q[1]); ctx.rotate(q[2]);
-    ctx.beginPath(); ctx.moveTo(q[3], 0); ctx.lineTo(0, -q[3] * 0.5); ctx.lineTo(-q[3], 0); ctx.lineTo(0, q[3] * 0.5); ctx.closePath(); ctx.fill();
-    ctx.restore();
+  var cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  var W = 512, H = 512, CX = 256, TAU = Math.PI * 2;
+  // 天空: 黃昏暖金(讓灰石城牆與我方藍旗跳出來)
+  var sky = ctx.createLinearGradient(0, 0, 0, 360);
+  sky.addColorStop(0, '#e9a54a'); sky.addColorStop(1, '#fbe3a8');
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+  // 太陽光暈(城後)
+  var sun = ctx.createRadialGradient(CX, 200, 10, CX, 200, 230);
+  sun.addColorStop(0, 'rgba(255,248,220,0.9)'); sun.addColorStop(1, 'rgba(255,248,220,0)');
+  ctx.fillStyle = sun; ctx.fillRect(0, 0, W, H);
+  // 遠山(遊戲草地的暗綠)
+  ctx.fillStyle = '#4f6e4c';
+  ctx.beginPath(); ctx.moveTo(0, 330); ctx.quadraticCurveTo(110, 262, 210, 318); ctx.quadraticCurveTo(320, 250, 512, 312); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.closePath(); ctx.fill();
+  // 主堡: 112×112 放大 3.6 倍, 中心 (256,258); 只畫血量牌(單位座標 y ≥ 27)以上的部分
+  var K = 3.6, CY = 258;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 0, W, CY + 27 * K); ctx.clip();
+  ctx.translate(CX, CY); ctx.scale(K, K);
+  Art.drawCastle(ctx, { x: 0, y: 0, hp: 20, maxHp: 20, hitAge: 0.3, hitDuration: 0.3, attackAge: 0.15, attackDuration: 0.15, targeted: false });
+  ctx.restore();
+  // 前景草丘(遊戲草地色 + 暗斑), 蓋住城牆下緣
+  ctx.fillStyle = '#27402c';
+  ctx.beginPath(); ctx.moveTo(0, 360); ctx.quadraticCurveTo(256, 322, 512, 360); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#2e4733';
+  ctx.beginPath(); ctx.moveTo(0, 372); ctx.quadraticCurveTo(256, 334, 512, 372); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.closePath(); ctx.fill();
+  // 通往城門的路(遊戲路面三層色)
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(0, 372); ctx.quadraticCurveTo(256, 334, 512, 372); ctx.lineTo(512, 512); ctx.lineTo(0, 512); ctx.closePath(); ctx.clip();
+  [['#6a5535', 74], ['#9a8158', 64], ['#ad9469', 24]].forEach(function (p) {
+    ctx.strokeStyle = p[0]; ctx.lineWidth = p[1];
+    ctx.beginPath(); ctx.moveTo(256, 340); ctx.quadraticCurveTo(250, 430, 236, 520); ctx.stroke();
   });
-
-  // 落地影
-  var K = 5.6, BX = 256, BY = 250;
-  ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(BX, BY + 35 * K, 30 * K, 5 * K, 0, 0, TAU); ctx.fill();
-  // Boss: 72×72 放大 5.6 倍(約 400 px), 走路中(不出現呆站問號)、滿血(不畫血條)
-  at(BX, BY, K, function () {
-    A.drawEnemy(ctx, { x: 0, y: 0, type: 'bossFrost', moving: true, hp: 1, maxHp: 1, slowed: false, healing: false });
+  ctx.restore();
+  // 兩名步兵把守(32×32 放大 2.6 倍), 站在路兩側
+  [[150, 404], [362, 404]].forEach(function (p) {
+    ctx.save(); ctx.translate(p[0], p[1]); ctx.scale(2.6, 2.6);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(0, 15.5, 13, 3, 0, 0, TAU); ctx.fill();
+    Art.drawSoldier(ctx, { x: 0, y: 0, hp: 10, maxHp: 10, hitAge: 0.2, hitDuration: 0.2, attackAge: 0.15, attackDuration: 0.15, attackKind: 'other', attackAngle: 0, moving: false, charging: false, rooted: false, healing: false, resonating: false, returning: false, targeted: false });
+    ctx.restore();
   });
 })();
 </script>
